@@ -1,0 +1,20 @@
+{
+  "name": "peerflix",
+  "version": "0.0.1",
+  "bin": {
+    "peerflix": "app.js"
+  },
+  "dependencies": {
+    "bitfield": "~0.1.0",
+    "clivas": "~0.1.4",
+    "range-parser": "0.0.4",
+    "hat": "0.0.3",
+    "mime": "~1.2.9",
+    "numeral": "~1.4.7",
+    "readable-stream": "~1.0.2",
+    "torrent-swarm": "0.0.1",
+    "read-torrent": "0.0.1",
+    "network-address": "0.0.4",
+    "torrent-wire-protocol": "~0.2.1"
+  }
+}
