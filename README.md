@@ -11,4 +11,6 @@ this will install a terminal app called `peerflix`. simply call it with a torren
 
 peerflix will print a terminal interface. this first line contains a address to a http server.
 
+![peerflix](https://raw.github.com/mafintosh/peerflix/master/screenshot.png)
+
 simply open this address in vlc or similar to start viewing the file
