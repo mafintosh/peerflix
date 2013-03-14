@@ -75,13 +75,14 @@ module.exports = function(torrent, file, destination) {
 		return s;
 	};
 
+	var lastFile = torrent.files[torrent.files.length-1];
 	var pieces = torrent.pieces.map(function(_, i) {
 		if (i < start) return;
 		if (i > end) return;
 
 		missing.push(i);
 
-		if (i === torrent.pieces.length-1) return piece(((file.length + file.offset) % torrent.pieceLength) || torrent.pieceLength);
+		if (i === torrent.pieces.length-1) return piece(((lastFile.length + lastFile.offset) % torrent.pieceLength) || torrent.pieceLength);
 		return piece(torrent.pieceLength);
 	});
 
