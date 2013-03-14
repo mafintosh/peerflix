@@ -5,6 +5,7 @@ var wire = require('torrent-wire-protocol');
 var hat = require('hat');
 var path = require('path');
 var os = require('os');
+var proc = require('child_process');
 var address = require('network-address');
 var numeral = require('numeral');
 var clivas = require('clivas');
@@ -15,20 +16,18 @@ var createServer = require('./server');
 
 var argv = optimist
 	.usage('Usage: $0 torrent_file_or_url [options]')
-	.alias('p', 'max-peers')
-	.default('p', 30)
-	.describe('p', 'max connected peers')
-	.alias('q', 'max-queued')
-	.default('q', 3)
-	.describe('q', 'max queued pieces')
-	.alias('b', 'buffer')
-	.describe('b', 'torrent buffer file')
+	.alias('c', 'connections').describe('c', 'max connected peers').default('c', 30)
+	.alias('p', 'port').describe('p', 'change the http port').default('p', 8888)
+	.alias('b', 'buffer').describe('b', 'change buffer file')
+	.alias('q', 'quiet').describe('q', 'be quiet')
+	.alias('v', 'vlc').describe('v', 'autoplay in vlc*')
 	.argv;
 
 var filename = argv._[0];
 
 if (!filename) {
 	optimist.showHelp();
+	console.error('*VLC can take several seconds to start since it needs to wait for the first piece\n');
 	process.exit(1);
 }
 
@@ -38,15 +37,17 @@ var biggest = function(torrent) {
 	});
 };
 
-var MAX_PEERS = argv.p;
-var MAX_QUEUED = argv.q;
+var MAX_PEERS = argv.connections;
+var MIN_PEERS = 15;
+var MAX_QUEUED = 3;
+var VLC_ARGS = '-q --video-on-top --play-and-exit';
 
-var CHOKE_TIMEOUT = 15000;
+var CHOKE_TIMEOUT = 20000;
 var PIECE_TIMEOUT = 10000;
 var HANDSHAKE_TIMEOUT = 5000;
-var PEER_ID = '-TV0002-'+hat(48);
+var PEER_ID = '-TV0003-'+hat(48);
 
-readTorrent(process.argv[2], function(err, torrent) {
+readTorrent(filename, function(err, torrent) {
 	if (err) throw err;
 
 	var selected = biggest(torrent);
@@ -111,7 +112,7 @@ readTorrent(process.argv[2], function(err, torrent) {
 			protocol.on('have', update);
 
 			var onchoketimeout = function() {
-				if (sw.queued && MAX_PEERS - peers.length < 10) return ontimeout();
+				if (peers.length > MIN_PEERS && sw.queued > 2 * (MAX_PEERS - peers.length)) return ontimeout();
 				timeout = setTimeout(onchoketimeout, CHOKE_TIMEOUT);
 			};
 
@@ -187,14 +188,19 @@ readTorrent(process.argv[2], function(err, torrent) {
 			};
 		}();
 
+		var href = 'http://'+address()+':'+server.address().port+'/';
+		var filename = server.filename.split('/').pop().replace(/\{|\}/g, '');
+
+		if (argv.vlc) proc.exec('vlc '+href+' '+VLC_ARGS+' || /Applications/VLC.app/Contents/MacOS/VLC '+href+' '+VLC_ARGS);
+		if (argv.quiet) return console.log('server is listening on '+href);
+
 		setInterval(function() {
-			var filename = server.filename.split('/').pop().replace(/\{|\}/g, '');
 			var unchoked = peers.filter(function(peer) {
 				return !peer.peerChoking;
 			});
 
 			clivas.clear();
-			clivas.line('{green:open} {bold:vlc} {green:and enter} {bold:http://'+address()+':'+server.address().port+'/} {green:as the network addres}');
+			clivas.line('{green:open} {bold:vlc} {green:and enter} {bold:'+href+'} {green:as the network addres}');
 			clivas.line('');
 			clivas.line('{yellow:info} {green:streaming} {bold:'+filename+'} {green:-} {bold:'+bytesPerSecond()+'} {green:from} {bold:'+unchoked.length +'/'+peers.length+'} {green:peers}    ');
 			clivas.line('{yellow:info} {green:downloaded} {bold:'+numeral(downloaded).format('0.00b')+'} {green:and uploaded }{bold:'+numeral(uploaded).format('0.00b')+'}        ');
