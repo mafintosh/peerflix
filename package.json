@@ -15,6 +15,7 @@
     "torrent-swarm": "0.0.1",
     "read-torrent": "0.0.1",
     "network-address": "0.0.4",
-    "torrent-wire-protocol": "~0.2.1"
+    "torrent-wire-protocol": "~0.2.1",
+    "part-file": "0.0.1"
   }
 }
