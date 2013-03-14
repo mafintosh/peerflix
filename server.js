@@ -119,6 +119,7 @@ module.exports = function(torrent, file, destination) {
 	prioritize(0);
 	server.missing = missing;
 	server.filename = file.name;
+	server.destination = destination;
 
 	server.sizeof = function(index, offset) {
 		var p = pieces[index];

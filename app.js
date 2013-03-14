@@ -5,6 +5,7 @@ var wire = require('torrent-wire-protocol');
 var hat = require('hat');
 var path = require('path');
 var os = require('os');
+var fs = require('fs');
 var proc = require('child_process');
 var address = require('network-address');
 var numeral = require('numeral');
@@ -38,13 +39,14 @@ var biggest = function(torrent) {
 };
 
 var MAX_PEERS = argv.connections;
-var MIN_PEERS = 15;
-var MAX_QUEUED = 3;
+var MIN_PEERS = (MAX_PEERS / 2) | 0;
+var MAX_QUEUED = 5;
 var VLC_ARGS = '-q --video-on-top --play-and-exit';
 
 var CHOKE_TIMEOUT = 20000;
 var PIECE_TIMEOUT = 10000;
 var HANDSHAKE_TIMEOUT = 5000;
+var MIN_SPEED = 8 * 1024; // 8KB/s
 var PEER_ID = '-TV0003-'+hat(48);
 
 readTorrent(filename, function(err, torrent) {
@@ -76,12 +78,13 @@ readTorrent(filename, function(err, torrent) {
 				if (peer.queued >= MAX_QUEUED)       return true;
 
 				if (!peer.peerHave(piece)) return;
-				if (peer.requesting(piece) && piece !== server.missing[0]) return;
+				if (peer.requesting(piece) && peer.speed() < MIN_SPEED) return;
 
 				var offset = server.select(piece);
 
 				if (offset === -1) return;
 
+				peer.started = peer.started || Date.now();
 				peer.active();
 				peer.request(piece, offset, server.sizeof(piece, offset));
 			});
@@ -143,6 +146,11 @@ readTorrent(filename, function(err, torrent) {
 			if (protocol.queued) protocol.destroy();
 		};
 
+		protocol.started = 0;
+		protocol.speed = function() {
+			return 1000 * protocol.downloaded / (Date.now() - protocol.started);
+		};
+
 		protocol.active = function() { // TODO: move piece timeout to protocol impl
 			clearTimeout(hanging);
 			hanging = setTimeout(onidle, PIECE_TIMEOUT);
@@ -194,6 +202,10 @@ readTorrent(filename, function(err, torrent) {
 		if (argv.vlc) proc.exec('vlc '+href+' '+VLC_ARGS+' || /Applications/VLC.app/Contents/MacOS/VLC '+href+' '+VLC_ARGS);
 		if (argv.quiet) return console.log('server is listening on '+href);
 
+		var bytes = function(num) {
+			return numeral(num).format('0.0b');
+		};
+
 		setInterval(function() {
 			var unchoked = peers.filter(function(peer) {
 				return !peer.peerChoking;
@@ -203,7 +215,7 @@ readTorrent(filename, function(err, torrent) {
 			clivas.line('{green:open} {bold:vlc} {green:and enter} {bold:'+href+'} {green:as the network addres}');
 			clivas.line('');
 			clivas.line('{yellow:info} {green:streaming} {bold:'+filename+'} {green:-} {bold:'+bytesPerSecond()+'} {green:from} {bold:'+unchoked.length +'/'+peers.length+'} {green:peers}    ');
-			clivas.line('{yellow:info} {green:downloaded} {bold:'+numeral(downloaded).format('0.00b')+'} {green:and uploaded }{bold:'+numeral(uploaded).format('0.00b')+'}        ');
+			clivas.line('{yellow:info} {green:downloaded} {bold:'+bytes(downloaded)+'} {green:and uploaded }{bold:'+bytes(uploaded)+'}        ');
 			clivas.line('{yellow:info} {green:found }{bold:'+sw.peersFound+'} {green:peers and} {bold:'+sw.nodesFound+'} {green:nodes through the dht}');
 			clivas.line('{yellow:info} {green:peer queue size is} {bold:'+sw.queued+'}     ');
 			clivas.line('{yellow:info} {green:target pieces are} {80+bold:'+(server.missing.length ? server.missing.slice(0, 15).join(' ') : '(none)')+'}     ');
@@ -214,12 +226,12 @@ readTorrent(filename, function(err, torrent) {
 				if (peer.peerChoking) tags.push('choked');
 				if (peer.peerHave(server.missing[0])) tags.push('target');
 
-				clivas.line('{25+magenta:'+peer.id+'} {10:↓'+numeral(peer.downloaded).format('0.00b')+'}  {10:↑'+numeral(peer.uploaded).format('0.00b')+'} {20+grey:'+tags.join(', ')+'}');
+				clivas.line('{25+magenta:'+peer.id+'} {10:↓'+bytes(peer.downloaded)+'} {10+cyan:↓'+bytes(peer.speed())+'/s}  {10:↑'+bytes(peer.uploaded)+'} {20+grey:'+tags.join(', ')+'}     ');
 			});
 
 			if (peers.length > 30) {
 				clivas.line('{80:}');
-				clivas.line('... and '+(peers.length-30)+' more');
+				clivas.line('... and '+(peers.length-30)+' more     ');
 			}
 
 			clivas.line('{80:}');
@@ -227,4 +239,8 @@ readTorrent(filename, function(err, torrent) {
 		}, 500);
 	});
 
+	process.on('SIGINT', function() {
+		if (fs.existsSync(server.destination)) fs.unlinkSync(server.destination);
+		process.exit(0);
+	});
 });
