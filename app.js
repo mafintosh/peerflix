@@ -10,10 +10,25 @@ var numeral = require('numeral');
 var clivas = require('clivas');
 var bitfield = require('bitfield');
 var readTorrent = require('read-torrent');
+var optimist = require('optimist');
 var createServer = require('./server');
 
-if (!process.argv[2]) {
-	console.error('usage: torrenttv file_or_url.torrent');
+var argv = optimist
+	.usage('Usage: $0 torrent_file_or_url [options]')
+	.alias('p', 'max-peers')
+	.default('p', 30)
+	.describe('p', 'max connected peers')
+	.alias('q', 'max-queued')
+	.default('q', 3)
+	.describe('q', 'max queued pieces')
+	.alias('b', 'buffer')
+	.describe('b', 'torrent buffer file')
+	.argv;
+
+var filename = argv._[0];
+
+if (!filename) {
+	optimist.showHelp();
 	process.exit(1);
 }
 
@@ -23,20 +38,19 @@ var biggest = function(torrent) {
 	});
 };
 
-var MAX_PEERS = 60;
-var MAX_QUEUED = 3;
+var MAX_PEERS = argv.p;
+var MAX_QUEUED = argv.q;
 
 var CHOKE_TIMEOUT = 15000;
 var PIECE_TIMEOUT = 10000;
 var HANDSHAKE_TIMEOUT = 5000;
-var SPEED_TARGET = 8000;
 var PEER_ID = '-TV0002-'+hat(48);
 
 readTorrent(process.argv[2], function(err, torrent) {
 	if (err) throw err;
 
 	var selected = biggest(torrent);
-	var server = createServer(torrent, selected, path.join(os.tmpDir(), torrent.infoHash+'.'+selected.offset));
+	var server = createServer(torrent, selected, path.join(os.tmpDir(), argv.b || torrent.infoHash+'.'+selected.offset));
 	var peers = [];
 
 	var speed = [0];
@@ -174,6 +188,7 @@ readTorrent(process.argv[2], function(err, torrent) {
 		}();
 
 		setInterval(function() {
+			var filename = server.filename.split('/').pop().replace(/\{|\}/g, '');
 			var unchoked = peers.filter(function(peer) {
 				return !peer.peerChoking;
 			});
@@ -181,7 +196,7 @@ readTorrent(process.argv[2], function(err, torrent) {
 			clivas.clear();
 			clivas.line('{green:open} {bold:vlc} {green:and enter} {bold:http://'+address()+':'+server.address().port+'/} {green:as the network addres}');
 			clivas.line('');
-			clivas.line('{yellow:info} {green:streaming} {bold:'+server.filename.split('/').pop().replace(/\{|\}/g, '')+'} {green:-} {bold:'+bytesPerSecond()+'} {green:from} {bold:'+unchoked.length +'/'+peers.length+'} {green:peers}    ');
+			clivas.line('{yellow:info} {green:streaming} {bold:'+filename+'} {green:-} {bold:'+bytesPerSecond()+'} {green:from} {bold:'+unchoked.length +'/'+peers.length+'} {green:peers}    ');
 			clivas.line('{yellow:info} {green:downloaded} {bold:'+numeral(downloaded).format('0.00b')+'} {green:and uploaded }{bold:'+numeral(uploaded).format('0.00b')+'}        ');
 			clivas.line('{yellow:info} {green:found }{bold:'+sw.peersFound+'} {green:peers and} {bold:'+sw.nodesFound+'} {green:nodes through the dht}');
 			clivas.line('{yellow:info} {green:peer queue size is} {bold:'+sw.queued+'}     ');
