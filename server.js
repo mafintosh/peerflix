@@ -20,6 +20,7 @@ module.exports = function(torrent, file, destination) {
 		this.remaining = range.end - range.start + 1;
 		this.skip = (range.start + file.offset) % torrent.pieceLength;
 		this.destroyed = false;
+		this._buffer = this.position + Math.min(4, (this.remaining / torrent.pieceLength) | 0);
 		this._onreadable = null;
 	};
 
@@ -38,15 +39,22 @@ module.exports = function(torrent, file, destination) {
 			if (!self.destroyed) self.push(data);
 		};
 
-		if (dest.readable(this.position)) return dest.read(this.position++, onread);
+		if (!this.buffering()) return dest.read(this.position++, onread);
 
 		this._onreadable = function(index) {
-			if (index !== self.position) return;
+			if (self.buffering()) return;
 			dest.removeListener('readable', self._onreadable);
 			dest.read(self.position++, onread);
 		};
 
 		dest.on('readable', this._onreadable);
+	};
+
+	PieceStream.prototype.buffering = function() {
+		for (var i = this.position; i < this._buffer; i++) {
+			if (!dest.readable(i)) return true;
+		}
+		return !dest.readable(this.position);
 	};
 
 	PieceStream.prototype.destroy = function() {

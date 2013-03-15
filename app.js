@@ -53,7 +53,8 @@ readTorrent(filename, function(err, torrent) {
 	if (err) throw err;
 
 	var selected = biggest(torrent);
-	var server = createServer(torrent, selected, path.join(os.tmpDir(), argv.b || torrent.infoHash+'.'+selected.offset));
+	var buffer = path.join(os.tmpDir(), argv.b || torrent.infoHash+'.'+selected.offset);
+	var server = createServer(torrent, selected, buffer);
 	var peers = [];
 
 	var speed = [0];
@@ -73,15 +74,12 @@ readTorrent(filename, function(err, torrent) {
 		peers.forEach(function(peer) {
 			if (peer.peerChoking) return;
 
-			(peer.downloaded ? server.missing : [].concat(server.missing).reverse()).some(function(piece) {
+			(peer.downloaded && peer.speed() > MIN_SPEED ? server.missing : server.missing.slice(20)).some(function(piece) {
 				if (peer.queued && !peer.downloaded) return true;
 				if (peer.queued >= MAX_QUEUED)       return true;
 
 				if (!peer.peerHave(piece)) return;
-				if (peer.requesting(piece) && peer.speed() < MIN_SPEED) return;
-
 				var offset = server.select(piece);
-
 				if (offset === -1) return;
 
 				peer.started = peer.started || Date.now();
@@ -227,7 +225,7 @@ readTorrent(filename, function(err, torrent) {
 				if (peer.peerChoking) tags.push('choked');
 				if (peer.peerHave(server.missing[0])) tags.push('target');
 
-				clivas.line('{25+magenta:'+peer.id+'} {10:↓'+bytes(peer.downloaded)+'} {10+cyan:↓'+bytes(peer.speed())+'/s} {10:↑'+bytes(peer.uploaded)+'} {15+grey:'+tags.join(', ')+'} ');
+				clivas.line('{25+magenta:'+peer.id+'} {10:↓'+bytes(peer.downloaded)+'} {10+cyan:↓'+bytes(peer.speed())+'/s} {15+grey:'+tags.join(', ')+'} ');
 			});
 
 			if (peers.length > 30) {
