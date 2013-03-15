@@ -99,6 +99,7 @@ module.exports = function(torrent, file, destination) {
 	var server = http.createServer(function(request, response) {
 		var range = request.headers.range;
 
+		request.setTimeout(0);
 		response.setHeader('Accept-Ranges', 'bytes');
 		response.setHeader('Content-Type', mime.lookup(file.name));
 
@@ -128,6 +129,7 @@ module.exports = function(torrent, file, destination) {
 	});
 
 	prioritize(0);
+
 	server.missing = missing;
 	server.filename = file.name;
 	server.destination = destination;
