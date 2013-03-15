@@ -17,7 +17,7 @@ var createServer = require('./server');
 
 var argv = optimist
 	.usage('Usage: $0 torrent_file_or_url [options]')
-	.alias('c', 'connections').describe('c', 'max connected peers').default('c', 30)
+	.alias('c', 'connections').describe('c', 'max connected peers').default('c', 60)
 	.alias('p', 'port').describe('p', 'change the http port').default('p', 8888)
 	.alias('b', 'buffer').describe('b', 'change buffer file')
 	.alias('q', 'quiet').describe('q', 'be quiet')
