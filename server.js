@@ -5,6 +5,8 @@ var partFile = require('part-file');
 var Readable = require('readable-stream');
 var piece = require('./piece');
 
+var MIN_PIECE_BUFFER = 3;
+
 var pipeline = function(inp, out) {
 	inp.pipe(out);
 	out.on('close', function() {
@@ -20,7 +22,7 @@ module.exports = function(torrent, file, destination) {
 		this.remaining = range.end - range.start + 1;
 		this.skip = (range.start + file.offset) % torrent.pieceLength;
 		this.destroyed = false;
-		this._buffer = this.position + Math.min(4, (this.remaining / torrent.pieceLength) | 0);
+		this._buffer = this.position + Math.min(MIN_PIECE_BUFFER, (this.remaining / torrent.pieceLength) | 0);
 		this._onreadable = null;
 	};
 
