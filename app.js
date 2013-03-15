@@ -131,6 +131,7 @@ readTorrent(filename, function(err, torrent) {
 			});
 
 			timeout = setTimeout(onchoketimeout, CHOKE_TIMEOUT);
+			protocol.keepAlive();
 		});
 
 
