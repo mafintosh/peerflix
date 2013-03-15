@@ -47,7 +47,7 @@ var CHOKE_TIMEOUT = 20000;
 var PIECE_TIMEOUT = 10000;
 var HANDSHAKE_TIMEOUT = 5000;
 var MIN_SPEED = 8 * 1024; // 8KB/s
-var PEER_ID = '-TV0003-'+hat(48);
+var PEER_ID = '-PF0005-'+hat(48);
 
 readTorrent(filename, function(err, torrent) {
 	if (err) throw err;
@@ -206,6 +206,7 @@ readTorrent(filename, function(err, torrent) {
 			return numeral(num).format('0.0b');
 		};
 
+		process.stdout.write(new Buffer('G1tIG1sySg==', 'base64')); // clear for drawing
 		setInterval(function() {
 			var unchoked = peers.filter(function(peer) {
 				return !peer.peerChoking;
@@ -218,7 +219,7 @@ readTorrent(filename, function(err, torrent) {
 			clivas.line('{yellow:info} {green:downloaded} {bold:'+bytes(downloaded)+'} {green:and uploaded }{bold:'+bytes(uploaded)+'}        ');
 			clivas.line('{yellow:info} {green:found }{bold:'+sw.peersFound+'} {green:peers and} {bold:'+sw.nodesFound+'} {green:nodes through the dht}');
 			clivas.line('{yellow:info} {green:peer queue size is} {bold:'+sw.queued+'}     ');
-			clivas.line('{yellow:info} {green:target pieces are} {80+bold:'+(server.missing.length ? server.missing.slice(0, 15).join(' ') : '(none)')+'}     ');
+			clivas.line('{yellow:info} {green:target pieces are} {50+bold:'+(server.missing.length ? server.missing.slice(0, 10).join(' ') : '(none)')+'}    ');
 			clivas.line('{80:}');
 
 			peers.slice(0, 30).forEach(function(peer) {
@@ -226,7 +227,7 @@ readTorrent(filename, function(err, torrent) {
 				if (peer.peerChoking) tags.push('choked');
 				if (peer.peerHave(server.missing[0])) tags.push('target');
 
-				clivas.line('{25+magenta:'+peer.id+'} {10:↓'+bytes(peer.downloaded)+'} {10+cyan:↓'+bytes(peer.speed())+'/s}  {10:↑'+bytes(peer.uploaded)+'} {20+grey:'+tags.join(', ')+'}     ');
+				clivas.line('{25+magenta:'+peer.id+'} {10:↓'+bytes(peer.downloaded)+'} {10+cyan:↓'+bytes(peer.speed())+'/s} {10:↑'+bytes(peer.uploaded)+'} {15+grey:'+tags.join(', ')+'} ');
 			});
 
 			if (peers.length > 30) {
