@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var swarm = require('torrent-swarm');
+var peerSwarm = require('peer-swarm');
 var wire = require('torrent-wire-protocol');
 var hat = require('hat');
 var path = require('path');
@@ -178,7 +178,7 @@ readTorrent(filename, function(err, torrent) {
 		});
 	};
 
-	var sw = swarm(torrent.infoHash, {maxSize:MAX_PEERS}, onconnection).listen();
+	var sw = peerSwarm(torrent.infoHash, {maxSize:MAX_PEERS}, onconnection).listen();
 
 	server.listen(8888);
 	server.on('error', function() {

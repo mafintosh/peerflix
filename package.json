@@ -1,6 +1,6 @@
 {
   "name": "peerflix",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "bin": {
     "peerflix": "app.js"
   },
@@ -12,7 +12,7 @@
     "mime": "~1.2.9",
     "numeral": "~1.4.7",
     "readable-stream": "~1.0.2",
-    "torrent-swarm": "~0.0.4",
+    "peer-swarm": "~0.0.4",
     "read-torrent": "0.0.1",
     "network-address": "0.0.4",
     "torrent-wire-protocol": "~0.2.1",
