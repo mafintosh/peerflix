@@ -5,7 +5,7 @@ var partFile = require('part-file');
 var Readable = require('readable-stream');
 var piece = require('./piece');
 
-var MIN_PIECE_BUFFER = 3;
+var MIN_BUFFER = 1.5 * 1000 * 1000;
 
 var pipeline = function(inp, out) {
 	inp.pipe(out);
@@ -15,6 +15,8 @@ var pipeline = function(inp, out) {
 };
 
 module.exports = function(torrent, file, destination) {
+	var piecesToBuffer = Math.max(Math.ceil(MIN_BUFFER / torrent.pieceLength), 3);
+
 	var PieceStream = function(range) {
 		Readable.call(this);
 		range = range || {start:0, end:file.length-1};
@@ -22,7 +24,7 @@ module.exports = function(torrent, file, destination) {
 		this.remaining = range.end - range.start + 1;
 		this.skip = (range.start + file.offset) % torrent.pieceLength;
 		this.destroyed = false;
-		this._buffer = this.position + Math.min(MIN_PIECE_BUFFER, (this.remaining / torrent.pieceLength) | 0);
+		this._buffer = this.position + Math.min(piecesToBuffer, (this.remaining / torrent.pieceLength) | 0);
 		this._onreadable = null;
 	};
 
@@ -41,12 +43,12 @@ module.exports = function(torrent, file, destination) {
 			if (!self.destroyed) self.push(data);
 		};
 
-		if (!this.buffering()) return dest.read(this.position++, onread);
+		if (!this.buffering()) return dest.read(this.position++ - start, onread);
 
 		this._onreadable = function(index) {
 			if (self.buffering()) return;
 			dest.removeListener('readable', self._onreadable);
-			dest.read(self.position++, onread);
+			dest.read(self.position++ - start, onread);
 		};
 
 		dest.on('readable', this._onreadable);
@@ -54,9 +56,9 @@ module.exports = function(torrent, file, destination) {
 
 	PieceStream.prototype.buffering = function() {
 		for (var i = this.position; i < this._buffer; i++) {
-			if (!dest.readable(i)) return true;
+			if (!dest.readable(i - start)) return true;
 		}
-		return !dest.readable(this.position);
+		return !dest.readable(this.position - start);
 	};
 
 	PieceStream.prototype.destroy = function() {
