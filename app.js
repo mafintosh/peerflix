@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 var peerSwarm = require('peer-swarm');
-var wire = require('torrent-wire-protocol');
+var wire = require('peer-wire-protocol');
 var hat = require('hat');
 var path = require('path');
 var os = require('os');
@@ -76,16 +76,18 @@ readTorrent(filename, function(err, torrent) {
 			if (peer.peerChoking) return;
 
 			(peer.downloaded && peer.speed() > MIN_SPEED ? server.missing : server.missing.slice(20)).some(function(piece) {
-				if (peer.queued && !peer.downloaded) return true;
-				if (peer.queued >= MAX_QUEUED)       return true;
+				if (peer.requests && !peer.downloaded) return true;
+				if (peer.requests >= MAX_QUEUED)       return true;
 
-				if (!peer.peerHave(piece)) return;
+				if (!peer.peerPieces[piece]) return;
 				var offset = server.select(piece);
 				if (offset === -1) return;
 
 				peer.started = peer.started || Date.now();
 				peer.active();
-				peer.request(piece, offset, server.sizeof(piece, offset));
+				peer.request(piece, offset, server.sizeof(piece, offset), function(err) {
+					if (err) server.deselect(piece, offset);
+				});
 			});
 		});
 	};
@@ -132,7 +134,7 @@ readTorrent(filename, function(err, torrent) {
 			});
 
 			timeout = setTimeout(onchoketimeout, CHOKE_TIMEOUT);
-			protocol.keepAlive();
+			protocol.setKeepAlive();
 		});
 
 
@@ -143,7 +145,7 @@ readTorrent(filename, function(err, torrent) {
 
 		var hanging;
 		var onidle = function() {
-			if (protocol.queued) protocol.destroy();
+			if (protocol.requests) protocol.destroy();
 		};
 
 		protocol.started = 0;
@@ -164,16 +166,12 @@ readTorrent(filename, function(err, torrent) {
 			update();
 		});
 
-		protocol.on('discard', function(index, offset, length) {
-			server.deselect(index, offset);
-		});
-
-		protocol.on('request', function(index, offset, length) {
+		protocol.on('request', function(index, offset, length, callback) {
 			requested++;
 			server.read(index, offset, length, function(err, buffer) {
-				if (err) return;
+				if (err) return callback(err);
 				uploaded += length;
-				protocol.piece(index, offset, buffer);
+				callback(null, buffer);
 			});
 		});
 	};
@@ -226,7 +224,7 @@ readTorrent(filename, function(err, torrent) {
 			peers.slice(0, 30).forEach(function(peer) {
 				var tags = [];
 				if (peer.peerChoking) tags.push('choked');
-				if (peer.peerHave(server.missing[0])) tags.push('target');
+				if (peer.peerPieces[server.missing[0]]) tags.push('target');
 
 				clivas.line('{25+magenta:'+peer.id+'} {10:↓'+bytes(peer.downloaded)+'} {10+cyan:↓'+bytes(peer.speed())+'/s} {15+grey:'+tags.join(', ')+'} ');
 			});
