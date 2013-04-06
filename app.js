@@ -84,7 +84,6 @@ readTorrent(filename, function(err, torrent) {
 				if (offset === -1) return;
 
 				peer.started = peer.started || Date.now();
-				peer.active();
 				peer.request(piece, offset, server.sizeof(piece, offset), function(err) {
 					if (err) server.deselect(piece, offset);
 				});
@@ -143,25 +142,17 @@ readTorrent(filename, function(err, torrent) {
 		protocol.bitfield(have);
 		protocol.interested();
 
-		var hanging;
-		var onidle = function() {
-			if (protocol.requests) protocol.destroy();
-		};
-
 		protocol.started = 0;
 		protocol.speed = function() {
 			return 1000 * protocol.downloaded / (Date.now() - protocol.started);
 		};
 
-		protocol.active = function() { // TODO: move piece timeout to protocol impl
-			clearTimeout(hanging);
-			hanging = setTimeout(onidle, PIECE_TIMEOUT);
-		};
-
+		protocol.setTimeout(PIECE_TIMEOUT, function() {
+			if (protocol.requests) protocol.destroy();
+		});
 		protocol.on('piece', function(index, offset, buffer) {
 			speed[0] += buffer.length;
 			downloaded += buffer.length;
-			protocol.active();
 			server.write(index, offset, buffer);
 			update();
 		});
