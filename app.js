@@ -106,7 +106,7 @@ readTorrent(filename, function(err, torrent) {
 			clearTimeout(timeout);
 
 			peers.push(protocol);
-			protocol.once('end', function() {
+			protocol.once('finish', function() {
 				clearTimeout(timeout);
 				peers.splice(peers.indexOf(protocol), 1);
 				if (protocol.downloaded) sw.reconnect(address);
