@@ -13,22 +13,25 @@ var clivas = require('clivas');
 var bitfield = require('bitfield');
 var readTorrent = require('read-torrent');
 var optimist = require('optimist');
+var os = require('os');
 var createServer = require('./server');
 
 var argv = optimist
 	.usage('Usage: $0 torrent_file_or_url [options]')
-	.alias('c', 'connections').describe('c', 'max connected peers').default('c', 60)
+	.alias('c', 'connections').describe('c', 'max connected peers').default('c', os.cpus().length > 1 ? 60 : 30)
 	.alias('p', 'port').describe('p', 'change the http port').default('p', 8888)
 	.alias('b', 'buffer').describe('b', 'change buffer file')
 	.alias('q', 'quiet').describe('q', 'be quiet')
 	.alias('v', 'vlc').describe('v', 'autoplay in vlc*')
+	.alias('o', 'omx').describe('o', 'autoplay in omx**')
 	.argv;
 
 var filename = argv._[0];
 
 if (!filename) {
 	optimist.showHelp();
-	console.error('*VLC can take several seconds to start since it needs to wait for the first piece\n');
+	console.error('*Autoplay can take several seconds to start since it needs to wait for the first piece');
+	console.error('*OMX player is the default Raspbian video player\n');
 	process.exit(1);
 }
 
@@ -42,6 +45,7 @@ var MAX_PEERS = argv.connections;
 var MIN_PEERS = (MAX_PEERS / 2) | 0;
 var MAX_QUEUED = 5;
 var VLC_ARGS = '-q --video-on-top --play-and-exit';
+var OMX_EXEC = 'omxplayer -r -o hdmi -t on ';
 
 var CHOKE_TIMEOUT = 20000;
 var PIECE_TIMEOUT = 10000;
@@ -190,6 +194,7 @@ readTorrent(filename, function(err, torrent) {
 		var filename = server.filename.split('/').pop().replace(/\{|\}/g, '');
 
 		if (argv.vlc) proc.exec('vlc '+href+' '+VLC_ARGS+' || /Applications/VLC.app/Contents/MacOS/VLC '+href+' '+VLC_ARGS);
+		if (argv.omx) proc.exec(OMX_EXEC+' '+href);
 		if (argv.quiet) return console.log('server is listening on '+href);
 
 		var bytes = function(num) {
