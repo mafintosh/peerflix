@@ -18,7 +18,7 @@ var createServer = require('./server');
 
 var argv = optimist
 	.usage('Usage: $0 torrent_file_or_url [options]')
-	.alias('c', 'connections').describe('c', 'max connected peers').default('c', os.cpus().length > 1 ? 60 : 30)
+	.alias('c', 'connections').describe('c', 'max connected peers').default('c', os.cpus().length > 1 ? 100 : 30)
 	.alias('p', 'port').describe('p', 'change the http port').default('p', 8888)
 	.alias('b', 'buffer').describe('b', 'change buffer file')
 	.alias('q', 'quiet').describe('q', 'be quiet')
@@ -42,12 +42,12 @@ var biggest = function(torrent) {
 };
 
 var MAX_PEERS = argv.connections;
-var MIN_PEERS = (MAX_PEERS / 2) | 0;
+var MIN_PEERS = 0;
 var MAX_QUEUED = 5;
 var VLC_ARGS = '-q --video-on-top --play-and-exit';
 var OMX_EXEC = 'omxplayer -r -o hdmi -t on ';
 
-var CHOKE_TIMEOUT = 20000;
+var CHOKE_TIMEOUT = 5000;
 var PIECE_TIMEOUT = 10000;
 var HANDSHAKE_TIMEOUT = 5000;
 var MIN_SPEED = 8 * 1024; // 8KB/s
