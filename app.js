@@ -13,6 +13,7 @@ var clivas = require('clivas');
 var bitfield = require('bitfield');
 var readTorrent = require('read-torrent');
 var optimist = require('optimist');
+var speedometer = require('speedometer');
 var os = require('os');
 var createServer = require('./server');
 
@@ -63,10 +64,9 @@ readTorrent(filename, function(err, torrent) {
 	var server = createServer(torrent, selected, buffer);
 	var peers = [];
 
-	var speed = [0];
+	var speed = speedometer();
 	var uploaded = 0;
 	var downloaded = 0;
-	var requested = 0;
 
 	var have = bitfield(torrent.pieces.length);
 
@@ -92,8 +92,10 @@ readTorrent(filename, function(err, torrent) {
 				if (offset === -1) return;
 
 				peer.started = peer.started || Date.now();
-				peer.request(piece, offset, server.sizeof(piece, offset), function(err) {
-					if (err) server.deselect(piece, offset);
+				peer.request(piece, offset, server.sizeof(piece, offset), function(err, buffer) {
+					if (err) return server.deselect(piece, offset);
+					server.write(piece, offset, buffer);
+					process.nextTick(update);
 				});
 			});
 		});
@@ -146,36 +148,33 @@ readTorrent(filename, function(err, torrent) {
 
 
 		protocol.id = id;
-		protocol.handshake(new Buffer(torrent.infoHash, 'hex'), PEER_ID); // handshake SHOULD accept a hex string as well...
+		protocol.handshake(torrent.infoHash, PEER_ID);
 		protocol.bitfield(have);
 		protocol.interested();
-
-		protocol.started = 0;
-		protocol.speed = function() {
-			return 1000 * protocol.downloaded / (Date.now() - protocol.started);
-		};
+		protocol.speed = speedometer();
 
 		protocol.setTimeout(PIECE_TIMEOUT, function() {
 			if (protocol.requests) protocol.destroy();
 		});
-		protocol.on('piece', function(index, offset, buffer) {
-			speed[0] += buffer.length;
-			downloaded += buffer.length;
-			server.write(index, offset, buffer);
-			update();
+
+		protocol.on('download', function(bytes) {
+			downloaded += bytes;
+			protocol.speed(bytes);
+			speed(bytes);
+		});
+
+		protocol.on('upload', function(bytes) {
+			uploaded += bytes;
 		});
 
 		protocol.on('request', function(index, offset, length, callback) {
-			requested++;
-			server.read(index, offset, length, function(err, buffer) {
-				if (err) return callback(err);
-				uploaded += length;
-				callback(null, buffer);
-			});
+			server.read(index, offset, length, callback);
 		});
 	};
 
-	var sw = peerSwarm(torrent.infoHash, {maxSize:MAX_PEERS}, onconnection).listen();
+	var sw = peerSwarm(torrent.infoHash, {maxSize:MAX_PEERS});
+	sw.on('connection', onconnection);
+	sw.listen();
 
 	server.listen(8888);
 	server.on('error', function() {
@@ -183,17 +182,6 @@ readTorrent(filename, function(err, torrent) {
 	});
 
 	server.on('listening', function() {
-		var bytesPerSecond = function() {
-			setInterval(function() {
-				speed.unshift(speed[0]);
-				speed = speed.slice(0, 15);
-			}, 1000);
-
-			return function() {
-				return numeral((speed[1] - speed[speed.length-1]) / speed.length).format('0.00b')+'/s';
-			};
-		}();
-
 		var href = 'http://'+address()+':'+server.address().port+'/';
 		var filename = server.filename.split('/').pop().replace(/\{|\}/g, '');
 
@@ -214,8 +202,8 @@ readTorrent(filename, function(err, torrent) {
 			clivas.clear();
 			clivas.line('{green:open} {bold:vlc} {green:and enter} {bold:'+href+'} {green:as the network addres}');
 			clivas.line('');
-			clivas.line('{yellow:info} {green:streaming} {bold:'+filename+'} {green:-} {bold:'+bytesPerSecond()+'} {green:from} {bold:'+unchoked.length +'/'+peers.length+'} {green:peers}    ');
-			clivas.line('{yellow:info} {green:downloaded} {bold:'+bytes(downloaded)+'} {green:and uploaded }{bold:'+bytes(uploaded)+'} {green:from }{bold:'+requested+'}{green: requests}      ');
+			clivas.line('{yellow:info} {green:streaming} {bold:'+filename+'} {green:-} {bold:'+bytes(speed())+'/s} {green:from} {bold:'+unchoked.length +'/'+peers.length+'} {green:peers}    ');
+			clivas.line('{yellow:info} {green:downloaded} {bold:'+bytes(downloaded)+'} {green:and uploaded }{bold:'+bytes(uploaded)+'}       ');
 			clivas.line('{yellow:info} {green:found }{bold:'+sw.peersFound+'} {green:peers and} {bold:'+sw.nodesFound+'} {green:nodes through the dht}');
 			clivas.line('{yellow:info} {green:peer queue size is} {bold:'+sw.queued+'}     ');
 			clivas.line('{yellow:info} {green:target pieces are} {50+bold:'+(server.missing.length ? server.missing.slice(0, 10).join(' ') : '(none)')+'}    ');
