@@ -67,7 +67,6 @@ readTorrent(filename, function(err, torrent) {
 	var uploaded = 0;
 	var downloaded = 0;
 	var requested = 0;
-	var lowPriorityOffset = selected.length > HIGH_QUALITY ? 60 : 20;
 
 	var have = bitfield(torrent.pieces.length);
 
@@ -82,7 +81,9 @@ readTorrent(filename, function(err, torrent) {
 		peers.forEach(function(peer) {
 			if (peer.peerChoking) return;
 
-			(peer.downloaded && peer.speed() > MIN_SPEED ? server.missing : server.missing.slice(lowPriorityOffset)).some(function(piece) {
+			var offset = peer.speed() < MIN_SPEED / 2 ? 40 : 20;
+
+			(peer.downloaded && peer.speed() > MIN_SPEED ? server.missing : server.missing.slice(offset)).some(function(piece) {
 				if (peer.requests && !peer.downloaded) return true;
 				if (peer.requests >= MAX_QUEUED)       return true;
 
