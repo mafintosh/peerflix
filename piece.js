@@ -55,6 +55,10 @@ Piece.prototype.write = function(offset, buffer) {
 	this.blocksWritten++;
 	buffer.copy(this.buffer, offset);
 
+	var firstBlank = Math.min( Array.prototype.indexOf.call(this.blocks, BLOCK_BLANK), 
+							   Array.prototype.indexOf.call(this.blocks, BLOCK_RESERVED) );
+	this.emit("progress", Math.min( this.buffer.length,  ( (firstBlank == -1) ? this.blocks.length : firstBlank ) * BLOCK_SIZE));
+	
 	return this.blocksWritten === this.blocks.length && this.buffer;
 };
 
