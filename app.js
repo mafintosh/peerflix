@@ -21,6 +21,7 @@ var argv = optimist
 	.alias('c', 'connections').describe('c', 'max connected peers').default('c', os.cpus().length > 1 ? 100 : 30)
 	.alias('p', 'port').describe('p', 'change the http port').default('p', 8888)
 	.alias('b', 'buffer').describe('b', 'change buffer file')
+	.alias('i', 'index').describe('i', 'changed streamed file (index)')
 	.alias('q', 'quiet').describe('q', 'be quiet')
 	.alias('v', 'vlc').describe('v', 'autoplay in vlc*')
 	.alias('o', 'omx').describe('o', 'autoplay in omx**')
@@ -57,7 +58,7 @@ var PEER_ID = '-PF0005-'+hat(48);
 readTorrent(filename, function(err, torrent) {
 	if (err) throw err;
 
-	var selected = biggest(torrent);
+	var selected = (argv.index && torrent.files[argv.index]) || biggest(torrent);
 	var buffer = path.join(os.tmpDir(), argv.b || torrent.infoHash+'.'+selected.offset);
 	var server = createServer(torrent, selected, buffer);
 	var peers = [];
