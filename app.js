@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var peerSwarm = require('peer-swarm');
+var peerSwarm = require('peer-wire-swarm');
 var wire = require('peer-wire-protocol');
 var hat = require('hat');
 var path = require('path');
