@@ -15,7 +15,7 @@ var pipeline = function(inp, out) {
 };
 
 module.exports = function(torrent, file, destination) {
-	var piecesToBuffer = Math.max(Math.ceil(MIN_BUFFER / torrent.pieceLength), 3);
+	var piecesToBuffer = Math.max(Math.ceil(MIN_BUFFER / torrent.pieceLength), 1);
 
 	var PieceStream = function(range) {
 		Readable.call(this);
