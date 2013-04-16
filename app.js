@@ -48,9 +48,10 @@ var VLC_ARGS = '-q --video-on-top --play-and-exit';
 var OMX_EXEC = 'omxplayer -r -o hdmi -t on ';
 
 var CHOKE_TIMEOUT = 5000;
-var PIECE_TIMEOUT = 20000;
+var PIECE_TIMEOUT = 30000;
 var HANDSHAKE_TIMEOUT = 5000;
 var MIN_SPEED = 8 * 1024; // 8KB/s
+var HIGH_QUALITY = 1000 * 1000 * 1000; // we hardcode 1gb files to be HD
 var PEER_ID = '-PF0005-'+hat(48);
 
 readTorrent(filename, function(err, torrent) {
@@ -65,6 +66,7 @@ readTorrent(filename, function(err, torrent) {
 	var uploaded = 0;
 	var downloaded = 0;
 	var requested = 0;
+	var lowPriorityOffset = selected.length > HIGH_QUALITY ? 60 : 20;
 
 	var have = bitfield(torrent.pieces.length);
 
@@ -79,7 +81,7 @@ readTorrent(filename, function(err, torrent) {
 		peers.forEach(function(peer) {
 			if (peer.peerChoking) return;
 
-			(peer.downloaded && peer.speed() > MIN_SPEED ? server.missing : server.missing.slice(20)).some(function(piece) {
+			(peer.downloaded && peer.speed() > MIN_SPEED ? server.missing : server.missing.slice(lowPriorityOffset)).some(function(piece) {
 				if (peer.requests && !peer.downloaded) return true;
 				if (peer.requests >= MAX_QUEUED)       return true;
 
