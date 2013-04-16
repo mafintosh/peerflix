@@ -48,7 +48,7 @@ var VLC_ARGS = '-q --video-on-top --play-and-exit';
 var OMX_EXEC = 'omxplayer -r -o hdmi -t on ';
 
 var CHOKE_TIMEOUT = 5000;
-var PIECE_TIMEOUT = 10000;
+var PIECE_TIMEOUT = 20000;
 var HANDSHAKE_TIMEOUT = 5000;
 var MIN_SPEED = 8 * 1024; // 8KB/s
 var PEER_ID = '-PF0005-'+hat(48);
