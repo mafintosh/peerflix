@@ -53,8 +53,9 @@ var CHOKE_TIMEOUT = 5000;
 var PIECE_TIMEOUT = 30000;
 var HANDSHAKE_TIMEOUT = 5000;
 var MIN_SPEED = 8 * 1024; // 8KB/s
-var HIGH_QUALITY = 1000 * 1000 * 1000; // we hardcode 1gb files to be HD
 var PEER_ID = '-PF0005-'+hat(48);
+
+var noop = function() {};
 
 readTorrent(filename, function(err, torrent) {
 	if (err) throw err;
@@ -78,10 +79,15 @@ readTorrent(filename, function(err, torrent) {
 	});
 
 	var update = function() {
+		peers.sort(function(a,b) {
+			return b.downloaded - a.downloaded;
+		});
+
 		peers.forEach(function(peer) {
 			if (peer.peerChoking) return;
 
 			var offset = peer.speed() < MIN_SPEED / 2 ? 40 : 20;
+			if (offset >= server.missing.length) offset = 0;
 
 			(peer.downloaded && peer.speed() > MIN_SPEED ? server.missing : server.missing.slice(offset)).some(function(piece) {
 				if (peer.requests && !peer.downloaded) return true;
@@ -91,11 +97,10 @@ readTorrent(filename, function(err, torrent) {
 				var offset = server.select(piece);
 				if (offset === -1) return;
 
-				peer.started = peer.started || Date.now();
 				peer.request(piece, offset, server.sizeof(piece, offset), function(err, buffer) {
+					process.nextTick(update);
 					if (err) return server.deselect(piece, offset);
 					server.write(piece, offset, buffer);
-					process.nextTick(update);
 				});
 			});
 		});
@@ -119,6 +124,7 @@ readTorrent(filename, function(err, torrent) {
 				clearTimeout(timeout);
 				peers.splice(peers.indexOf(protocol), 1);
 				if (protocol.downloaded) sw.reconnect(address);
+				process.nextTick(update);
 			});
 
 			protocol.on('unchoke', update);
@@ -154,7 +160,7 @@ readTorrent(filename, function(err, torrent) {
 		protocol.speed = speedometer();
 
 		protocol.setTimeout(PIECE_TIMEOUT, function() {
-			if (protocol.requests) protocol.destroy();
+			protocol.destroy();
 		});
 
 		protocol.on('download', function(bytes) {
@@ -189,15 +195,16 @@ readTorrent(filename, function(err, torrent) {
 		if (argv.omx) proc.exec(OMX_EXEC+' '+href);
 		if (argv.quiet) return console.log('server is listening on '+href);
 
+		var active = function(peer) {
+			return !peer.peerChoking;
+		};
 		var bytes = function(num) {
 			return numeral(num).format('0.0b');
 		};
 
 		process.stdout.write(new Buffer('G1tIG1sySg==', 'base64')); // clear for drawing
 		setInterval(function() {
-			var unchoked = peers.filter(function(peer) {
-				return !peer.peerChoking;
-			});
+			var unchoked = peers.filter(active);
 
 			clivas.clear();
 			clivas.line('{green:open} {bold:vlc} {green:and enter} {bold:'+href+'} {green:as the network addres}');
@@ -213,8 +220,7 @@ readTorrent(filename, function(err, torrent) {
 				var tags = [];
 				if (peer.peerChoking) tags.push('choked');
 				if (peer.peerPieces[server.missing[0]]) tags.push('target');
-
-				clivas.line('{25+magenta:'+peer.id+'} {10:↓'+bytes(peer.downloaded)+'} {10+cyan:↓'+bytes(peer.speed())+'/s} {15+grey:'+tags.join(', ')+'} ');
+				clivas.line('{25+magenta:'+peer.id+'} {10:↓'+bytes(peer.downloaded)+'} {10+cyan:↓'+bytes(peer.speed())+'/s} {15+grey:'+tags.join(', ')+'}   ');
 			});
 
 			if (peers.length > 30) {
@@ -231,4 +237,14 @@ readTorrent(filename, function(err, torrent) {
 		if (fs.existsSync(server.destination)) fs.unlinkSync(server.destination);
 		process.exit(0);
 	});
+
+	require('http').createServer(function(req, res) { // stat server for benchmarking
+		res.setHeader('Content-Type', 'application/json');
+		res.setHeader('Access-Control-Allow-Origin', '*');
+		res.end(JSON.stringify({
+			download_speed: Math.round(speed()/1000),
+			peers: peers.length,
+			active_peers: peers.filter(active).length
+		}));
+	}).listen(11470).on('error', noop);
 });
