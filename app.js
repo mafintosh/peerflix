@@ -187,6 +187,7 @@ readTorrent(filename, function(err, torrent) {
 		server.listen(0);
 	});
 
+	var started = Date.now();
 	var active = function(peer) {
 		return !peer.peerChoking;
 	};
@@ -206,12 +207,13 @@ readTorrent(filename, function(err, torrent) {
 		process.stdout.write(new Buffer('G1tIG1sySg==', 'base64')); // clear for drawing
 		setInterval(function() {
 			var unchoked = peers.filter(active);
+			var runtime = Math.floor((Date.now() - started) / 1000);
 
 			clivas.clear();
 			clivas.line('{green:open} {bold:vlc} {green:and enter} {bold:'+href+'} {green:as the network addres}');
 			clivas.line('');
 			clivas.line('{yellow:info} {green:streaming} {bold:'+filename+'} {green:-} {bold:'+bytes(speed())+'/s} {green:from} {bold:'+unchoked.length +'/'+peers.length+'} {green:peers}    ');
-			clivas.line('{yellow:info} {green:downloaded} {bold:'+bytes(downloaded)+'} {green:and uploaded }{bold:'+bytes(uploaded)+'}       ');
+			clivas.line('{yellow:info} {green:downloaded} {bold:'+bytes(downloaded)+'} {green:and uploaded }{bold:'+bytes(uploaded)+'} {green:in }{bold:'+runtime+'s}     ');
 			clivas.line('{yellow:info} {green:found }{bold:'+sw.peersFound+'} {green:peers and} {bold:'+sw.nodesFound+'} {green:nodes through the dht}');
 			clivas.line('{yellow:info} {green:peer queue size is} {bold:'+sw.queued+'}     ');
 			clivas.line('{yellow:info} {green:target pieces are} {50+bold:'+(server.missing.length ? server.missing.slice(0, 10).join(' ') : '(none)')+'}    ');
