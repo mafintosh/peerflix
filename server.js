@@ -76,6 +76,8 @@ module.exports = function(torrent, file, destination) {
 
 	var prioritize = function(i) {
 		missing.sort(function(a, b) {
+			if (a === end) return -1;
+			if (b === end) return 1;
 			if (a >= i && b < i) return -1;
 			if (b >= i && a < i) return 1;
 			return a - b;
