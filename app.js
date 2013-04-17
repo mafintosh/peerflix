@@ -187,6 +187,10 @@ readTorrent(filename, function(err, torrent) {
 		server.listen(0);
 	});
 
+	var active = function(peer) {
+		return !peer.peerChoking;
+	};
+
 	server.on('listening', function() {
 		var href = 'http://'+address()+':'+server.address().port+'/';
 		var filename = server.filename.split('/').pop().replace(/\{|\}/g, '');
@@ -195,9 +199,6 @@ readTorrent(filename, function(err, torrent) {
 		if (argv.omx) proc.exec(OMX_EXEC+' '+href);
 		if (argv.quiet) return console.log('server is listening on '+href);
 
-		var active = function(peer) {
-			return !peer.peerChoking;
-		};
 		var bytes = function(num) {
 			return numeral(num).format('0.0b');
 		};
