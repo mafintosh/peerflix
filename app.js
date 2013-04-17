@@ -26,6 +26,7 @@ var argv = optimist
 	.alias('q', 'quiet').describe('q', 'be quiet')
 	.alias('v', 'vlc').describe('v', 'autoplay in vlc*')
 	.alias('o', 'omx').describe('o', 'autoplay in omx**')
+	.alias('j', 'jack').describe('j', 'autoplay in omx** using the audio jack')
 	.argv;
 
 var filename = argv._[0];
@@ -47,7 +48,7 @@ var MAX_PEERS = argv.connections;
 var MIN_PEERS = 0;
 var MAX_QUEUED = 5;
 var VLC_ARGS = '-q --video-on-top --play-and-exit';
-var OMX_EXEC = 'omxplayer -r -o hdmi -t on ';
+var OMX_EXEC = argv.jack ? 'omxplayer -r -o local -t on' : 'omxplayer -r -o hdmi -t on ';
 
 var CHOKE_TIMEOUT = 5000;
 var PIECE_TIMEOUT = 30000;
