@@ -4,6 +4,7 @@ var mime = require('mime');
 var partFile = require('part-file');
 var Readable = require('readable-stream');
 var piece = require('./piece');
+var util = require('util');
 
 var MIN_BUFFER = 1.5 * 1000 * 1000;
 
@@ -28,7 +29,7 @@ module.exports = function(torrent, file, destination) {
 		this._onreadable = null;
 	};
 
-	PieceStream.prototype.__proto__ = Readable.prototype;
+	util.inherits(PieceStream, Readable);
 
 	PieceStream.prototype._read = function() {
 		if (!this.remaining) return this.push(null);
