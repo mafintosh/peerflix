@@ -14,6 +14,7 @@ var bitfield = require('bitfield');
 var readTorrent = require('read-torrent');
 var optimist = require('optimist');
 var speedometer = require('speedometer');
+var once = require('once');
 var os = require('os');
 var createServer = require('./server');
 
@@ -121,12 +122,17 @@ readTorrent(filename, function(err, torrent) {
 			clearTimeout(timeout);
 
 			peers.push(protocol);
-			protocol.once('finish', function() {
+
+			var onclose = once(function() {
 				clearTimeout(timeout);
 				peers.splice(peers.indexOf(protocol), 1);
 				if (protocol.downloaded) sw.reconnect(address);
 				process.nextTick(update);
 			});
+
+			connection.on('close', onclose);
+			connection.on('error', onclose);
+			protocol.once('finish', onclose);
 
 			protocol.on('unchoke', update);
 			protocol.on('have', update);
