@@ -56,9 +56,9 @@ Piece.prototype.write = function(offset, buffer) {
 	this.blocksWritten++;
 	buffer.copy(this.buffer, offset);
 
-	var firstBlank = Math.min( Array.prototype.indexOf.call(this.blocks, BLOCK_BLANK), 
-							   Array.prototype.indexOf.call(this.blocks, BLOCK_RESERVED) );
-	this.progress = Math.min( this.buffer.length,  ( (firstBlank == -1) ? this.blocks.length : firstBlank ) * BLOCK_SIZE);
+	var firstBlank = 0;
+	Array.prototype.some.call(this.blocks, function(block) { firstBlank++; return block != BLOCK_WRITTEN });
+	this.progress = Math.min( this.buffer.length, firstBlank * BLOCK_SIZE);
 	this.emit("progress", this.progress);
 	
 	return this.blocksWritten === this.blocks.length && this.buffer;
