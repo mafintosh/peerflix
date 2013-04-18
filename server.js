@@ -15,8 +15,9 @@ var pipeline = function(inp, out) {
 	});
 };
 
-module.exports = function(torrent, file, destination) {
-	var piecesToBuffer = Math.max(Math.ceil(MIN_BUFFER / torrent.pieceLength), 1);
+module.exports = function(torrent, file, options) {
+	var destination = options.destination;
+	var piecesToBuffer = Math.ceil((options.buffer || MIN_BUFFER) / torrent.pieceLength);
 
 	var PieceStream = function(range) {
 		Readable.call(this);
