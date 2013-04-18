@@ -90,6 +90,7 @@ readTorrent(filename, function(err, torrent) {
 		if (!speed) return max;
 
 		peers.forEach(function(peer) {
+			if (peer.peerChoking) return;
 			if (me === peer || peer.speed() < speed) return;
 			data += peer.speed() * time;
 		});
@@ -104,7 +105,6 @@ readTorrent(filename, function(err, torrent) {
 
 		peers.forEach(function(peer) {
 			if (peer.peerChoking) return;
-
 			if (!peer.speed() && peer.downloaded) return peer.destroy();
 
 			server.missing.slice(calcOffset(peer)).some(function(piece) {
@@ -180,7 +180,7 @@ readTorrent(filename, function(err, torrent) {
 		protocol.handshake(torrent.infoHash, PEER_ID);
 		protocol.bitfield(have);
 		protocol.interested();
-		protocol.speed = speedometer();
+		protocol.speed = speedometer(5);
 
 		protocol.setTimeout(PIECE_TIMEOUT, function() {
 			protocol.destroy();
