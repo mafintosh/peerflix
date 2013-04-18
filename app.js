@@ -88,10 +88,13 @@ readTorrent(filename, function(err, torrent) {
 		peers.forEach(function(peer) {
 			if (peer.peerChoking) return;
 
+			if (!peer.speed() && peer.downloaded) return peer.destroy();
+
 			var offset = peer.speed() < MIN_SPEED / 2 ? 40 : 20;
+			if (peer.downloaded && peer.speed() > MIN_SPEED) offset = 0;
 			if (offset >= server.missing.length) offset = 0;
 
-			(peer.downloaded && peer.speed() > MIN_SPEED ? server.missing : server.missing.slice(offset)).some(function(piece) {
+			server.missing.slice(offset).some(function(piece) {
 				if (peer.requests && !peer.downloaded) return true;
 				if (peer.requests >= MAX_QUEUED)       return true;
 
