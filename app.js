@@ -148,7 +148,7 @@ readTorrent(filename, function(err, torrent) {
 			};
 
 			select();
-			if (!peer.requests) select(true);
+			if (!peer.requests && server.missing.length < 30) select(true);
 		});
 	};
 
