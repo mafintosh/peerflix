@@ -28,6 +28,8 @@ module.exports = function(torrent, file, options) {
 		this.destroyed = false;
 		this._buffer = this.position + Math.min(piecesToBuffer, (this.remaining / torrent.pieceLength) | 0);
 		this._onreadable = null;
+
+		server.position = this.position;
 	};
 
 	util.inherits(PieceStream, Readable);
@@ -42,7 +44,9 @@ module.exports = function(torrent, file, options) {
 			if (data.length > self.remaining) data = data.slice(0, self.remaining);
 			self.skip = 0;
 			self.remaining -= data.length;
-			if (!self.destroyed) self.push(data);
+			if (self.destroyed) return;
+			self.push(data);
+			server.position = self.position;
 		};
 
 		if (!this.buffering()) return dest.read(this.position++ - start, onread);
