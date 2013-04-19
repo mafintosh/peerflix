@@ -52,10 +52,11 @@ var VLC_ARGS = '-q --video-on-top --play-and-exit';
 var OMX_EXEC = argv.jack ? 'omxplayer -r -o local ' : 'omxplayer -r -o hdmi ';
 
 var BLOCK_SIZE = 16 * 1024; // used for finding offset prio
+var MIN_SPEED =  5*1024;
 var CHOKE_TIMEOUT = 5000;
 var PIECE_TIMEOUT = 30000;
+var FAST_PIECE_TIMEOUT = 10000;
 var HANDSHAKE_TIMEOUT = 5000;
-var MIN_SPEED = 8 * 1024; // 8KB/s
 var PEER_ID = '-PF0005-'+hat(48);
 
 var noop = function() {};
@@ -84,10 +85,15 @@ readTorrent(filename, function(err, torrent) {
 	var calcOffset = function(me) {
 		var speed = me.speed();
 		var time = MAX_QUEUED * BLOCK_SIZE / (speed || 1);
-		var max = Math.min(60, server.missing.length-1);
+		var max = server.missing.length > 30 ? server.missing.length - 30 : server.missing.length - 1;
 		var data = 0;
 
-		if (!speed) return max;
+		if (speed < MIN_SPEED) return max;
+
+		if (!me.fast) {
+			me.fast = true;
+			me.setTimeout(FAST_PIECE_TIMEOUT);
+		}
 
 		peers.forEach(function(peer) {
 			if (peer.peerChoking) return;
@@ -105,13 +111,11 @@ readTorrent(filename, function(err, torrent) {
 
 		peers.forEach(function(peer) {
 			if (peer.peerChoking) return;
-			if (!peer.speed() && peer.downloaded) return peer.destroy();
 
 			server.missing.slice(calcOffset(peer)).some(function(piece) {
-				if (peer.requests && !peer.downloaded) return true;
-				if (peer.requests >= MAX_QUEUED)       return true;
-
+				if (peer.requests >= MAX_QUEUED) return true;
 				if (!peer.peerPieces[piece]) return;
+
 				var offset = server.select(piece);
 				if (offset === -1) return;
 
@@ -180,7 +184,7 @@ readTorrent(filename, function(err, torrent) {
 		protocol.handshake(torrent.infoHash, PEER_ID);
 		protocol.bitfield(have);
 		protocol.interested();
-		protocol.speed = speedometer(5);
+		protocol.speed = speedometer();
 
 		protocol.setTimeout(PIECE_TIMEOUT, function() {
 			protocol.destroy();
