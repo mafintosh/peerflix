@@ -22,10 +22,10 @@ var Piece = function(length) {
 
 Piece.prototype.__proto__ = process.EventEmitter.prototype;
 
-Piece.prototype.select = function() {
+Piece.prototype.select = function(force) {
 	if (!this.blocks) this.clear();
 	for (var i = 0; i < this.blocks.length; i++) {
-		if (this.blocks[i]) continue;
+		if ((this.blocks[i] && !force) || (this.blocks[i] === BLOCK_WRITTEN)) continue;
 		this.blocks[i] = BLOCK_RESERVED;
 		return i * BLOCK_SIZE;
 	}
@@ -60,7 +60,7 @@ Piece.prototype.write = function(offset, buffer) {
 	Array.prototype.some.call(this.blocks, function(block) { firstBlank++; return block != BLOCK_WRITTEN });
 	this.progress = Math.min( this.buffer.length, firstBlank * BLOCK_SIZE);
 	this.emit("progress", this.progress);
-	
+
 	return this.blocksWritten === this.blocks.length && this.buffer;
 };
 

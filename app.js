@@ -106,6 +106,7 @@ readTorrent(filename, function(err, torrent) {
 
 		requesting[piece].forEach(function(peer) {
 			if (server.missing.length < 10) return;
+			if (peer.peerChoking) return;
 			if (peer.speed() > 2*BLOCK_SIZE) return;
 			if (calcOffset(peer) <= slack) return;
 			var i = requesting[piece].indexOf(peer);
@@ -127,22 +128,27 @@ readTorrent(filename, function(err, torrent) {
 		peers.forEach(function(peer) {
 			if (peer.peerChoking) return;
 
-			server.missing.slice(calcOffset(peer)).some(function(piece) {
-				if (peer.requests >= MAX_QUEUED) return true;
-				if (!peer.peerPieces[piece]) return;
+			var select = function(force) {
+				server.missing.slice(calcOffset(peer)).some(function(piece) {
+					if (peer.requests >= MAX_QUEUED) return true;
+					if (!peer.peerPieces[piece]) return;
 
-				var offset = server.select(piece);
-				if (offset === -1) return;
+					var offset = server.select(piece, force);
+					if (offset === -1) return;
 
-				requesting[piece] = requesting[piece] || [];
-				requesting[piece].push(peer);
+					requesting[piece] = requesting[piece] || [];
+					requesting[piece].push(peer);
 
-				peer.request(piece, offset, server.sizeof(piece, offset), function(err, buffer) {
-					process.nextTick(update);
-					if (err) return server.deselect(piece, offset);
-					server.write(piece, offset, buffer);
+					peer.request(piece, offset, server.sizeof(piece, offset), function(err, buffer) {
+						process.nextTick(update);
+						if (err) return server.deselect(piece, offset);
+						server.write(piece, offset, buffer);
+					});
 				});
-			});
+			};
+
+			select();
+			if (!peer.requests) select(true);
 		});
 	};
 

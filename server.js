@@ -147,9 +147,11 @@ module.exports = function(torrent, file, options) {
 		return p ? p.sizeof(offset) : 0;
 	};
 
-	server.select = function(index) {
+	server.select = function(index, force) {
 		var p = pieces[index];
-		return p ? p.select() : -1;
+		if (!p) return -1;
+		var i = p.select();
+		return i === -1 && force ? p.select(true) : i;
 	};
 
 	server.deselect = function(index, offset) {
