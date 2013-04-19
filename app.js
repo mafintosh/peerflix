@@ -85,6 +85,13 @@ readTorrent(filename, function(err, torrent) {
 		});
 	});
 
+	var remove = function(arr, item) {
+		if (!arr) return false;
+		var i = arr.indexOf(item);
+		if (i === -1) return false;
+		arr.splice(i, 1);
+		return true;
+	};
 	var calcOffset = function(me) {
 		var speed = me.speed();
 		var time = MAX_QUEUED * BLOCK_SIZE / (speed || 1);
@@ -109,8 +116,7 @@ readTorrent(filename, function(err, torrent) {
 			if (peer.peerChoking) return;
 			if (peer.speed() > 2*BLOCK_SIZE) return;
 			if (calcOffset(peer) <= slack) return;
-			var i = requesting[piece].indexOf(peer);
-			if (i > -1) requesting[piece].splice(i, 1);
+			while (remove(requesting[piece], peer));
 			peer.cancel();
 			resyncs++;
 		});
@@ -140,6 +146,7 @@ readTorrent(filename, function(err, torrent) {
 					requesting[piece].push(peer);
 
 					peer.request(piece, offset, server.sizeof(piece, offset), function(err, buffer) {
+						remove(requesting[piece], peer);
 						process.nextTick(update);
 						if (err) return server.deselect(piece, offset);
 						server.write(piece, offset, buffer);
