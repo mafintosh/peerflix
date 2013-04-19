@@ -95,12 +95,13 @@ readTorrent(filename, function(err, torrent) {
 	var calcOffset = function(me) {
 		var speed = me.speed();
 		var time = MAX_QUEUED * BLOCK_SIZE / (speed || 1);
-		var max = server.missing.length > 30 ? server.missing.length - 30 : server.missing.length - 1;
+		var max = server.missing.length > 60 ? server.missing.length - 30 : server.missing.length - 1;
 		var data = 0;
 
 		if (speed < MIN_SPEED) return max;
 
 		peers.forEach(function(peer) {
+			if (!peer.peerPieces[server.missing[0]]) return;
 			if (peer.peerChoking) return;
 			if (me === peer || peer.speed() < speed) return;
 			data += peer.speed() * time;
@@ -108,18 +109,27 @@ readTorrent(filename, function(err, torrent) {
 
 		return Math.min(Math.floor(data / torrent.pieceLength), max);
 	};
-	var resync = function(piece, slack) {
+	var resync = function(offset) {
+		var piece = server.position + offset;
+
 		if (!requesting[piece]) return;
+		if (server.missing.length < 10) return;
 
 		requesting[piece].forEach(function(peer) {
-			if (server.missing.length < 10) return;
-			if (peer.peerChoking) return;
 			if (peer.speed() > 2*BLOCK_SIZE) return;
-			if (calcOffset(peer) <= slack) return;
+			if (calcOffset(peer) <= offset) return;
 			while (remove(requesting[piece], peer));
 			peer.cancel();
 			resyncs++;
 		});
+	};
+	var lastResync = 0;
+	var resyncAll = function() {
+		if (Date.now() - lastResync < 2000) return;
+		lastResync = Date.now();
+		for (var i = 0; i < 10; i++) {
+			resync(i);
+		}
 	};
 
 	var update = function() {
@@ -127,9 +137,7 @@ readTorrent(filename, function(err, torrent) {
 			return b.downloaded - a.downloaded;
 		});
 
-		for (var i = 0; i < 5; i++) {
-			resync(server.position+i, i+1);
-		}
+		resyncAll();
 
 		peers.forEach(function(peer) {
 			if (peer.peerChoking) return;
