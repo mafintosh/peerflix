@@ -51,7 +51,7 @@ var MAX_QUEUED = 5;
 var VLC_ARGS = '-q --video-on-top --play-and-exit';
 var OMX_EXEC = argv.jack ? 'omxplayer -r -o local ' : 'omxplayer -r -o hdmi ';
 
-var BLOCK_SIZE = 16 * 1024; // used for finding offset prio
+var BLOCK_SIZE = 16*1024; // used for finding offset prio
 var MIN_SPEED =  5*1024;
 var CHOKE_TIMEOUT = 5000;
 var PIECE_TIMEOUT = 30000;
@@ -72,10 +72,13 @@ readTorrent(filename, function(err, torrent) {
 	var speed = speedometer();
 	var uploaded = 0;
 	var downloaded = 0;
+	var resyncs = 0;
 
 	var have = bitfield(torrent.pieces.length);
+	var requesting = {};
 
 	server.on('readable', function(i) {
+		delete requesting[i];
 		have.set(i);
 		peers.forEach(function(peer) {
 			peer.have(i);
@@ -90,11 +93,6 @@ readTorrent(filename, function(err, torrent) {
 
 		if (speed < MIN_SPEED) return max;
 
-		if (!me.fast) {
-			me.fast = true;
-			me.setTimeout(FAST_PIECE_TIMEOUT);
-		}
-
 		peers.forEach(function(peer) {
 			if (peer.peerChoking) return;
 			if (me === peer || peer.speed() < speed) return;
@@ -103,11 +101,28 @@ readTorrent(filename, function(err, torrent) {
 
 		return Math.min(Math.floor(data / torrent.pieceLength), max);
 	};
+	var resync = function(piece, slack) {
+		if (!requesting[piece]) return;
+
+		requesting[piece].forEach(function(peer) {
+			if (server.missing.length < 10) return;
+			if (peer.speed() > 2*BLOCK_SIZE) return;
+			if (calcOffset(peer) <= slack) return;
+			var i = requesting[piece].indexOf(peer);
+			if (i > -1) requesting[piece].splice(i, 1);
+			peer.cancel();
+			resyncs++;
+		});
+	};
 
 	var update = function() {
 		peers.sort(function(a,b) {
 			return b.downloaded - a.downloaded;
 		});
+
+		for (var i = 0; i < 5; i++) {
+			resync(server.position+i, i+1);
+		}
 
 		peers.forEach(function(peer) {
 			if (peer.peerChoking) return;
@@ -118,6 +133,9 @@ readTorrent(filename, function(err, torrent) {
 
 				var offset = server.select(piece);
 				if (offset === -1) return;
+
+				requesting[piece] = requesting[piece] || [];
+				requesting[piece].push(peer);
 
 				peer.request(piece, offset, server.sizeof(piece, offset), function(err, buffer) {
 					process.nextTick(update);
@@ -240,7 +258,7 @@ readTorrent(filename, function(err, torrent) {
 			clivas.line('{green:open} {bold:vlc} {green:and enter} {bold:'+href+'} {green:as the network addres}');
 			clivas.line('');
 			clivas.line('{yellow:info} {green:streaming} {bold:'+filename+'} {green:-} {bold:'+bytes(speed())+'/s} {green:from} {bold:'+unchoked.length +'/'+peers.length+'} {green:peers}    ');
-			clivas.line('{yellow:info} {green:downloaded} {bold:'+bytes(downloaded)+'} {green:and uploaded }{bold:'+bytes(uploaded)+'} {green:in }{bold:'+runtime+'s}     ');
+			clivas.line('{yellow:info} {green:downloaded} {bold:'+bytes(downloaded)+'} {green:and uploaded }{bold:'+bytes(uploaded)+'} {green:in }{bold:'+runtime+'s} {green:with} {bold:'+resyncs+'} {green:resyncs}     ');
 			clivas.line('{yellow:info} {green:found }{bold:'+sw.peersFound+'} {green:peers and} {bold:'+sw.nodesFound+'} {green:nodes through the dht}');
 			clivas.line('{yellow:info} {green:peer queue size is} {bold:'+sw.queued+'}     ');
 			clivas.line('{yellow:info} {green:target pieces are} {50+bold:'+(server.missing.length ? server.missing.slice(0, 10).join(' ') : '(none)')+'}    ');

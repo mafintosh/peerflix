@@ -51,6 +51,7 @@ module.exports = function(torrent, file, options) {
 			if (self.buffering()) return;
 			dest.removeListener('readable', self._onreadable);
 			dest.read(self.position++ - start, onread);
+			server.position = self.position;
 		};
 
 		dest.on('readable', this._onreadable);
@@ -136,6 +137,7 @@ module.exports = function(torrent, file, options) {
 
 	prioritize(0);
 
+	server.position = 0;
 	server.missing = missing;
 	server.filename = file.name;
 	server.destination = destination;
