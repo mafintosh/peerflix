@@ -79,11 +79,12 @@ module.exports = function(torrent, file, options) {
 	var start = (file.offset / torrent.pieceLength) | 0;
 	var end = ((file.offset + file.length + 1) / torrent.pieceLength) | 0;
 	var dest = partFile(destination, torrent.pieceLength, torrent.pieces.slice(start, end+1));
+	var isAvi = /\.avi$/i.test(file.name);
 
 	var prioritize = function(i) {
 		missing.sort(function(a, b) {
-			if (a === end) return -1;
-			if (b === end) return 1;
+			if (a === end && !isAvi) return -1;
+			if (b === end && !isAvi) return 1;
 			if (a >= i && b < i) return -1;
 			if (b >= i && a < i) return 1;
 			return a - b;

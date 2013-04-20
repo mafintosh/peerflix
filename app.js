@@ -23,12 +23,13 @@ var argv = optimist
 	.alias('c', 'connections').describe('c', 'max connected peers').default('c', os.cpus().length > 1 ? 100 : 30)
 	.alias('p', 'port').describe('p', 'change the http port').default('p', 8888)
 	.alias('b', 'buffer').describe('b', 'change buffer size').default('b', '1.5MB')
-	.alias('bp', 'path').describe('bp', 'change buffer file path')
 	.alias('i', 'index').describe('i', 'changed streamed file (index)')
 	.alias('q', 'quiet').describe('q', 'be quiet')
 	.alias('v', 'vlc').describe('v', 'autoplay in vlc*')
+	.alias('m', 'mplayer').describe('m', 'autoplay in mplayer**')
 	.alias('o', 'omx').describe('o', 'autoplay in omx**')
 	.alias('j', 'jack').describe('j', 'autoplay in omx** using the audio jack')
+	.describe('path', 'change buffer file path')
 	.argv;
 
 var filename = argv._[0];
@@ -51,6 +52,7 @@ var MIN_PEERS = 0;
 var MAX_QUEUED = 5;
 var VLC_ARGS = '-q --video-on-top --play-and-exit';
 var OMX_EXEC = argv.jack ? 'omxplayer -r -o local ' : 'omxplayer -r -o hdmi ';
+var MPLAYER_EXEC = 'mplayer -ontop -really-quiet -noidx -loop 0 ';
 
 var BLOCK_SIZE = 16*1024; // used for finding offset prio
 var MIN_SPEED =  5*1024;
@@ -66,7 +68,7 @@ readTorrent(filename, function(err, torrent) {
 	if (err) throw err;
 
 	var selected = (typeof(argv.index)=='number') ? torrent.files[argv.index] : biggest(torrent);
-	var destination = argv.bp || path.join(os.tmpDir(), torrent.infoHash+'.'+selected.offset);
+	var destination = argv.path || path.join(os.tmpDir(), torrent.infoHash+'.'+selected.offset);
 	var server = createServer(torrent, selected, {destination:destination, buffer:argv.buffer && numeral().unformat(argv.buffer)});
 	var peers = [];
 
@@ -265,6 +267,7 @@ readTorrent(filename, function(err, torrent) {
 
 		if (argv.vlc) proc.exec('vlc '+href+' '+VLC_ARGS+' || /Applications/VLC.app/Contents/MacOS/VLC '+href+' '+VLC_ARGS);
 		if (argv.omx) proc.exec(OMX_EXEC+' '+href);
+		if (argv.mplayer) proc.exec(MPLAYER_EXEC+' '+href);
 		if (argv.quiet) return console.log('server is listening on '+href);
 
 		var bytes = function(num) {
