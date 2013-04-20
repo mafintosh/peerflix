@@ -130,7 +130,7 @@ readTorrent(filename, function(err, torrent) {
 	var resyncAll = function() {
 		if (Date.now() - lastResync < 2000) return;
 		lastResync = Date.now();
-		for (var i = 0; i < 10; i++) {
+		for (var i = 0; i < 2; i++) {
 			resync(i);
 		}
 	};
