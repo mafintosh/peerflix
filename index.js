@@ -10,6 +10,7 @@ var readTorrent = require('read-torrent');
 var optimist = require('optimist');
 var speedometer = require('speedometer');
 var once = require('once');
+var net = require('net');
 var createServer = require('./server');
 
 module.exports = function(filename, opts, ready)
@@ -220,7 +221,15 @@ module.exports = function(filename, opts, ready)
 				server.read(index, offset, length, callback);
 			});
 		};
-
+		
+		if (options.fastpeers)
+			(Array.isArray(options.fastpeers) ? options.fastpeers : options.fastpeers.split(','))
+			.forEach(function(peer)
+			{
+				var socket = net.connect(peer.split(':')[1], peer.split(':')[0]);
+				socket.on('connect', function() { onconnection(socket, peer, peer) });			
+			});
+			
 		var sw = peerflix.swarm = peerSwarm(torrent.infoHash, {maxSize:MAX_PEERS});
 		sw.on('connection', onconnection);
 		sw.listen();

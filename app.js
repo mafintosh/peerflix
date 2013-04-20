@@ -15,6 +15,7 @@ var argv = optimist
 	.alias('b', 'buffer').describe('b', 'change buffer size').default('b', '1.5MB')
 	.alias('bp', 'path').describe('bp', 'change buffer file path')
 	.alias('i', 'index').describe('i', 'changed streamed file (index)')
+	.alias('f', 'fastpeers').describe('f', 'a comma-separated list of addresses of peers to connect to which will be assumed to be fast (e.g. for testing purposes)')
 	.alias('q', 'quiet').describe('q', 'be quiet')
 	.alias('s', 'stat').describe('s', 'export a statistics server on port 11470')
 	.alias('v', 'vlc').describe('v', 'autoplay in vlc*')
