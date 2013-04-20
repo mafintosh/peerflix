@@ -137,6 +137,9 @@ module.exports = function(torrent, file, options) {
 		pieces[index] = null;
 		if (i > -1) missing.splice(i, 1);
 		server.emit('readable', index);
+		
+		if (pieces.every(function(piece) { return !piece }))
+			server.emit('finished');
 	});
 
 	prioritize(0);
