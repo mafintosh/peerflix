@@ -65,7 +65,7 @@ var noop = function() {};
 readTorrent(filename, function(err, torrent) {
 	if (err) throw err;
 
-	var selected = (argv.index && torrent.files[argv.index]) || biggest(torrent);
+	var selected = (typeof(argv.index)=='number') ? torrent.files[argv.index] : biggest(torrent);
 	var destination = argv.bp || path.join(os.tmpDir(), torrent.infoHash+'.'+selected.offset);
 	var server = createServer(torrent, selected, {destination:destination, buffer:argv.buffer && numeral().unformat(argv.buffer)});
 	var peers = [];
