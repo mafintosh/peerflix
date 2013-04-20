@@ -41,6 +41,7 @@ module.exports = function(filename, opts, ready)
 	{
 		if (err) throw err;
 
+		peerflix.torrent = torrent;
 		var selected = (typeof(options.index)=='number') ? torrent.files[options.index] : biggest(torrent);
 		var destination = options.bp || path.join(os.tmpDir(), torrent.infoHash+'.'+selected.offset);
 		var server = peerflix.server = createServer(torrent, selected, {destination:destination, buffer:options.buffer && numeral().unformat(options.buffer)});

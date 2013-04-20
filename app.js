@@ -5,8 +5,8 @@ var clivas = require('clivas');
 var numeral = require('numeral');
 var os = require('os');
 var address = require('network-address');
-var peerflix = require('./');
 var proc = require('child_process');
+var peerflix = require('./');
 
 var argv = optimist
 	.usage('Usage: $0 torrent_file_or_url [options]')
