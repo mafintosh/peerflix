@@ -228,6 +228,7 @@ module.exports = function(filename, opts, ready) {
 				socket.on('connect', function() {
 					onconnection(socket, peer, peer);
 				});
+				socket.on('error', noop);
 			});
 		}
 
