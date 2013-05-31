@@ -1,9 +1,7 @@
 var http = require('http');
 var rangeParser = require('range-parser');
 var mime = require('mime');
-var partFile = require('part-file');
 var Readable = require('readable-stream');
-var piece = require('./piece');
 var util = require('util');
 
 var MIN_BUFFER = 1.5 * 1000 * 1000;
@@ -15,10 +13,15 @@ var pipeline = function(inp, out) {
 	});
 };
 
-module.exports = function(torrent, file, options) {
-	var destination = options.destination;
-	var piecesToBuffer = Math.ceil((options.buffer || MIN_BUFFER) / torrent.pieceLength);
+module.exports = function(storage, file, options) {
+	var dest = storage.dest;
+	var missing = storage.missing;
+	var torrent = storage.torrent;
 
+	var piecesToBuffer = Math.ceil((options.buffer || MIN_BUFFER) / torrent.pieceLength);
+	var start = (file.offset / torrent.pieceLength) | 0;
+	var end = ((file.offset + file.length + 1) / torrent.pieceLength) | 0;
+		
 	var PieceStream = function(range) {
 		Readable.call(this);
 		range = range || {start:0, end:file.length-1};
@@ -74,13 +77,7 @@ module.exports = function(torrent, file, options) {
 		this.emit('close');
 	};
 
-	var missing = [];
-
-	var start = (file.offset / torrent.pieceLength) | 0;
-	var end = ((file.offset + file.length + 1) / torrent.pieceLength) | 0;
-	var dest = partFile(destination, torrent.pieceLength, torrent.pieces.slice(start, end+1));
 	var isAvi = /\.avi$/i.test(file.name);
-
 	var prioritize = function(i) {
 		missing.sort(function(a, b) {
 			if (a === end && !isAvi) return -1;
@@ -96,17 +93,6 @@ module.exports = function(torrent, file, options) {
 		prioritize(s.position);
 		return s;
 	};
-
-	var lastFile = torrent.files[torrent.files.length-1];
-	var pieces = torrent.pieces.map(function(_, i) {
-		if (i < start) return;
-		if (i > end) return;
-
-		missing.push(i);
-
-		if (i === torrent.pieces.length-1) return piece(((lastFile.length + lastFile.offset) % torrent.pieceLength) || torrent.pieceLength);
-		return piece(torrent.pieceLength);
-	});
 
 	var server = http.createServer(function(request, response) {
 		var range = request.headers.range;
@@ -132,59 +118,13 @@ module.exports = function(torrent, file, options) {
 		pipeline(stream(range), response);
 	});
 
-	dest.on('readable', function(index) {
-		index += start;
-		var i = missing.indexOf(index);
-		pieces[index] = null;
-		if (i > -1) missing.splice(i, 1);
-		server.emit('readable', index);
-		
-		if (pieces.every(function(piece) { return !piece }))
-			server.emit('finished');
-	});
-
+	server.position = 0;
 	prioritize(0);
 
-	server.position = 0;
-	server.missing = missing;
-	server.filename = file.name;
-	server.destination = destination;
-
-	server.sizeof = function(index, offset) {
-		var p = pieces[index];
-		return p ? p.sizeof(offset) : 0;
-	};
-
-	server.select = function(index, force) {
-		var p = pieces[index];
-		if (!p) return -1;
-		var i = p.select();
-		return i === -1 && force ? p.select(true) : i;
-	};
-
-	server.deselect = function(index, offset) {
-		var p = pieces[index];
-		if (p) p.deselect(offset);
-	};
-
-	server.write = function(index, offset, block) {
-		var p = pieces[index];
-		if (!p) return;
-
-		var buffer = p.write(offset, block);
-		if (!buffer) return;
-
-		dest.write(index - start, buffer, function(err) {
-			if (err) return p.reset();
-		});
-	};
-
-	server.read = function(index, offset, length, callback) {
-		dest.read(index - start, function(err, buffer) {
-			if (err) return callback(err);
-			callback(null, buffer.slice(offset, offset+length));
-		});
-	};
+	server.listen(options.port || 8888);
+	server.on('error', function() {
+		server.listen(0);
+	});
 
 	return server;
 };
