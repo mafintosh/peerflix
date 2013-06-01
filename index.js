@@ -11,6 +11,7 @@ var optimist = require('optimist');
 var speedometer = require('speedometer');
 var once = require('once');
 var net = require('net');
+var createStorage = require('./storage');
 var createServer = require('./server');
 
 module.exports = function(filename, opts, ready) {
@@ -42,8 +43,9 @@ module.exports = function(filename, opts, ready) {
 
 		peerflix.torrent = torrent;
 		var selected = (typeof(options.index)=='number') ? torrent.files[options.index] : biggest(torrent);
-		var destination = options.path || path.join(os.tmpDir(), torrent.infoHash+'.'+selected.offset);
-		var server = peerflix.server = createServer(torrent, selected, {destination:destination, buffer:options.buffer && numeral().unformat(options.buffer)});
+		var destination = peerflix.destination = options.path || path.join(os.tmpDir(), torrent.infoHash+'.'+selected.offset);
+		var storage = peerflix.storage = createStorage(torrent, selected, { destination:destination });
+		var server = peerflix.server = createServer(storage, selected, { buffer:options.buffer && numeral().unformat(options.buffer), port: options.port });
 		var peers  = peerflix.peers = [];
 
 		var speed = peerflix.speed = speedometer();
@@ -54,7 +56,7 @@ module.exports = function(filename, opts, ready) {
 		var have = bitfield(torrent.pieces.length);
 		var requesting = {};
 
-		server.on('readable', function(i) {
+		storage.on('readable', function(i) {
 			delete requesting[i];
 			have.set(i);
 			peers.forEach(function(peer) {
@@ -72,13 +74,13 @@ module.exports = function(filename, opts, ready) {
 		var calcOffset = function(me) {
 			var speed = me.speed();
 			var time = MAX_QUEUED * BLOCK_SIZE / (speed || 1);
-			var max = server.missing.length > 60 ? server.missing.length - 30 : server.missing.length - 1;
+			var max = storage.missing.length > 60 ? storage.missing.length - 30 : storage.missing.length - 1;
 			var data = 0;
 
 			if (speed < MIN_SPEED) return max;
 
 			peers.forEach(function(peer) {
-				if (!peer.peerPieces[server.missing[0]]) return;
+				if (!peer.peerPieces[storage.missing[0]]) return;
 				if (peer.peerChoking) return;
 				if (me === peer || peer.speed() < speed) return;
 				data += peer.speed() * time;
@@ -90,7 +92,7 @@ module.exports = function(filename, opts, ready) {
 			var piece = server.position + offset;
 
 			if (!requesting[piece]) return;
-			if (server.missing.length < 10) return;
+			if (storage.missing.length < 10) return;
 
 			requesting[piece].forEach(function(peer) {
 				if (peer.speed() > 2*BLOCK_SIZE) return;
@@ -120,32 +122,32 @@ module.exports = function(filename, opts, ready) {
 				if (peer.peerChoking) return;
 
 				var select = function(force) {
-					server.missing.slice(calcOffset(peer)).some(function(piece) {
+					storage.missing.slice(calcOffset(peer)).some(function(piece) {
 						if (peer.requests >= MAX_QUEUED) return true;
 						if (!peer.peerPieces[piece]) return;
 
-						var offset = server.select(piece, force);
+						var offset = storage.select(piece, force);
 						if (offset === -1) return;
 
 						requesting[piece] = requesting[piece] || [];
 						requesting[piece].push(peer);
 
-						peer.request(piece, offset, server.sizeof(piece, offset), function(err, buffer) {
+						peer.request(piece, offset, storage.sizeof(piece, offset), function(err, buffer) {
 							remove(requesting[piece], peer);
 							process.nextTick(update);
-							if (err) return server.deselect(piece, offset);
-							server.write(piece, offset, buffer);
+							if (err) return storage.deselect(piece, offset);
+							storage.write(piece, offset, buffer);
 						});
 					});
 				};
 
 				select();
-				if (!peer.requests && server.missing.length < 30) select(true);
+				if (!peer.requests && storage.missing.length < 30) select(true);
 			});
 		};
 
 		var onconnection = function(connection, id, address) {
-			if (!server.missing.length) return;
+			if (!storage.missing.length) return;
 
 			var protocol = wire();
 
@@ -216,9 +218,7 @@ module.exports = function(filename, opts, ready) {
 				peerflix.uploaded += bytes;
 			});
 
-			protocol.on('request', function(index, offset, length, callback) {
-				server.read(index, offset, length, callback);
-			});
+			protocol.on('request', storage.read);
 		};
 
 		if (options.fastpeers) {
@@ -232,19 +232,16 @@ module.exports = function(filename, opts, ready) {
 			});
 		}
 
-		var sw = peerflix.swarm = peerSwarm(torrent.infoHash, {maxSize:MAX_PEERS});
-		sw.on('connection', onconnection);
-		sw.listen();
-
-		server.listen(options.port || 8888);
-		server.on('error', function() {
-			server.listen(0);
-		});
+		if (options.hasOwnProperty("dht") ? options.dht : true) {
+			var sw = peerflix.swarm = peerSwarm(torrent.infoHash, {maxSize:MAX_PEERS});
+			sw.on('connection', onconnection);
+			sw.listen();
+		}
 
 		ready(null, peerflix);
 	});
 
 	peerflix.clearCache = function() {
-		if (fs.existsSync(peerflix.server.destination)) fs.unlinkSync(peerflix.server.destination);
+		if (fs.existsSync(peerflix.destination)) fs.unlinkSync(peerflix.destination);
 	};
 }

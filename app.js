@@ -44,6 +44,7 @@ peerflix(filename, argv, function(err, flix) {
 
 	var peers = flix.peers;
 	var server = flix.server;
+	var storage = flix.storage;
 	var speed = flix.speed;
 	var sw = flix.swarm;
 
@@ -54,7 +55,7 @@ peerflix(filename, argv, function(err, flix) {
 
 	server.on('listening', function() {
 		var href = 'http://'+address()+':'+server.address().port+'/';
-		var filename = server.filename.split('/').pop().replace(/\{|\}/g, '');
+		var filename = storage.filename.split('/').pop().replace(/\{|\}/g, '');
 
 		if (argv.vlc) proc.exec('vlc '+href+' '+VLC_ARGS+' || /Applications/VLC.app/Contents/MacOS/VLC '+href+' '+VLC_ARGS);
 		if (argv.omx) proc.exec(OMX_EXEC+' '+href);
@@ -77,13 +78,13 @@ peerflix(filename, argv, function(err, flix) {
 			clivas.line('{yellow:info} {green:downloaded} {bold:'+bytes(flix.downloaded)+'} {green:and uploaded }{bold:'+bytes(flix.uploaded)+'} {green:in }{bold:'+runtime+'s} {green:with} {bold:'+flix.resyncs+'} {green:resyncs}     ');
 			clivas.line('{yellow:info} {green:found }{bold:'+sw.peersFound+'} {green:peers and} {bold:'+sw.nodesFound+'} {green:nodes through the dht}');
 			clivas.line('{yellow:info} {green:peer queue size is} {bold:'+sw.queued+'}     ');
-			clivas.line('{yellow:info} {green:target pieces are} {50+bold:'+(server.missing.length ? server.missing.slice(0, 10).join(' ') : '(none)')+'}    ');
+			clivas.line('{yellow:info} {green:target pieces are} {50+bold:'+(storage.missing.length ? storage.missing.slice(0, 10).join(' ') : '(none)')+'}    ');
 			clivas.line('{80:}');
 
 			peers.slice(0, 30).forEach(function(peer) {
 				var tags = [];
 				if (peer.peerChoking) tags.push('choked');
-				if (peer.peerPieces[server.missing[0]]) tags.push('target');
+				if (peer.peerPieces[storage.missing[0]]) tags.push('target');
 				clivas.line('{25+magenta:'+peer.id+'} {10:↓'+bytes(peer.downloaded)+'} {10+cyan:↓'+bytes(peer.speed())+'/s} {15+grey:'+tags.join(', ')+'}   ');
 			});
 
@@ -98,7 +99,7 @@ peerflix(filename, argv, function(err, flix) {
 	});
 
 	process.on('SIGINT', function() {
-		flix.clearCache();
+	//	flix.clearCache();
 		process.exit(0);
 	});
 
