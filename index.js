@@ -42,7 +42,7 @@ module.exports = function(filename, opts, ready) {
 		if (err) return ready(err);
 
 		peerflix.torrent = torrent;
-		var selected = (typeof(options.index)=='number') ? torrent.files[options.index] : biggest(torrent);
+		var selected = peerflix.selected = (typeof(options.index)=='number') ? torrent.files[options.index] : biggest(torrent);
 		var destination = peerflix.destination = options.path || path.join(os.tmpDir(), torrent.infoHash+'.'+selected.offset);
 		var storage = peerflix.storage = createStorage(torrent, selected, { destination:destination });
 		var server = peerflix.server = createServer(storage, selected, { buffer:options.buffer && numeral().unformat(options.buffer), port: options.port });
