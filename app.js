@@ -8,6 +8,8 @@ var address = require('network-address');
 var proc = require('child_process');
 var peerflix = require('./');
 
+var path = require('path');
+
 var argv = optimist
 	.usage('Usage: $0 torrent_file_or_url [options]')
 	.alias('c', 'connections').describe('c', 'max connected peers').default('c', os.cpus().length > 1 ? 100 : 30)
@@ -108,8 +110,43 @@ peerflix(filename, argv, function(err, flix) {
 	require('http').createServer(function(req, res) { // stat server for benchmarking
 		res.setHeader('Content-Type', 'application/json');
 		res.setHeader('Access-Control-Allow-Origin', '*');
+
+		// Torrent file
+		var origin = flix.selected;
+
+		// File on disk
+		var dest = storage.dest;
+
+		// Chunks and progress
+		var totalChunks = dest.parts.length;
+		var currentChunks = dest.verifiedParts;
+		var missingChunks = totalChunks - currentChunks;
+
+		var chunks = {
+			total: totalChunks,
+			current: currentChunks,
+			missing: missingChunks
+		};
+		var progress = chunks.current / chunks.total;
+
 		res.end(JSON.stringify({
+			// Current progress
+			progress: progress,
+
+			// Is it completed
+			complete: dest.complete(),
+
+			// Chunks
+			chunks: chunks,
+
+			// Filenames
+			name: origin.name,
+			path: path.resolve(dest.filename),
+
+			// Speed in kb/s
 			download_speed: Math.round(speed()/1000),
+
+			// Torrent stuff
 			peers: peers.length,
 			active_peers: peers.filter(active).length
 		}));
