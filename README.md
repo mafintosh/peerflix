@@ -7,9 +7,10 @@ it requires node.js to run.
 
 this will install a terminal app called `peerflix`. simply call it with a torrent file
 
-	peerflix http://www.clearbits.net/get/53-star-wreck---in-the-pirkinning.torrent
+	peerflix http://www.clearbits.net/get/53-star-wreck---in-the-pirkinning.torrent --vlc
 
 peerflix will print a terminal interface. this first line contains a address to a http server.
+using `--vlc` will open the file in vlc when it's ready to stream.
 
 ![peerflix](https://raw.github.com/mafintosh/peerflix/master/screenshot.png)
 
