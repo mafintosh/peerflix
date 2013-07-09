@@ -1,7 +1,7 @@
 # peerflix
 
 a streaming torrent client.
-it requires node.js to run and currently only have a terminal interface.
+it requires node.js to run.
 
 	npm install -g peerflix
 
