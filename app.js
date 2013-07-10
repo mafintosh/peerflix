@@ -18,7 +18,7 @@ var argv = optimist
 	.alias('i', 'index').describe('i', 'changed streamed file (index)')
 	.alias('f', 'fastpeers').describe('f', 'a comma-separated list of addresses of known fast peers')
 	.alias('q', 'quiet').describe('q', 'be quiet')
-	.alias('s', 'stat').describe('s', 'export a statistics server on port 11470')
+	.alias('s', 'stats').describe('s', 'export a statistics server on port 11470')
 	.alias('v', 'vlc').describe('v', 'autoplay in vlc*')
 	.alias('m', 'mplayer').describe('m', 'autoplay in mplayer**')
 	.alias('o', 'omx').describe('o', 'autoplay in omx**')
