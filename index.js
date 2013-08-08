@@ -15,6 +15,11 @@ var createStorage = require('./storage');
 var createServer = require('./server');
 
 module.exports = function(filename, opts, ready) {
+	if (!ready) {
+		ready = opts;
+		opts = null;
+	}
+
 	var peerflix = {}; // peerflix handle
 	var options = opts || {};
 
@@ -47,6 +52,7 @@ module.exports = function(filename, opts, ready) {
 		var storage = peerflix.storage = createStorage(torrent, selected, { destination:destination });
 		var server = peerflix.server = createServer(storage, selected, { buffer:options.buffer && numeral().unformat(options.buffer), port: options.port });
 		var peers  = peerflix.peers = [];
+		var destroyed = false;
 
 		var speed = peerflix.speed = speedometer();
 		peerflix.uploaded = 0;
@@ -158,6 +164,7 @@ module.exports = function(filename, opts, ready) {
 
 			protocol.once('handshake', function() {
 				clearTimeout(timeout);
+				if (destroyed) return;
 
 				peers.push(protocol);
 
@@ -237,6 +244,21 @@ module.exports = function(filename, opts, ready) {
 			sw.on('connection', onconnection);
 			sw.listen();
 		}
+
+		peerflix.destroy = function() {
+			destroyed = true;
+			peers.forEach(function(peer) {
+				peer.destroy();
+			});
+			if (!peerflix.swarm) return;
+			 // hackish
+			peerflix.swarm.maxSize = 0;
+			peerflix.swarm.connections.forEach(function(conn) {
+				conn.destroy();
+			});
+			peerflix.swarm._sock.close();
+			server.close();
+		};
 
 		ready(null, peerflix);
 	});
