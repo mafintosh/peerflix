@@ -4,7 +4,7 @@
   "license": "MIT",
   "repository": "git://github.com/mafintosh/peerflix.git",
   "bin": {
-    "peerflix": "app.js"
+    "peerflix": "./app.js"
   },
   "dependencies": {
     "bitfield": "~0.1.0",
