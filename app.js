@@ -16,6 +16,7 @@ var argv = optimist
 	.alias('p', 'port').describe('p', 'change the http port').default('p', 8888)
 	.alias('b', 'buffer').describe('b', 'change buffer size').default('b', '1.5MB')
 	.alias('i', 'index').describe('i', 'changed streamed file (index)')
+	.alias('t', 'subtitles').describe('t', 'load subtitles file')
 	.alias('f', 'fastpeers').describe('f', 'a comma-separated list of addresses of known fast peers')
 	.alias('q', 'quiet').describe('q', 'be quiet')
 	.alias('s', 'stats').describe('s', 'export a statistics server on port 11470')
@@ -38,6 +39,11 @@ if (!filename) {
 var VLC_ARGS = '-q --video-on-top --play-and-exit';
 var OMX_EXEC = argv.jack ? 'omxplayer -r -o local ' : 'omxplayer -r -o hdmi ';
 var MPLAYER_EXEC = 'mplayer -ontop -really-quiet -noidx -loop 0 ';
+if (argv.t)	{
+	VLC_ARGS += ' --sub-file=' + argv.t
+	OMX_EXEC += ' --subtitles ' + argv.t
+	MPLAYER_EXEC += ' −sub ' + argv.t
+}
 
 var noop = function() {};
 
