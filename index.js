@@ -266,4 +266,6 @@ module.exports = function(filename, opts, ready) {
 	peerflix.clearCache = function() {
 		if (fs.existsSync(peerflix.destination)) fs.unlinkSync(peerflix.destination);
 	};
+
+	return peerflix;
 }
