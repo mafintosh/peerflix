@@ -78,6 +78,8 @@ peerflix(filename, argv, function(err, flix) {
 		setInterval(function() {
 			var unchoked = peers.filter(active);
 			var runtime = Math.floor((Date.now() - started) / 1000);
+			var linesremaining = clivas.height;
+			var peerslisted = 0;
 
 			clivas.clear();
 			clivas.line('{green:open} {bold:vlc} {green:and enter} {bold:'+href+'} {green:as the network addres}');
@@ -88,17 +90,21 @@ peerflix(filename, argv, function(err, flix) {
 			clivas.line('{yellow:info} {green:peer queue size is} {bold:'+sw.queued+'}     ');
 			clivas.line('{yellow:info} {green:target pieces are} {50+bold:'+(storage.missing.length ? storage.missing.slice(0, 10).join(' ') : '(none)')+'}    ');
 			clivas.line('{80:}');
+			linesremaining -= 8;
 
-			peers.slice(0, 30).forEach(function(peer) {
+			peers.every(function(peer) {
 				var tags = [];
 				if (peer.peerChoking) tags.push('choked');
 				if (peer.peerPieces[storage.missing[0]]) tags.push('target');
 				clivas.line('{25+magenta:'+peer.id+'} {10:↓'+bytes(peer.downloaded)+'} {10+cyan:↓'+bytes(peer.speed())+'/s} {15+grey:'+tags.join(', ')+'}   ');
+				peerslisted++;
+				return linesremaining-peerslisted > 4;
 			});
+			linesremaining -= peerslisted;
 
-			if (peers.length > 30) {
+			if (peers.length > peerslisted) {
 				clivas.line('{80:}');
-				clivas.line('... and '+(peers.length-30)+' more     ');
+				clivas.line('... and '+(peers.length-peerslisted)+' more     ');
 			}
 
 			clivas.line('{80:}');
