@@ -18,13 +18,12 @@ var argv = optimist
 	.alias('p', 'port').describe('p', 'change the http port').default('p', 8888)
 	.alias('i', 'index').describe('i', 'changed streamed file (index)')
 	.alias('t', 'subtitles').describe('t', 'load subtitles file')
-	.alias('f', 'fastpeers').describe('f', 'a comma-separated list of addresses of known fast peers')
 	.alias('q', 'quiet').describe('q', 'be quiet')
-	.alias('s', 'stats').describe('s', 'export a statistics server on port 11470')
 	.alias('v', 'vlc').describe('v', 'autoplay in vlc*')
 	.alias('m', 'mplayer').describe('m', 'autoplay in mplayer**')
 	.alias('o', 'omx').describe('o', 'autoplay in omx**')
 	.alias('j', 'jack').describe('j', 'autoplay in omx** using the audio jack')
+	.describe('clean', 'remove the tmp buffer file after peerflix closes').default('s', true)
 	.describe('path', 'change buffer file path')
 	.argv;
 
@@ -119,4 +118,11 @@ readTorrent(filename, function(err, torrent) {
 	});
 
 	engine.server.listen(argv.port || 8888);
+	if (!argv.clean) return engine.verify();
+
+	process.on('SIGINT', function() {
+		engine.destroy(function() {
+			process.exit(0);
+		});
+	});
 });
