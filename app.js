@@ -4,7 +4,9 @@ var optimist = require('optimist');
 var clivas = require('clivas');
 var numeral = require('numeral');
 var os = require('os');
+var fs = require('fs');
 var address = require('network-address');
+var readTorrent = require('read-torrent');
 var proc = require('child_process');
 var peerflix = require('./');
 
@@ -14,7 +16,6 @@ var argv = optimist
 	.usage('Usage: $0 torrent_file_or_url [options]')
 	.alias('c', 'connections').describe('c', 'max connected peers').default('c', os.cpus().length > 1 ? 100 : 30)
 	.alias('p', 'port').describe('p', 'change the http port').default('p', 8888)
-	.alias('b', 'buffer').describe('b', 'change buffer size').default('b', '1.5MB')
 	.alias('i', 'index').describe('i', 'changed streamed file (index)')
 	.alias('t', 'subtitles').describe('t', 'load subtitles file')
 	.alias('f', 'fastpeers').describe('f', 'a comma-separated list of addresses of known fast peers')
@@ -47,23 +48,27 @@ if (argv.t)	{
 
 var noop = function() {};
 
-peerflix(filename, argv, function(err, flix) {
+readTorrent(filename, function(err, torrent) {
 	if (err) throw err;
 
-	var peers = flix.peers;
-	var server = flix.server;
-	var storage = flix.storage;
-	var speed = flix.speed;
-	var sw = flix.swarm;
+	var engine = peerflix(torrent, argv);
+	var hotswaps = 0;
+
+	engine.on('hotswap', function() {
+		hotswaps++;
+	});
 
 	var started = Date.now();
-	var active = function(peer) {
-		return !peer.peerChoking;
+	var wires = engine.swarm.wires;
+	var swarm = engine.swarm;
+
+	var active = function(wire) {
+		return !wire.peerChoking;
 	};
 
-	server.on('listening', function() {
-		var href = 'http://'+address()+':'+server.address().port+'/';
-		var filename = storage.filename.split('/').pop().replace(/\{|\}/g, '');
+	engine.server.on('listening', function() {
+		var href = 'http://'+address()+':'+engine.server.address().port+'/';
+		var filename = engine.server.index.name.split('/').pop().replace(/\{|\}/g, '');
 
 		if (argv.vlc) proc.exec('vlc '+href+' '+VLC_ARGS+' || /Applications/VLC.app/Contents/MacOS/VLC '+href+' '+VLC_ARGS);
 		if (argv.omx) proc.exec(OMX_EXEC+' '+href);
@@ -76,7 +81,7 @@ peerflix(filename, argv, function(err, flix) {
 
 		process.stdout.write(new Buffer('G1tIG1sySg==', 'base64')); // clear for drawing
 		setInterval(function() {
-			var unchoked = peers.filter(active);
+			var unchoked = engine.swarm.wires.filter(active);
 			var runtime = Math.floor((Date.now() - started) / 1000);
 			var linesremaining = clivas.height;
 			var peerslisted = 0;
@@ -84,27 +89,24 @@ peerflix(filename, argv, function(err, flix) {
 			clivas.clear();
 			clivas.line('{green:open} {bold:vlc} {green:and enter} {bold:'+href+'} {green:as the network addres}');
 			clivas.line('');
-			clivas.line('{yellow:info} {green:streaming} {bold:'+filename+'} {green:-} {bold:'+bytes(speed())+'/s} {green:from} {bold:'+unchoked.length +'/'+peers.length+'} {green:peers}    ');
-			clivas.line('{yellow:info} {green:downloaded} {bold:'+bytes(flix.downloaded)+'} {green:and uploaded }{bold:'+bytes(flix.uploaded)+'} {green:in }{bold:'+runtime+'s} {green:with} {bold:'+flix.resyncs+'} {green:resyncs}     ');
-			clivas.line('{yellow:info} {green:found }{bold:'+sw.peersFound+'} {green:peers and} {bold:'+sw.nodesFound+'} {green:nodes through the dht}');
-			clivas.line('{yellow:info} {green:peer queue size is} {bold:'+sw.queued+'}     ');
-			clivas.line('{yellow:info} {green:target pieces are} {50+bold:'+(storage.missing.length ? storage.missing.slice(0, 10).join(' ') : '(none)')+'}    ');
+			clivas.line('{yellow:info} {green:streaming} {bold:'+filename+'} {green:-} {bold:'+bytes(swarm.downloadSpeed())+'/s} {green:from} {bold:'+unchoked.length +'/'+wires.length+'} {green:peers}    ');
+			clivas.line('{yellow:info} {green:downloaded} {bold:'+bytes(swarm.downloaded)+'} {green:and uploaded }{bold:'+bytes(swarm.uploaded)+'} {green:in }{bold:'+runtime+'s} {green:with} {bold:'+hotswaps+'} {green:hotswaps}     ');
+			clivas.line('{yellow:info} {green:peer queue size is} {bold:'+swarm.queued+'}     ');
 			clivas.line('{80:}');
 			linesremaining -= 8;
 
-			peers.every(function(peer) {
+			wires.every(function(wire) {
 				var tags = [];
-				if (peer.peerChoking) tags.push('choked');
-				if (peer.peerPieces[storage.missing[0]]) tags.push('target');
-				clivas.line('{25+magenta:'+peer.id+'} {10:↓'+bytes(peer.downloaded)+'} {10+cyan:↓'+bytes(peer.speed())+'/s} {15+grey:'+tags.join(', ')+'}   ');
+				if (wire.peerChoking) tags.push('choked');
+				clivas.line('{25+magenta:'+wire.peerAddress+'} {10:↓'+bytes(wire.downloaded)+'} {10+cyan:↓'+bytes(wire.downloadSpeed())+'/s} {15+grey:'+tags.join(', ')+'}   ');
 				peerslisted++;
 				return linesremaining-peerslisted > 4;
 			});
 			linesremaining -= peerslisted;
 
-			if (peers.length > peerslisted) {
+			if (wires.length > peerslisted) {
 				clivas.line('{80:}');
-				clivas.line('... and '+(peers.length-peerslisted)+' more     ');
+				clivas.line('... and '+(wires.length-peerslisted)+' more     ');
 			}
 
 			clivas.line('{80:}');
@@ -112,55 +114,9 @@ peerflix(filename, argv, function(err, flix) {
 		}, 500);
 	});
 
-	process.on('SIGINT', function() {
-	//	flix.clearCache();
-		process.exit(0);
+	engine.server.once('error', function() {
+		engine.server.listen(0);
 	});
 
-	if (!argv.stats) return;
-
-	require('http').createServer(function(req, res) { // stat server for benchmarking
-		res.setHeader('Content-Type', 'application/json');
-		res.setHeader('Access-Control-Allow-Origin', '*');
-
-		// Torrent file
-		var origin = flix.selected;
-
-		// File on disk
-		var dest = storage.dest;
-
-		// Chunks and progress
-		var totalChunks = dest.parts.length;
-		var currentChunks = dest.verifiedParts;
-		var missingChunks = totalChunks - currentChunks;
-
-		var chunks = {
-			total: totalChunks,
-			current: currentChunks,
-			missing: missingChunks
-		};
-		var progress = chunks.current / chunks.total;
-
-		res.end(JSON.stringify({
-			// Current progress
-			progress: progress,
-
-			// Is it completed
-			complete: dest.complete(),
-
-			// Chunks
-			chunks: chunks,
-
-			// Filenames
-			name: origin.name,
-			path: path.resolve(dest.filename),
-
-			// Speed in kb/s
-			download_speed: Math.round(speed()/1000),
-
-			// Torrent stuff
-			peers: peers.length,
-			active_peers: peers.filter(active).length
-		}));
-	}).listen(11470).on('error', noop);
+	engine.server.listen(argv.port || 8888);
 });
