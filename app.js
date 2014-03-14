@@ -65,6 +65,14 @@ readTorrent(filename, function(err, torrent) {
 		return !wire.peerChoking;
 	};
 
+	engine.on('uninterested', function() {
+		engine.swarm.pause();
+	});
+
+	engine.on('interested', function() {
+		engine.swarm.resume();
+	});
+
 	engine.server.on('listening', function() {
 		var href = 'http://'+address()+':'+engine.server.address().port+'/';
 		var filename = engine.server.index.name.split('/').pop().replace(/\{|\}/g, '');
