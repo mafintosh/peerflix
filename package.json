@@ -14,7 +14,7 @@
     "numeral": "^1.5.3",
     "pump": "^0.3.1",
     "optimist": "^0.6.1",
-    "peerflix-engine": "^0.2.0",
+    "peerflix-engine": "^0.2.3",
     "read-torrent": "^0.2.0"
   }
 }
