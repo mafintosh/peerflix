@@ -15,6 +15,7 @@
     "pump": "^0.3.1",
     "optimist": "^0.6.1",
     "peerflix-engine": "^0.2.3",
-    "read-torrent": "^0.2.0"
+    "read-torrent": "^0.2.0",
+    "windows-no-runnable": "~0.0.6"
   }
 }
