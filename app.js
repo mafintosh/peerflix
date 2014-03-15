@@ -85,7 +85,7 @@ readTorrent(filename, function(err, torrent) {
 			} catch (e) {
 				try {
 					key = registry('HKLM/Software/Wow6432Node/VideoLAN/VLC');
-				} catch (e) { console.log("VLC not found"); }
+				} catch (e) {}
 			}
 
 			if (!!key) {
