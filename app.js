@@ -77,7 +77,27 @@ readTorrent(filename, function(err, torrent) {
 		var href = 'http://'+address()+':'+engine.server.address().port+'/';
 		var filename = engine.server.index.name.split('/').pop().replace(/\{|\}/g, '');
 
-		if (argv.vlc) proc.exec('vlc '+href+' '+VLC_ARGS+' || /Applications/VLC.app/Contents/MacOS/VLC '+href+' '+VLC_ARGS);
+		if (process.platform === 'win32') {
+			var registry = require('windows-no-runnable').registry;
+			var key;
+			try {
+				key = registry('HKLM/Software/VideoLAN/VLC');
+			} catch (e) {
+				try {
+					key = registry('HKLM/Software/Wow6432Node/VideoLAN/VLC');
+				} catch (e) {}
+			}
+
+			if (!!key) {
+				var vlcPath = key["(Default)"].value;
+				VLC_ARGS = VLC_ARGS.split(' ');
+				VLC_ARGS.unshift(href);
+				if (argv.vlc) proc.execFile(vlcPath, VLC_ARGS);
+			}
+		} else {
+			if (argv.vlc) proc.exec('vlc '+href+' '+VLC_ARGS+' || /Applications/VLC.app/Contents/MacOS/VLC '+href+' '+VLC_ARGS);
+		}
+
 		if (argv.omx) proc.exec(OMX_EXEC+' '+href);
 		if (argv.mplayer) proc.exec(MPLAYER_EXEC+' '+href);
 		if (argv.quiet) return console.log('server is listening on '+href);
