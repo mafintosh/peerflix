@@ -1,4 +1,4 @@
-var engine = require('peerflix-engine');
+var engine = require('torrent-stream');
 var http = require('http');
 var rangeParser = require('range-parser');
 var url = require('url');

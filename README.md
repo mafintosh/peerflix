@@ -41,7 +41,7 @@ engine.server.listen(8888);
 The above example will start a http server that listens on port 8888 and serves the files inside the torrent as http requests.
 A request to `http://localhost:8888` will serve the index file (which defaults to the biggest file).
 
-For more information see [peerflix-engine](https://github.com/mafintosh/peerflix-engine)
+For more information see [torrent-stream](https://github.com/mafintosh/torrent-stream)
 
 ## License
 
