@@ -19,6 +19,7 @@ var argv = optimist
 	.alias('i', 'index').describe('i', 'changed streamed file (index)')
 	.alias('t', 'subtitles').describe('t', 'load subtitles file')
 	.alias('q', 'quiet').describe('q', 'be quiet')
+	.alias('1', 'once').describe('1', 'only run for one connection')
 	.alias('v', 'vlc').describe('v', 'autoplay in vlc*')
 	.alias('m', 'mplayer').describe('m', 'autoplay in mplayer**')
 	.alias('o', 'omx').describe('o', 'autoplay in omx**')
@@ -122,7 +123,21 @@ readTorrent(filename, function(err, torrent) {
 	});
 
 	engine.server.once('error', function() {
-		engine.server.listen(0);
+		if (argv.once) {
+			engine.destroy(function() {
+				process.exit(0);
+			});
+		} else {
+			engine.server.listen(0);
+		}
+	});
+
+	engine.server.once('clientError', function() {
+		if (argv.once) {
+			engine.destroy(function() {
+				process.exit(0);
+			});
+		}
 	});
 
 	engine.server.listen(argv.port || 8888);
