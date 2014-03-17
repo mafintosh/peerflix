@@ -1,14 +1,18 @@
 # peerflix
 
-Streaming torrent client for node.js
+Streaming torrent client for Node.js
 
 	npm install -g peerflix
 
-This will install a terminal app called `peerflix`.
+## Note
+
+Peerflix is an experimental streaming video client using bittorrent through [torrent-stream](https://github.com/mafintosh/torrent-stream).
+
+It is not under active development, so instead check out [webtorrent](https://github.com/feross/webtorrent) by [@feross](https://github.com/feross).
 
 ## Usage
 
-Simply start it with a torrent file
+To try out peerflix start it with a torrent file
 
 	peerflix http://www.clearbits.net/get/53-star-wreck---in-the-pirkinning.torrent --vlc
 
@@ -25,23 +29,7 @@ To get a full list of available options run
 
 ## Programmatic usage
 
-``` js
-var peerflix = require('peerflix');
-var fs = require('fs');
-
-var torrent = fs.readFileSync('my-test-file.torrent');
-var engine = peerflix(torrent, {
-	connections: 100,
-	path: '/tmp/my-folder'
-});
-
-engine.server.listen(8888);
-```
-
-The above example will start a http server that listens on port 8888 and serves the files inside the torrent as http requests.
-A request to `http://localhost:8888` will serve the index file (which defaults to the biggest file).
-
-For more information see [torrent-stream](https://github.com/mafintosh/torrent-stream)
+If you want to build your own app using streaming bittorent in Node you should checkout [torrent-stream](https://github.com/mafintosh/torrent-stream)
 
 ## License
 
