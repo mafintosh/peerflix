@@ -20,18 +20,18 @@ var argv = optimist
 	.alias('t', 'subtitles').describe('t', 'load subtitles file')
 	.alias('q', 'quiet').describe('q', 'be quiet')
 	.alias('v', 'vlc').describe('v', 'autoplay in vlc*')
-	.alias('m', 'mplayer').describe('m', 'autoplay in mplayer**')
+	.alias('m', 'mplayer').describe('m', 'autoplay in mplayer*')
 	.alias('o', 'omx').describe('o', 'autoplay in omx**')
 	.alias('j', 'jack').describe('j', 'autoplay in omx** using the audio jack')
-	.describe('path', 'change buffer file path')
+	.alias('f', 'path').describe('f', 'change buffer file path')
 	.argv;
 
 var filename = argv._[0];
 
 if (!filename) {
 	optimist.showHelp();
-	console.error('*Autoplay can take several seconds to start since it needs to wait for the first piece');
-	console.error('*OMX player is the default Raspbian video player\n');
+	console.error('* Autoplay can take several seconds to start since it needs to wait for the first piece');
+	console.error('** OMX player is the default Raspbian video player\n');
 	process.exit(1);
 }
 
