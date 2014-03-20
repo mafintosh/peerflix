@@ -12,7 +12,7 @@ It is not under active development, so instead check out [webtorrent](https://gi
 
 ## Usage
 
-To try out peerflix start it with a torrent file
+To try out peerflix start it with a magnet link or torrent file
 
 	peerflix magnet:?xt=urn:btih:ef330b39f4801d25b4245212e75a38634bfc856e --vlc
 
