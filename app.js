@@ -23,7 +23,6 @@ var argv = optimist
 	.alias('m', 'mplayer').describe('m', 'autoplay in mplayer**')
 	.alias('o', 'omx').describe('o', 'autoplay in omx**')
 	.alias('j', 'jack').describe('j', 'autoplay in omx** using the audio jack')
-	.describe('clean', 'remove the tmp buffer file after peerflix closes')
 	.describe('path', 'change buffer file path')
 	.argv;
 
@@ -146,11 +145,4 @@ readTorrent(filename, function(err, torrent) {
 	});
 
 	engine.server.listen(argv.port || 8888);
-	if (!argv.clean) return engine.verify();
-
-	process.on('SIGINT', function() {
-		engine.destroy(function() {
-			process.exit(0);
-		});
-	});
 });
