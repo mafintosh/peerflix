@@ -14,7 +14,7 @@ It is not under active development, so instead check out [webtorrent](https://gi
 
 To try out peerflix start it with a torrent file
 
-	peerflix http://www.clearbits.net/get/53-star-wreck---in-the-pirkinning.torrent --vlc
+	peerflix magnet:?xt=urn:btih:ef330b39f4801d25b4245212e75a38634bfc856e --vlc
 
 `peerflix` will print a terminal interface. this first line contains a address to a http server.
 Using `--vlc` will open the file in vlc when it's ready to stream.
