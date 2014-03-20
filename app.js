@@ -25,6 +25,7 @@ var argv = optimist
 	.alias('o', 'omx').describe('o', 'autoplay in omx**')
 	.alias('j', 'jack').describe('j', 'autoplay in omx** using the audio jack')
 	.alias('f', 'path').describe('f', 'change buffer file path')
+	.alias('b', 'blocklist').describe('b', 'use the specified blocklist')
 	.argv;
 
 var filename = argv._[0];

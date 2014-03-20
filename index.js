@@ -1,9 +1,27 @@
 var engine = require('torrent-stream');
 var http = require('http');
+var fs = require('fs');
 var rangeParser = require('range-parser');
 var url = require('url');
 var mime = require('mime');
 var pump = require('pump');
+
+var parseBlocklist = function(filename) {
+	// TODO: support gzipped files
+	var blocklistData = fs.readFileSync(opts.blocklist, { encoding: 'utf8' });
+	var blocklist = [];
+	blocklistData.split('\n').forEach(function(line) {
+		var match = null;
+		if ((match = /^\s*([^#].*)\s*:\s*([a-f0-9.:]+?)\s*-\s*([a-f0-9.:]+?)\s*$/.exec(line))) {
+			opts.blocklist.push({
+				reason: match[1],
+				startAddress: match[2],
+				endAddress: match[3]
+			});
+		}
+	});
+	return blocklist;
+};
 
 var createServer = function(e, index) {
 	var server = http.createServer();
@@ -63,6 +81,9 @@ var createServer = function(e, index) {
 
 module.exports = function(torrent, opts) {
 	if (!opts) opts = {};
+	if (opts.blocklist) {
+		opts.blocklist = parseBlocklist(opts.blocklist);
+	}
 	var e = engine(torrent, opts);
 	if (!opts.list) {
 		e.server = createServer(e, opts.index);
