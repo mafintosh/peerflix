@@ -64,6 +64,8 @@ var createServer = function(e, index) {
 module.exports = function(torrent, opts) {
 	if (!opts) opts = {};
 	var e = engine(torrent, opts);
-	e.server = createServer(e, opts.index);
+	if (!opts.list) {
+		e.server = createServer(e, opts.index);
+	};
 	return e;
 };
