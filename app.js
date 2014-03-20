@@ -17,6 +17,7 @@ var argv = optimist
 	.alias('c', 'connections').describe('c', 'max connected peers').default('c', os.cpus().length > 1 ? 100 : 30)
 	.alias('p', 'port').describe('p', 'change the http port').default('p', 8888)
 	.alias('i', 'index').describe('i', 'changed streamed file (index)')
+	.alias('l', 'list').describe('l', 'list available files with corresponding index')
 	.alias('t', 'subtitles').describe('t', 'load subtitles file')
 	.alias('q', 'quiet').describe('q', 'be quiet')
 	.alias('v', 'vlc').describe('v', 'autoplay in vlc*')
@@ -49,6 +50,18 @@ var noop = function() {};
 var ontorrent = function(torrent) {
 	var engine = peerflix(torrent, argv);
 	var hotswaps = 0;
+
+if (argv.list) {
+	var onready = function() {
+		engine.files.forEach(function(file, i, files) {
+			clivas.line('{3+bold:'+i+'} : {magenta:'+file.name+'}');
+		})
+		process.exit(0);
+	};
+	if (engine.torrent) onready();
+	else engine.on('ready', onready);
+	return;
+}
 
 	engine.on('hotswap', function() {
 		hotswaps++;
