@@ -8,16 +8,21 @@ var pump = require('pump');
 var createServer = function(e, index) {
 	var server = http.createServer();
 
-	if (typeof index !== 'number') {
-		index = e.files.reduce(function(a, b) {
-			return a.length > b.length ? a : b;
-		});
-		index = e.files.indexOf(index);
-	}
+	var onready = function() {
+		if (typeof index !== 'number') {
+			index = e.files.reduce(function(a, b) {
+				return a.length > b.length ? a : b;
+			});
+			index = e.files.indexOf(index);
+		}
 
-	e.files[index].select();
+		e.files[index].select();
+		server.index = e.files[index];
+	};
 
-	server.index = e.files[index];
+	if (e.torrent) onready();
+	else e.on('ready', onready);
+
 	server.on('request', function(request, response) {
 		var u = url.parse(request.url);
 

@@ -13,7 +13,7 @@ var peerflix = require('./');
 var path = require('path');
 
 var argv = optimist
-	.usage('Usage: $0 torrent_file_or_url [options]')
+	.usage('Usage: $0 magnet-link-or-torrent [options]')
 	.alias('c', 'connections').describe('c', 'max connected peers').default('c', os.cpus().length > 1 ? 100 : 30)
 	.alias('p', 'port').describe('p', 'change the http port').default('p', 8888)
 	.alias('i', 'index').describe('i', 'changed streamed file (index)')
@@ -46,9 +46,7 @@ if (argv.t)	{
 
 var noop = function() {};
 
-readTorrent(filename, function(err, torrent) {
-	if (err) throw err;
-
+var ontorrent = function(torrent) {
 	var engine = peerflix(torrent, argv);
 	var hotswaps = 0;
 
@@ -144,5 +142,18 @@ readTorrent(filename, function(err, torrent) {
 		engine.server.listen(0);
 	});
 
-	engine.server.listen(argv.port || 8888);
+	engine.on('ready', function() {
+		engine.server.listen(argv.port || 8888);
+	});
+};
+
+if (/^magnet:/.test(filename)) return ontorrent(filename);
+
+readTorrent(filename, function(err, torrent) {
+	if (err) {
+		console.error(err.message);
+		process.exit(1);
+	}
+
+	ontorrent(torrent);
 });
