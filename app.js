@@ -100,7 +100,7 @@ if (argv.list) {
 			}
 
 			if (!!key) {
-				var vlcPath = key["(Default)"].value;
+				var vlcPath = ( key['(Default)'] || function(){for (var name in key) if (name[0] === '(') return key[name];}() ) .value;
 				VLC_ARGS = VLC_ARGS.split(' ');
 				VLC_ARGS.unshift(href);
 				if (argv.vlc) proc.execFile(vlcPath, VLC_ARGS);
