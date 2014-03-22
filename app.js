@@ -161,6 +161,7 @@ if (argv.list) {
 	});
 
 	var onmagnet = function() {
+		clivas.clear();
 		clivas.line('{green:fetching torrent metadata from} {bold:'+engine.swarm.wires.length+'} {green:peers}');
 	};
 
