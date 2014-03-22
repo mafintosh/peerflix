@@ -118,7 +118,8 @@ if (argv.list) {
 		};
 
 		process.stdout.write(new Buffer('G1tIG1sySg==', 'base64')); // clear for drawing
-		setInterval(function() {
+
+		var draw = function() {
 			var unchoked = engine.swarm.wires.filter(active);
 			var runtime = Math.floor((Date.now() - started) / 1000);
 			var linesremaining = clivas.height;
@@ -149,14 +150,27 @@ if (argv.list) {
 
 			clivas.line('{80:}');
 			clivas.flush();
-		}, 500);
+		};
+
+		setInterval(draw, 500);
+		draw();
 	});
 
 	engine.server.once('error', function() {
 		engine.server.listen(0);
 	});
 
+	var onmagnet = function() {
+		clivas.line('{green:fetching torrent metadata from} {bold:'+engine.swarm.wires.length+'} {green:peers}');
+	};
+
+	if (typeof torrent === 'string' && torrent.indexOf('magnet:') === 0) {
+		onmagnet();
+		engine.swarm.on('wire', onmagnet);
+	}
+
 	engine.on('ready', function() {
+		engine.swarm.removeListener('wire', onmagnet);
 		engine.server.listen(argv.port || 8888);
 	});
 };
