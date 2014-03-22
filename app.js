@@ -165,7 +165,7 @@ if (argv.list) {
 		clivas.line('{green:fetching torrent metadata from} {bold:'+engine.swarm.wires.length+'} {green:peers}');
 	};
 
-	if (typeof torrent === 'string' && torrent.indexOf('magnet:') === 0) {
+	if (typeof torrent === 'string' && torrent.indexOf('magnet:') === 0 && !argv.quiet) {
 		onmagnet();
 		engine.swarm.on('wire', onmagnet);
 	}
