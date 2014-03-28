@@ -103,7 +103,6 @@ if (argv.list) {
 
 			if (!!key) {
 				var vlcPath = key["InstallDir"].value + path.sep + 'vlc';
-				console.log(vlcPath);
 				VLC_ARGS = VLC_ARGS.split(' ');
 				VLC_ARGS.unshift(href);
 				if (argv.vlc) proc.execFile(vlcPath, VLC_ARGS);
