@@ -93,17 +93,17 @@ if (argv.list) {
 			var key;
 			try {
 				key = registry('HKLM/Software/VideoLAN/VLC');
-				if (Object.getOwnPropertyNames(key).length === 0) {
+
+				if (Object.keys(key).length === 0) {
 					try {
 						key = registry('HKLM/Software/Wow6432Node/VideoLAN/VLC');
-						console.log(key);
 					} catch (e) {}
 				}
-			} catch (e) {
-			}
+			} catch (e) {}
 
 			if (!!key) {
-				var vlcPath = key["(Default)"].value;
+				var vlcPath = key["InstallDir"].value + path.sep + 'vlc';
+				console.log(vlcPath);
 				VLC_ARGS = VLC_ARGS.split(' ');
 				VLC_ARGS.unshift(href);
 				if (argv.vlc) proc.execFile(vlcPath, VLC_ARGS);
