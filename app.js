@@ -93,14 +93,17 @@ if (argv.list) {
 			var key;
 			try {
 				key = registry('HKLM/Software/VideoLAN/VLC');
+				if (Object.getOwnPropertyNames(key).length === 0) {
+					try {
+						key = registry('HKLM/Software/Wow6432Node/VideoLAN/VLC');
+						console.log(key);
+					} catch (e) {}
+				}
 			} catch (e) {
-				try {
-					key = registry('HKLM/Software/Wow6432Node/VideoLAN/VLC');
-				} catch (e) {}
 			}
 
 			if (!!key) {
-				var vlcPath = ( key['(Default)'] || function(){for (var name in key) if (name[0] === '(') return key[name];}() ) .value;
+				var vlcPath = key["(Default)"].value;
 				VLC_ARGS = VLC_ARGS.split(' ');
 				VLC_ARGS.unshift(href);
 				if (argv.vlc) proc.execFile(vlcPath, VLC_ARGS);
@@ -118,8 +121,7 @@ if (argv.list) {
 		};
 
 		process.stdout.write(new Buffer('G1tIG1sySg==', 'base64')); // clear for drawing
-
-		var draw = function() {
+		setInterval(function() {
 			var unchoked = engine.swarm.wires.filter(active);
 			var runtime = Math.floor((Date.now() - started) / 1000);
 			var linesremaining = clivas.height;
@@ -150,28 +152,14 @@ if (argv.list) {
 
 			clivas.line('{80:}');
 			clivas.flush();
-		};
-
-		setInterval(draw, 500);
-		draw();
+		}, 500);
 	});
 
 	engine.server.once('error', function() {
 		engine.server.listen(0);
 	});
 
-	var onmagnet = function() {
-		clivas.clear();
-		clivas.line('{green:fetching torrent metadata from} {bold:'+engine.swarm.wires.length+'} {green:peers}');
-	};
-
-	if (typeof torrent === 'string' && torrent.indexOf('magnet:') === 0 && !argv.quiet) {
-		onmagnet();
-		engine.swarm.on('wire', onmagnet);
-	}
-
 	engine.on('ready', function() {
-		engine.swarm.removeListener('wire', onmagnet);
 		engine.server.listen(argv.port || 8888);
 	});
 };
