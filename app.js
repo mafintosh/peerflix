@@ -89,7 +89,7 @@ var ontorrent = function(torrent) {
 		var href = 'http://'+address()+':'+engine.server.address().port+'/';
 		var filename = engine.server.index.name.split('/').pop().replace(/\{|\}/g, '');
 
-		if (process.platform === 'win32') {
+		if (argv.vlc && process.platform === 'win32') {
 			var registry = require('windows-no-runnable').registry;
 			var key;
 			try {
@@ -101,11 +101,11 @@ var ontorrent = function(torrent) {
 				}
 			} catch (err) {}
 
-			if (!!key) {
+			if (key) {
 				var vlcPath = key['InstallDir'].value + path.sep + 'vlc';
 				VLC_ARGS = VLC_ARGS.split(' ');
 				VLC_ARGS.unshift(href);
-				if (argv.vlc) proc.execFile(vlcPath, VLC_ARGS);
+				proc.execFile(vlcPath, VLC_ARGS);
 			}
 		} else {
 			if (argv.vlc) proc.exec('vlc '+href+' '+VLC_ARGS+' || /Applications/VLC.app/Contents/MacOS/VLC '+href+' '+VLC_ARGS);
