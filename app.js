@@ -26,7 +26,13 @@ var argv = optimist
 	.alias('j', 'jack').describe('j', 'autoplay in omx** using the audio jack')
 	.alias('f', 'path').describe('f', 'change buffer file path')
 	.alias('b', 'blocklist').describe('b', 'use the specified blocklist')
+	.describe('version', 'prints current version')
 	.argv;
+
+if (argv.version) {
+	console.error(require('./package').version);
+	process.exit(0);
+}
 
 var filename = argv._[0];
 
