@@ -92,14 +92,15 @@ var ontorrent = function(torrent) {
 		if (argv.vlc && process.platform === 'win32') {
 			var registry = require('windows-no-runnable').registry;
 			var key;
-			try {
-				key = registry('HKLM/Software/VideoLAN/VLC');
-				if (Object.getOwnPropertyNames(key).length === 0) {
-					try {
-						key = registry('HKLM/Software/Wow6432Node/VideoLAN/VLC');
-					} catch (e) {}
-				}
-			} catch (err) {}
+			if (process.arch === 'x64') {
+				try {
+					key = registry('HKLM/Software/Wow6432Node/VideoLAN/VLC');
+				} catch (e) {}
+			} else {
+				try {
+					key = registry('HKLM/Software/VideoLAN/VLC');
+				} catch (err) {}
+			}
 
 			if (key) {
 				var vlcPath = key['InstallDir'].value + path.sep + 'vlc';
