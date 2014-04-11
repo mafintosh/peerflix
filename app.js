@@ -11,6 +11,8 @@ var proc = require('child_process');
 var peerflix = require('./');
 
 var path = require('path');
+var intervalReference;
+var vlc;
 
 var argv = optimist
 	.usage('Usage: $0 magnet-link-or-torrent [options]')
@@ -63,7 +65,7 @@ var ontorrent = function(torrent) {
 		var onready = function() {
 			engine.files.forEach(function(file, i, files) {
 				clivas.line('{3+bold:'+i+'} : {magenta:'+file.name+'}');
-			})
+			});
 			process.exit(0);
 		};
 		if (engine.torrent) onready();
@@ -115,8 +117,20 @@ var ontorrent = function(torrent) {
 				proc.execFile(vlcPath, VLC_ARGS);
 			}
 		} else {
-			if (argv.vlc) proc.exec('vlc '+href+' '+VLC_ARGS+' || /Applications/VLC.app/Contents/MacOS/VLC '+href+' '+VLC_ARGS);
+			if (argv.vlc) {
+				console.log('OPENING VLC: vlc ' + href + ' ' + VLC_ARGS); 
+				proc.exec('vlc '+href+' '+VLC_ARGS+' || /Applications/VLC.app/Contents/MacOS/VLC '+href+' '+VLC_ARGS);
+			}
 		}
+
+		console.log('OPENING VLC: vlc ' + href + ' ' + VLC_ARGS); 
+		vlc = proc.exec('vlc '+href+' '+VLC_ARGS+' || /Applications/VLC.app/Contents/MacOS/VLC '+href+' '+VLC_ARGS, function(error, stdout, stderror){
+			if (error) quit();
+		});
+		vlc.on('exit', function(code){
+			console.log("\n[ VLC ]--> EXIT code: " + code);
+			process.exit(0);
+		});
 
 		if (argv.omx) proc.exec(OMX_EXEC+' '+href);
 		if (argv.mplayer) proc.exec(MPLAYER_EXEC+' '+href);
@@ -161,7 +175,7 @@ var ontorrent = function(torrent) {
 			clivas.flush();
 		};
 
-		setInterval(draw, 500);
+		intervalReference = setInterval(draw, 500);
 		draw();
 	});
 
