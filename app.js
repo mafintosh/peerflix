@@ -119,14 +119,12 @@ var ontorrent = function(torrent) {
 		} else {
 			if (argv.vlc) {
 				console.log('OPENING VLC: vlc ' + href + ' ' + VLC_ARGS); 
-				proc.exec('vlc '+href+' '+VLC_ARGS+' || /Applications/VLC.app/Contents/MacOS/VLC '+href+' '+VLC_ARGS);
+				vlc = proc.exec('vlc '+href+' '+VLC_ARGS+' || /Applications/VLC.app/Contents/MacOS/VLC '+href+' '+VLC_ARGS, function(error, stdout, stderror){
+					if (error) quit();
+				});
 			}
 		}
 
-		console.log('OPENING VLC: vlc ' + href + ' ' + VLC_ARGS); 
-		vlc = proc.exec('vlc '+href+' '+VLC_ARGS+' || /Applications/VLC.app/Contents/MacOS/VLC '+href+' '+VLC_ARGS, function(error, stdout, stderror){
-			if (error) quit();
-		});
 		vlc.on('exit', function(code){
 			console.log("\n[ VLC ]--> EXIT code: " + code);
 			process.exit(0);
