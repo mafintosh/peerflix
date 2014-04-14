@@ -8,12 +8,12 @@ var pump = require('pump');
 
 var parseBlocklist = function(filename) {
 	// TODO: support gzipped files
-	var blocklistData = fs.readFileSync(opts.blocklist, { encoding: 'utf8' });
+	var blocklistData = fs.readFileSync(filename, { encoding: 'utf8' });
 	var blocklist = [];
 	blocklistData.split('\n').forEach(function(line) {
 		var match = null;
 		if ((match = /^\s*([^#].*)\s*:\s*([a-f0-9.:]+?)\s*-\s*([a-f0-9.:]+?)\s*$/.exec(line))) {
-			opts.blocklist.push({
+			blocklist.push({
 				reason: match[1],
 				startAddress: match[2],
 				endAddress: match[3]
