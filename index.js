@@ -80,14 +80,6 @@ var createServer = function(e, index) {
 	return server;
 };
 
-//---------------------------------------------------------------
-//exit on ctrl-c
-process.on('SIGINT', function() {
-    console.log("\n[ QUIT ]--> Caught interrupt signal on SERVER module");
-	process.exit();
-});
-//---------------------------------------------------------------
-
 module.exports = function(torrent, opts) {
 	if (!opts) opts = {};
 	if (opts.blocklist) {
