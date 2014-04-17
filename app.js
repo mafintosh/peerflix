@@ -11,8 +11,6 @@ var proc = require('child_process');
 var peerflix = require('./');
 
 var path = require('path');
-var intervalReference;
-var vlc;
 
 var argv = optimist
 	.usage('Usage: $0 magnet-link-or-torrent [options]')
@@ -118,13 +116,13 @@ var ontorrent = function(torrent) {
 			}
 		} else {
 			if (argv.vlc) {
-				console.log('OPENING VLC: vlc ' + href + ' ' + VLC_ARGS); 
-				vlc = proc.exec('vlc '+href+' '+VLC_ARGS+' || /Applications/VLC.app/Contents/MacOS/VLC '+href+' '+VLC_ARGS, function(error, stdout, stderror){
-					if (error) quit();
+				var vlc = proc.exec('vlc '+href+' '+VLC_ARGS+' || /Applications/VLC.app/Contents/MacOS/VLC '+href+' '+VLC_ARGS, function(error, stdout, stderror){
+					if (error) {
+						process.exit(0);
+					}
 				});
 
-				vlc.on('exit', function(code){
-					console.log("\n[ VLC ]--> EXIT code: " + code);
+				vlc.on('exit', function(){
 					process.exit(0);
 				});
 			}
@@ -173,7 +171,7 @@ var ontorrent = function(torrent) {
 			clivas.flush();
 		};
 
-		intervalReference = setInterval(draw, 500);
+		setInterval(draw, 500);
 		draw();
 	});
 
