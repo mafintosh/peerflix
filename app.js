@@ -63,7 +63,7 @@ var ontorrent = function(torrent) {
 		var onready = function() {
 			engine.files.forEach(function(file, i, files) {
 				clivas.line('{3+bold:'+i+'} : {magenta:'+file.name+'}');
-			})
+			});
 			process.exit(0);
 		};
 		if (engine.torrent) onready();
@@ -115,7 +115,17 @@ var ontorrent = function(torrent) {
 				proc.execFile(vlcPath, VLC_ARGS);
 			}
 		} else {
-			if (argv.vlc) proc.exec('vlc '+href+' '+VLC_ARGS+' || /Applications/VLC.app/Contents/MacOS/VLC '+href+' '+VLC_ARGS);
+			if (argv.vlc) {
+				var vlc = proc.exec('vlc '+href+' '+VLC_ARGS+' || /Applications/VLC.app/Contents/MacOS/VLC '+href+' '+VLC_ARGS, function(error, stdout, stderror){
+					if (error) {
+						process.exit(0);
+					}
+				});
+
+				vlc.on('exit', function(){
+					process.exit(0);
+				});
+			}
 		}
 
 		if (argv.omx) proc.exec(OMX_EXEC+' '+href);

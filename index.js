@@ -23,8 +23,9 @@ var parseBlocklist = function(filename) {
 	return blocklist;
 };
 
+var server;
 var createServer = function(e, index) {
-	var server = http.createServer();
+	 server = http.createServer();
 
 	var onready = function() {
 		if (typeof index !== 'number') {
@@ -75,7 +76,7 @@ var createServer = function(e, index) {
 		if (request.method === 'HEAD') return response.end();
 		pump(file.createReadStream(range), response);
 	});
-
+	
 	return server;
 };
 
