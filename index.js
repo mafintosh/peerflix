@@ -1,4 +1,4 @@
-var engine = require('torrent-stream');
+var torrentStream = require('torrent-stream');
 var http = require('http');
 var fs = require('fs');
 var rangeParser = require('range-parser');
@@ -25,7 +25,7 @@ var parseBlocklist = function(filename) {
 
 var server;
 var createServer = function(e, index) {
-	 server = http.createServer();
+	server = http.createServer();
 
 	var onready = function() {
 		if (typeof index !== 'number') {
@@ -82,12 +82,23 @@ var createServer = function(e, index) {
 
 module.exports = function(torrent, opts) {
 	if (!opts) opts = {};
-	if (opts.blocklist) {
-		opts.blocklist = parseBlocklist(opts.blocklist);
-	}
-	var e = engine(torrent, opts);
-	if (!opts.list) {
-		e.server = createServer(e, opts.index);
-	};
-	return e;
+
+	// Parse blocklist
+	if (opts.blocklist) opts.blocklist = parseBlocklist(opts.blocklist);
+
+	var engine = torrentStream(torrent, opts);
+
+	// Just want torrent-stream to list files.
+	if (opts.list) return engine;
+
+	// Pause/Resume downloading as needed
+	engine.on('uninterested', function() { engine.swarm.pause();  });
+	engine.on('interested',   function() { engine.swarm.resume(); });
+
+	engine.server = createServer(engine, opts.index);
+
+	// Listen when torrent-stream is ready, by default a random port.
+	engine.on('ready', function() { engine.server.listen(opts.port || 0); });
+
+	return engine;
 };

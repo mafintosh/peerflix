@@ -4,7 +4,6 @@ var optimist = require('optimist');
 var clivas = require('clivas');
 var numeral = require('numeral');
 var os = require('os');
-var fs = require('fs');
 var address = require('network-address');
 var readTorrent = require('read-torrent');
 var proc = require('child_process');
@@ -82,14 +81,6 @@ var ontorrent = function(torrent) {
 	var active = function(wire) {
 		return !wire.peerChoking;
 	};
-
-	engine.on('uninterested', function() {
-		engine.swarm.pause();
-	});
-
-	engine.on('interested', function() {
-		engine.swarm.resume();
-	});
 
 	engine.server.on('listening', function() {
 		var href = 'http://'+address()+':'+engine.server.address().port+'/';
@@ -191,7 +182,6 @@ var ontorrent = function(torrent) {
 
 	engine.on('ready', function() {
 		engine.swarm.removeListener('wire', onmagnet);
-		engine.server.listen(argv.port || 8888);
 	});
 };
 
