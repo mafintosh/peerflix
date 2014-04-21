@@ -25,6 +25,7 @@ var argv = optimist
 	.alias('j', 'jack').describe('j', 'autoplay in omx** using the audio jack')
 	.alias('f', 'path').describe('f', 'change buffer file path')
 	.alias('b', 'blocklist').describe('b', 'use the specified blocklist')
+	.alias('n', 'no-quit').describe('n', 'do not quit peerflix on vlc exit')
 	.describe('version', 'prints current version')
 	.argv;
 
@@ -114,7 +115,7 @@ var ontorrent = function(torrent) {
 				});
 
 				vlc.on('exit', function(){
-					process.exit(0);
+					if (!argv.n && argv.quit !== false) process.exit(0);
 				});
 			}
 		}
