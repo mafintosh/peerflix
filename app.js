@@ -5,7 +5,6 @@ var clivas = require('clivas');
 var numeral = require('numeral');
 var os = require('os');
 var address = require('network-address');
-var readTorrent = require('read-torrent');
 var proc = require('child_process');
 var peerflix = require('./');
 
@@ -52,146 +51,136 @@ if (argv.t) {
 	MPLAYER_EXEC += ' -sub ' + argv.t;
 }
 
-var noop = function() {};
+var engine = peerflix(filename, argv);
 
-var ontorrent = function(torrent) {
-	var engine = peerflix(torrent, argv);
-	var hotswaps = 0;
+engine.on('error', function(err) {
+	console.error(err);
+	process.exit(1);
+})
 
-	if (argv.list) {
-		var onready = function() {
-			engine.files.forEach(function(file, i, files) {
-				clivas.line('{3+bold:'+i+'} : {magenta:'+file.name+'}');
-			});
-			process.exit(0);
-		};
-		if (engine.torrent) onready();
-		else engine.on('ready', onready);
-		return;
-	}
-
-	engine.on('hotswap', function() {
-		hotswaps++;
-	});
-
-	var started = Date.now();
-	var wires = engine.swarm.wires;
-	var swarm = engine.swarm;
-
-	var active = function(wire) {
-		return !wire.peerChoking;
-	};
-
-	engine.server.on('listening', function() {
-		var href = 'http://'+address()+':'+engine.server.address().port+'/';
-		var filename = engine.server.index.name.split('/').pop().replace(/\{|\}/g, '');
-
-		if (argv.vlc && process.platform === 'win32') {
-			var registry = require('windows-no-runnable').registry;
-			var key;
-			if (process.arch === 'x64') {
-				try {
-					key = registry('HKLM/Software/Wow6432Node/VideoLAN/VLC');
-				} catch (e) {}
-			} else {
-				try {
-					key = registry('HKLM/Software/VideoLAN/VLC');
-				} catch (err) {}
-			}
-
-			if (key) {
-				var vlcPath = key['InstallDir'].value + path.sep + 'vlc';
-				VLC_ARGS = VLC_ARGS.split(' ');
-				VLC_ARGS.unshift(href);
-				proc.execFile(vlcPath, VLC_ARGS);
-			}
-		} else {
-			if (argv.vlc) {
-				var vlc = proc.exec('vlc '+href+' '+VLC_ARGS+' || /Applications/VLC.app/Contents/MacOS/VLC '+href+' '+VLC_ARGS, function(error, stdout, stderror){
-					if (error) {
-						process.exit(0);
-					}
-				});
-
-				vlc.on('exit', function(){
-					process.exit(0);
-				});
-			}
-		}
-
-		if (argv.omx) proc.exec(OMX_EXEC+' '+href);
-		if (argv.mplayer) proc.exec(MPLAYER_EXEC+' '+href);
-		if (argv.quiet) return console.log('server is listening on '+href);
-
-		var bytes = function(num) {
-			return numeral(num).format('0.0b');
-		};
-
-		process.stdout.write(new Buffer('G1tIG1sySg==', 'base64')); // clear for drawing
-
-		var draw = function() {
-			var unchoked = engine.swarm.wires.filter(active);
-			var runtime = Math.floor((Date.now() - started) / 1000);
-			var linesremaining = clivas.height;
-			var peerslisted = 0;
-
-			clivas.clear();
-			clivas.line('{green:open} {bold:vlc} {green:and enter} {bold:'+href+'} {green:as the network address}');
-			clivas.line('');
-			clivas.line('{yellow:info} {green:streaming} {bold:'+filename+'} {green:-} {bold:'+bytes(swarm.downloadSpeed())+'/s} {green:from} {bold:'+unchoked.length +'/'+wires.length+'} {green:peers}    ');
-			clivas.line('{yellow:info} {green:downloaded} {bold:'+bytes(swarm.downloaded)+'} {green:and uploaded }{bold:'+bytes(swarm.uploaded)+'} {green:in }{bold:'+runtime+'s} {green:with} {bold:'+hotswaps+'} {green:hotswaps}     ');
-			clivas.line('{yellow:info} {green:peer queue size is} {bold:'+swarm.queued+'}     ');
-			clivas.line('{80:}');
-			linesremaining -= 8;
-
-			wires.every(function(wire) {
-				var tags = [];
-				if (wire.peerChoking) tags.push('choked');
-				clivas.line('{25+magenta:'+wire.peerAddress+'} {10:'+bytes(wire.downloaded)+'} {10+cyan:'+bytes(wire.downloadSpeed())+'/s} {15+grey:'+tags.join(', ')+'}   ');
-				peerslisted++;
-				return linesremaining-peerslisted > 4;
-			});
-			linesremaining -= peerslisted;
-
-			if (wires.length > peerslisted) {
-				clivas.line('{80:}');
-				clivas.line('... and '+(wires.length-peerslisted)+' more     ');
-			}
-
-			clivas.line('{80:}');
-			clivas.flush();
-		};
-
-		setInterval(draw, 500);
-		draw();
-	});
-
-	engine.server.once('error', function() {
-		engine.server.listen(0);
-	});
-
-	var onmagnet = function() {
+// Display Loading metadata..
+engine.on('init', function() {
+	var loading = function() {
 		clivas.clear();
 		clivas.line('{green:fetching torrent metadata from} {bold:'+engine.swarm.wires.length+'} {green:peers}');
 	};
-
-	if (typeof torrent === 'string' && torrent.indexOf('magnet:') === 0 && !argv.quiet) {
-		onmagnet();
-		engine.swarm.on('wire', onmagnet);
-	}
-
-	engine.on('ready', function() {
-		engine.swarm.removeListener('wire', onmagnet);
+	loading();
+	engine.swarm.on('wire', loading);
+	engine.on('torrent-metadata', function() {
+		engine.swarm.removeListener('wire', loading)
 	});
+});
+
+
+var hotswaps = 0;
+
+if (argv.list) {
+	var onready = function() {
+		engine.files.forEach(function(file, i, files) {
+			clivas.line('{3+bold:'+i+'} : {magenta:'+file.name+'}');
+		});
+		process.exit(0);
+	};
+	if (engine.torrent) onready();
+	else engine.on('ready', onready);
+	return;
+}
+
+engine.on('hotswap', function() {
+	hotswaps++;
+});
+
+var started = Date.now();
+
+var active = function(wire) {
+	return !wire.peerChoking;
 };
 
-if (/^magnet:/.test(filename)) return ontorrent(filename);
+engine.server.on('listening', function() {
+	var href = 'http://'+address()+':'+engine.server.address().port+'/';
+	var filename = engine.server.index.name.split('/').pop().replace(/\{|\}/g, '');
 
-readTorrent(filename, function(err, torrent) {
-	if (err) {
-		console.error(err.message);
-		process.exit(1);
+	if (argv.vlc && process.platform === 'win32') {
+		var registry = require('windows-no-runnable').registry;
+		var key;
+		if (process.arch === 'x64') {
+			try {
+				key = registry('HKLM/Software/Wow6432Node/VideoLAN/VLC');
+			} catch (e) {}
+		} else {
+			try {
+				key = registry('HKLM/Software/VideoLAN/VLC');
+			} catch (err) {}
+		}
+
+		if (key) {
+			var vlcPath = key['InstallDir'].value + path.sep + 'vlc';
+			VLC_ARGS = VLC_ARGS.split(' ');
+			VLC_ARGS.unshift(href);
+			proc.execFile(vlcPath, VLC_ARGS);
+		}
+	} else {
+		if (argv.vlc) {
+			var vlc = proc.exec('vlc '+href+' '+VLC_ARGS+' || /Applications/VLC.app/Contents/MacOS/VLC '+href+' '+VLC_ARGS, function(error, stdout, stderror){
+				if (error) {
+					process.exit(0);
+				}
+			});
+
+			vlc.on('exit', function(){
+				process.exit(0);
+			});
+		}
 	}
 
-	ontorrent(torrent);
+	if (argv.omx) proc.exec(OMX_EXEC+' '+href);
+	if (argv.mplayer) proc.exec(MPLAYER_EXEC+' '+href);
+	if (argv.quiet) return console.log('server is listening on '+href);
+
+	var bytes = function(num) {
+		return numeral(num).format('0.0b');
+	};
+
+	process.stdout.write(new Buffer('G1tIG1sySg==', 'base64')); // clear for drawing
+
+	var draw = function() {
+		var unchoked = engine.swarm.wires.filter(active);
+		var runtime = Math.floor((Date.now() - started) / 1000);
+		var linesremaining = clivas.height;
+		var peerslisted = 0;
+
+		clivas.clear();
+		clivas.line('{green:open} {bold:vlc} {green:and enter} {bold:'+href+'} {green:as the network address}');
+		clivas.line('');
+		clivas.line('{yellow:info} {green:streaming} {bold:'+filename+'} {green:-} {bold:'+bytes(engine.swarm.downloadSpeed())+'/s} {green:from} {bold:'+unchoked.length +'/'+engine.swarm.wires.length+'} {green:peers}    ');
+		clivas.line('{yellow:info} {green:downloaded} {bold:'+bytes(engine.swarm.downloaded)+'} {green:and uploaded }{bold:'+bytes(engine.swarm.uploaded)+'} {green:in }{bold:'+runtime+'s} {green:with} {bold:'+hotswaps+'} {green:hotswaps}     ');
+		clivas.line('{yellow:info} {green:peer queue size is} {bold:'+engine.swarm.queued+'}     ');
+		clivas.line('{80:}');
+		linesremaining -= 8;
+
+		engine.swarm.wires.every(function(wire) {
+			var tags = [];
+			if (wire.peerChoking) tags.push('choked');
+			clivas.line('{25+magenta:'+wire.peerAddress+'} {10:'+bytes(wire.downloaded)+'} {10+cyan:'+bytes(wire.downloadSpeed())+'/s} {15+grey:'+tags.join(', ')+'}   ');
+			peerslisted++;
+			return linesremaining-peerslisted > 4;
+		});
+		linesremaining -= peerslisted;
+
+		if (engine.swarm.wires.length > peerslisted) {
+			clivas.line('{80:}');
+			clivas.line('... and '+(engine.swarm.wires.length-peerslisted)+' more     ');
+		}
+
+		clivas.line('{80:}');
+		clivas.flush();
+	};
+
+	setInterval(draw, 500);
+	draw();
+});
+
+// Retry with different port
+engine.server.once('error', function() {
+	engine.server.listen(0);
 });
