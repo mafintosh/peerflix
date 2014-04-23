@@ -44,7 +44,7 @@ var createServer = function(e, index) {
 	var toJSON = function(host) {
 		var list = [];
 		e.files.forEach(function(file, i) {
-			list.push({name:file.name, size:file.size, url:'http://'+host+':'+server.address().port+'/'+i});
+			list.push({name:file.name, length:file.length, url:'http://'+host+'/'+i});
 		});
 		return JSON.stringify(list, null, '  ');
 	};
