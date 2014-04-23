@@ -26,6 +26,7 @@ var argv = optimist
 	.alias('f', 'path').describe('f', 'change buffer file path')
 	.alias('b', 'blocklist').describe('b', 'use the specified blocklist')
 	.alias('n', 'no-quit').describe('n', 'do not quit peerflix on vlc exit')
+	.alias('a', 'all').describe('a', 'select all files in the torrent')
 	.describe('version', 'prints current version')
 	.argv;
 
@@ -183,6 +184,10 @@ var ontorrent = function(torrent) {
 
 	engine.on('ready', function() {
 		engine.swarm.removeListener('wire', onmagnet);
+		if (!argv.all) return;
+		engine.files.forEach(function(file) {
+			file.select();
+		});
 	});
 };
 
