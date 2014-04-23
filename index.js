@@ -23,9 +23,8 @@ var parseBlocklist = function(filename) {
 	return blocklist;
 };
 
-var server;
 var createServer = function(e, index) {
-	server = http.createServer();
+	var server = http.createServer();
 
 	var onready = function() {
 		if (typeof index !== 'number') {
@@ -42,11 +41,20 @@ var createServer = function(e, index) {
 	if (e.torrent) onready();
 	else e.on('ready', onready);
 
+	var toJSON = function(host) {
+		var list = [];
+		e.files.forEach(function(file, i) {
+			list.push({name:file.name, size:file.size, url:'http://'+host+':'+server.address().port+'/'+i});
+		});
+		return JSON.stringify(list, null, '  ');
+	};
+
 	server.on('request', function(request, response) {
 		var u = url.parse(request.url);
 
 		if (u.pathname === '/favicon.ico') return response.end();
 		if (u.pathname === '/') u.pathname = '/'+index;
+		if (u.pathname === '/.json') return response.end(toJSON(request.headers.host || 'localhost'));
 
 		var i = Number(u.pathname.slice(1));
 
