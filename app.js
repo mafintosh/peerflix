@@ -192,11 +192,14 @@ var ontorrent = function(torrent) {
 	});
 	
 	if(argv.remove) {
-		process.on('SIGINT', function() {
+		var remove = function() {
 			engine.remove(function() {
 				process.exit();
 			});
-		});
+		};
+
+		process.on('SIGINT', remove);
+		process.on('SIGTERM', remove);
 	}
 };
 
