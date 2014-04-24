@@ -27,6 +27,7 @@ var argv = optimist
 	.alias('b', 'blocklist').describe('b', 'use the specified blocklist')
 	.alias('n', 'no-quit').describe('n', 'do not quit peerflix on vlc exit')
 	.alias('a', 'all').describe('a', 'select all files in the torrent')
+	.alias('r', 'remove').describe('r', 'remove files on exit')
 	.describe('version', 'prints current version')
 	.argv;
 
@@ -189,6 +190,14 @@ var ontorrent = function(torrent) {
 			file.select();
 		});
 	});
+	
+	if(argv.remove) {
+		process.on('SIGINT', function() {
+			engine.remove(function() {
+				process.exit();
+			});
+		});
+	}
 };
 
 if (/^magnet:/.test(filename)) return ontorrent(filename);
