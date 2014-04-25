@@ -83,6 +83,8 @@ var createServer = function(e, index) {
 
 		if (request.method === 'HEAD') return response.end();
 		pump(file.createReadStream(range), response);
+	}).on('connection', function(socket) {
+	socket.setTimeout(36000000);
 	});
 	
 	return server;
