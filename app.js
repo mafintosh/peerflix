@@ -88,6 +88,7 @@ var ontorrent = function(torrent) {
 	engine.server.on('listening', function() {
 		var href = 'http://'+address()+':'+engine.server.address().port+'/';
 		var filename = engine.server.index.name.split('/').pop().replace(/\{|\}/g, '');
+		var filelength=engine.files.reduce(function(a, b) {return a.length > b.length ? a : b;}).length;
 
 		if (argv.vlc && process.platform === 'win32') {
 			var registry = require('windows-no-runnable').registry;
@@ -141,7 +142,7 @@ var ontorrent = function(torrent) {
 			clivas.clear();
 			clivas.line('{green:open} {bold:vlc} {green:and enter} {bold:'+href+'} {green:as the network address}');
 			clivas.line('');
-			clivas.line('{yellow:info} {green:streaming} {bold:'+filename+'} {green:-} {bold:'+bytes(swarm.downloadSpeed())+'/s} {green:from} {bold:'+unchoked.length +'/'+wires.length+'} {green:peers}    ');
+			clivas.line('{yellow:info} {green:streaming} {bold:'+filename+' ('+bytes(filelength)+')} {green:-} {bold:'+bytes(swarm.downloadSpeed())+'/s} {green:from} {bold:'+unchoked.length +'/'+wires.length+'} {green:peers}    ');
 			clivas.line('{yellow:info} {green:downloaded} {bold:'+bytes(swarm.downloaded)+'} {green:and uploaded }{bold:'+bytes(swarm.uploaded)+'} {green:in }{bold:'+runtime+'s} {green:with} {bold:'+hotswaps+'} {green:hotswaps}     ');
 			clivas.line('{yellow:info} {green:peer queue size is} {bold:'+swarm.queued+'}     ');
 			clivas.line('{80:}');
