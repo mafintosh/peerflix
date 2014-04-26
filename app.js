@@ -88,7 +88,7 @@ var ontorrent = function(torrent) {
 	engine.server.on('listening', function() {
 		var href = 'http://'+address()+':'+engine.server.address().port+'/';
 		var filename = engine.server.index.name.split('/').pop().replace(/\{|\}/g, '');
-		var filelength=engine.files.reduce(function(a, b) {return a.length > b.length ? a : b;}).length;
+		var filelength = engine.server.index.length;
 
 		if (argv.vlc && process.platform === 'win32') {
 			var registry = require('windows-no-runnable').registry;
