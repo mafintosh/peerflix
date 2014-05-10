@@ -143,7 +143,7 @@ var ontorrent = function(torrent) {
 			clivas.line('{green:open} {bold:vlc} {green:and enter} {bold:'+href+'} {green:as the network address}');
 			clivas.line('');
 			clivas.line('{yellow:info} {green:streaming} {bold:'+filename+' ('+bytes(filelength)+')} {green:-} {bold:'+bytes(swarm.downloadSpeed())+'/s} {green:from} {bold:'+unchoked.length +'/'+wires.length+'} {green:peers}    ');
-			clivas.line('{yellow:info path} {cyan:' + engine.path + '}');
+			clivas.line('{yellow:info} {green:path} {cyan:' + engine.path + '}');
 			clivas.line('{yellow:info} {green:downloaded} {bold:'+bytes(swarm.downloaded)+'} {green:and uploaded }{bold:'+bytes(swarm.uploaded)+'} {green:in }{bold:'+runtime+'s} {green:with} {bold:'+hotswaps+'} {green:hotswaps}     ');
 			clivas.line('{yellow:info} {green:peer queue size is} {bold:'+swarm.queued+'}     ');
 			clivas.line('{80:}');
