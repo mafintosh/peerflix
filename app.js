@@ -95,12 +95,20 @@ var ontorrent = function(torrent) {
 			var key;
 			if (process.arch === 'x64') {
 				try {
-					key = registry('HKLM/Software/Wow6432Node/VideoLAN/VLC');
-				} catch (e) {}
+					key = registry('HKLM/Software/Wow6432Node/VideoLAN/VLC');					
+				} catch (e) {
+					try {
+						key = registry('HKLM/Software/VideoLAN/VLC');
+					} catch (err) {}
+				}
 			} else {
 				try {
 					key = registry('HKLM/Software/VideoLAN/VLC');
-				} catch (err) {}
+				} catch (err) {
+					try {
+						key = registry('HKLM/Software/Wow6432Node/VideoLAN/VLC');					
+					} catch (e) {}				
+				}
 			}
 
 			if (key) {
