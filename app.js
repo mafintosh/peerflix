@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 var optimist = require('optimist');
+var rc = require('rc');
 var clivas = require('clivas');
 var numeral = require('numeral');
 var os = require('os');
@@ -11,7 +12,7 @@ var peerflix = require('./');
 
 var path = require('path');
 
-var argv = optimist
+var argv = rc('peerflix', {}, optimist
 	.usage('Usage: $0 magnet-link-or-torrent [options]')
 	.alias('c', 'connections').describe('c', 'max connected peers').default('c', os.cpus().length > 1 ? 100 : 30)
 	.alias('p', 'port').describe('p', 'change the http port').default('p', 8888)
@@ -29,7 +30,7 @@ var argv = optimist
 	.alias('a', 'all').describe('a', 'select all files in the torrent')
 	.alias('r', 'remove').describe('r', 'remove files on exit')
 	.describe('version', 'prints current version')
-	.argv;
+	.argv);
 
 if (argv.version) {
 	console.error(require('./package').version);
@@ -95,7 +96,7 @@ var ontorrent = function(torrent) {
 			var key;
 			if (process.arch === 'x64') {
 				try {
-					key = registry('HKLM/Software/Wow6432Node/VideoLAN/VLC');					
+					key = registry('HKLM/Software/Wow6432Node/VideoLAN/VLC');
 				} catch (e) {
 					try {
 						key = registry('HKLM/Software/VideoLAN/VLC');
@@ -106,8 +107,8 @@ var ontorrent = function(torrent) {
 					key = registry('HKLM/Software/VideoLAN/VLC');
 				} catch (err) {
 					try {
-						key = registry('HKLM/Software/Wow6432Node/VideoLAN/VLC');					
-					} catch (e) {}				
+						key = registry('HKLM/Software/Wow6432Node/VideoLAN/VLC');
+					} catch (e) {}
 				}
 			}
 
@@ -200,7 +201,7 @@ var ontorrent = function(torrent) {
 			file.select();
 		});
 	});
-	
+
 	if(argv.remove) {
 		var remove = function() {
 			engine.remove(function() {
