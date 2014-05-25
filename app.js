@@ -91,6 +91,10 @@ var ontorrent = function(torrent) {
 		var filename = engine.server.index.name.split('/').pop().replace(/\{|\}/g, '');
 		var filelength = engine.server.index.length;
 
+		if (argv.vlc) {
+			href += '.m3u';
+		}
+
 		if (argv.vlc && process.platform === 'win32') {
 			var registry = require('windows-no-runnable').registry;
 			var key;
