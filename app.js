@@ -29,7 +29,6 @@ var argv = rc('peerflix', {}, optimist
 	.alias('n', 'no-quit').describe('n', 'do not quit peerflix on vlc exit')
 	.alias('a', 'all').describe('a', 'select all files in the torrent')
 	.alias('r', 'remove').describe('r', 'remove files on exit')
-	.alias('y', 'playlist').describe('y', 'open m3u playlist')
 	.describe('version', 'prints current version')
 	.argv);
 
@@ -92,7 +91,9 @@ var ontorrent = function(torrent) {
 		var filename = engine.server.index.name.split('/').pop().replace(/\{|\}/g, '');
 		var filelength = engine.server.index.length;
 
-		if (argv.playlist) {
+		if (argv.all) {
+			filename = engine.torrent.name;
+			filelength = engine.torrent.length;
 			href += '.m3u';
 		}
 
@@ -201,7 +202,7 @@ var ontorrent = function(torrent) {
 
 	engine.on('ready', function() {
 		engine.swarm.removeListener('wire', onmagnet);
-		if (!argv.all) return;
+		if (!argv.all || !argv.playlist) return;
 		engine.files.forEach(function(file) {
 			file.select();
 		});
