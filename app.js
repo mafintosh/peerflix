@@ -202,7 +202,7 @@ var ontorrent = function(torrent) {
 
 	engine.on('ready', function() {
 		engine.swarm.removeListener('wire', onmagnet);
-		if (!argv.all || !argv.playlist) return;
+		if (!argv.all) return;
 		engine.files.forEach(function(file) {
 			file.select();
 		});
