@@ -29,6 +29,7 @@ var argv = rc('peerflix', {}, optimist
 	.alias('n', 'no-quit').describe('n', 'do not quit peerflix on vlc exit')
 	.alias('a', 'all').describe('a', 'select all files in the torrent')
 	.alias('r', 'remove').describe('r', 'remove files on exit')
+	.alias('y', 'playlist').describe('y', 'open m3u playlist')
 	.describe('version', 'prints current version')
 	.argv);
 
@@ -90,6 +91,10 @@ var ontorrent = function(torrent) {
 		var href = 'http://'+address()+':'+engine.server.address().port+'/';
 		var filename = engine.server.index.name.split('/').pop().replace(/\{|\}/g, '');
 		var filelength = engine.server.index.length;
+
+		if (argv.playlist) {
+			href += '.m3u';
+		}
 
 		if (argv.vlc && process.platform === 'win32') {
 			var registry = require('windows-no-runnable').registry;
