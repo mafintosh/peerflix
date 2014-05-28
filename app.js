@@ -29,7 +29,7 @@ var argv = rc('peerflix', {}, optimist
 	.alias('n', 'no-quit').describe('n', 'do not quit peerflix on vlc exit')
 	.alias('a', 'all').describe('a', 'select all files in the torrent')
 	.alias('r', 'remove').describe('r', 'remove files on exit')
-	.alias('i', 'peer').describe('i', 'add peer by ip:port')
+	.alias('e', 'peer').describe('e', 'add peer by ip:port')
 	.describe('version', 'prints current version')
 	.argv);
 
