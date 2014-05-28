@@ -29,6 +29,7 @@ var argv = rc('peerflix', {}, optimist
 	.alias('n', 'no-quit').describe('n', 'do not quit peerflix on vlc exit')
 	.alias('a', 'all').describe('a', 'select all files in the torrent')
 	.alias('r', 'remove').describe('r', 'remove files on exit')
+	.alias('i', 'ipadress').describe('i', 'add ip:port')
 	.describe('version', 'prints current version')
 	.argv);
 
@@ -85,6 +86,10 @@ var ontorrent = function(torrent) {
 	var active = function(wire) {
 		return !wire.peerChoking;
 	};
+	
+	if(argv.ip) {
+		engine.connect(argv.ipadress);
+	}
 
 	engine.server.on('listening', function() {
 		var href = 'http://'+address()+':'+engine.server.address().port+'/';
