@@ -62,6 +62,16 @@ var noop = function() {};
 var ontorrent = function(torrent) {
 	var engine = peerflix(torrent, argv);
 	var hotswaps = 0;
+	var verified = 0;
+	var invalid = 0;
+
+	engine.on('verify', function() {
+		verified++;
+	});
+
+	engine.on('invalid-piece', function() {
+		invalid++;
+	});
 
 	if (argv.list) {
 		var onready = function() {
@@ -165,7 +175,8 @@ var ontorrent = function(torrent) {
 			clivas.line('{yellow:info} {green:streaming} {bold:'+filename+' ('+bytes(filelength)+')} {green:-} {bold:'+bytes(swarm.downloadSpeed())+'/s} {green:from} {bold:'+unchoked.length +'/'+wires.length+'} {green:peers}    ');
 			clivas.line('{yellow:info} {green:path} {cyan:' + engine.path + '}');
 			clivas.line('{yellow:info} {green:downloaded} {bold:'+bytes(swarm.downloaded)+'} {green:and uploaded }{bold:'+bytes(swarm.uploaded)+'} {green:in }{bold:'+runtime+'s} {green:with} {bold:'+hotswaps+'} {green:hotswaps}     ');
-			clivas.line('{yellow:info} {green:peer queue size is} {bold:'+swarm.queued+'}     ');
+			clivas.line('{yellow:info} {green:verified} {bold:'+verified+'} {green:pieces and received} {bold:'+invalid+'} {green:invalid pieces}');
+			clivas.line('{yellow:info} {green:peer queue size is} {bold:'+swarm.queued+'}');
 			clivas.line('{80:}');
 			linesremaining -= 8;
 
