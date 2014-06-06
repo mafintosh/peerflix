@@ -5,22 +5,46 @@ var rangeParser = require('range-parser');
 var url = require('url');
 var mime = require('mime');
 var pump = require('pump');
+var gzip = require('zlib').Gunzip();
 
 var parseBlocklist = function(filename) {
-	// TODO: support gzipped files
-	var blocklistData = fs.readFileSync(filename, { encoding: 'utf8' });
-	var blocklist = [];
-	blocklistData.split('\n').forEach(function(line) {
-		var match = null;
-		if ((match = /^\s*([^#].*)\s*:\s*([a-f0-9.:]+?)\s*-\s*([a-f0-9.:]+?)\s*$/.exec(line))) {
-			blocklist.push({
-				reason: match[1],
-				startAddress: match[2],
-				endAddress: match[3]
-			});
-		}
-	});
-	return blocklist;
+    if( filename.substring(filename.lastIndexOf('.')+1) == 'gz' ) {
+        var input = fs.createReadStream(filename);
+        filename = filename.substring(0, filename.lastIndexOf('.'))+'.txt'
+        var output = fs.createWriteStream(filename);
+
+        var result = input.pipe(gzip).pipe(output);
+        result.on('finish', function () {
+            var blocklistData = fs.readFileSync(result.path, { encoding: 'utf8' });
+            var blocklist = [];
+            blocklistData.split('\n').forEach(function(line) {
+                var match = null;
+                if ((match = /^\s*([^#].*)\s*:\s*([a-f0-9.:]+?)\s*-\s*([a-f0-9.:]+?)\s*$/.exec(line))) {
+                    blocklist.push({
+                        reason: match[1],
+                        startAddress: match[2],
+                        endAddress: match[3]
+                    });
+                }
+            });
+            return blocklist;
+        });
+    }
+    else {
+        var blocklistData = fs.readFileSync(filename, { encoding: 'utf8' });
+        var blocklist = [];
+        blocklistData.split('\n').forEach(function(line) {
+            var match = null;
+            if ((match = /^\s*([^#].*)\s*:\s*([a-f0-9.:]+?)\s*-\s*([a-f0-9.:]+?)\s*$/.exec(line))) {
+                blocklist.push({
+                    reason: match[1],
+                    startAddress: match[2],
+                    endAddress: match[3]
+                });
+            }
+        });
+        return blocklist;
+    }
 };
 
 var createServer = function(e, index) {

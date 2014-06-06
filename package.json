@@ -17,6 +17,7 @@
     "rc": "^0.4.0",
     "torrent-stream": "^0.11.1",
     "read-torrent": "^0.2.0",
-    "windows-no-runnable": "~0.0.6"
+    "windows-no-runnable": "~0.0.6",
+    "zlib": "~1.0.5"
   }
 }
