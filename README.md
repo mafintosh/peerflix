@@ -10,7 +10,7 @@ To try out peerflix start it with a magnet link or torrent file
 
 	peerflix magnet:?xt=urn:btih:ef330b39f4801d25b4245212e75a38634bfc856e --vlc
 
-`peerflix` will print a terminal interface. this first line contains a address to a http server.
+`peerflix` will print a terminal interface. this first line contains an address to a http server.
 Using `--vlc` will open the file in vlc when it's ready to stream.
 
 ![peerflix](https://raw.github.com/mafintosh/peerflix/master/screenshot.png)
