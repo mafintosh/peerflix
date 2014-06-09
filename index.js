@@ -12,11 +12,10 @@ var parseBlocklist = function(filename) {
 	var blocklist = [];
 	blocklistData.split('\n').forEach(function(line) {
 		var match = null;
-		if ((match = /^\s*([^#].*)\s*:\s*([a-f0-9.:]+?)\s*-\s*([a-f0-9.:]+?)\s*$/.exec(line))) {
+		if ((match = /^\s*[^#].*?\s*:\s*([a-f0-9.:]+?)\s*-\s*([a-f0-9.:]+?)\s*$/.exec(line))) {
 			blocklist.push({
-				reason: match[1],
-				startAddress: match[2],
-				endAddress: match[3]
+				start: match[1],
+				end: match[2]
 			});
 		}
 	});
@@ -93,7 +92,7 @@ var createServer = function(e, index) {
 	}).on('connection', function(socket) {
 	socket.setTimeout(36000000);
 	});
-	
+
 	return server;
 };
 
