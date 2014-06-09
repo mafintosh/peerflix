@@ -14,9 +14,8 @@ var parseBlocklist = function(filename) {
 		var match = null;
 		if ((match = /^\s*([^#].*)\s*:\s*([a-f0-9.:]+?)\s*-\s*([a-f0-9.:]+?)\s*$/.exec(line))) {
 			blocklist.push({
-				reason: match[1],
-				startAddress: match[2],
-				endAddress: match[3]
+				start: match[2],
+				end: match[3]
 			});
 		}
 	});
@@ -93,7 +92,7 @@ var createServer = function(e, index) {
 	}).on('connection', function(socket) {
 	socket.setTimeout(36000000);
 	});
-	
+
 	return server;
 };
 
