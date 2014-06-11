@@ -141,7 +141,9 @@ var ontorrent = function(torrent) {
 			}
 		} else {
 			if (argv.vlc) {
-				var vlc = proc.exec('vlc '+href+' '+VLC_ARGS+' || open -a VLC -W --args '+href+' '+VLC_ARGS, function(error, stdout, stderror){
+				var root = '/Applications/VLC.app/Contents/MacOS/VLC'
+				var home = (process.env.HOME || '') + root
+				var vlc = proc.exec('vlc '+href+' '+VLC_ARGS+' || '+root+' '+href+' '+VLC_ARGS+' || '+home+' '+href+' '+VLC_ARGS, function(error, stdout, stderror){
 					if (error) {
 						process.exit(0);
 					}
