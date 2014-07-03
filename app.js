@@ -12,6 +12,8 @@ var peerflix = require('./');
 
 var path = require('path');
 
+process.title = 'peerflix';
+
 var argv = rc('peerflix', {}, optimist
 	.usage('Usage: $0 magnet-link-or-torrent [options]')
 	.alias('c', 'connections').describe('c', 'max connected peers').default('c', os.cpus().length > 1 ? 100 : 30)
