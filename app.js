@@ -49,7 +49,7 @@ if (!filename) {
 	process.exit(1);
 }
 
-var VLC_ARGS = '-q --video-on-top --play-and-exit';
+var VLC_ARGS = '-q --play-and-exit';
 var OMX_EXEC = argv.jack ? 'omxplayer -r -o local ' : 'omxplayer -r -o hdmi ';
 var MPLAYER_EXEC = 'mplayer -ontop -really-quiet -noidx -loop 0 ';
 
