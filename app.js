@@ -23,6 +23,7 @@ var argv = rc('peerflix', {}, optimist
 	.alias('t', 'subtitles').describe('t', 'load subtitles file')
 	.alias('q', 'quiet').describe('q', 'be quiet')
 	.alias('v', 'vlc').describe('v', 'autoplay in vlc*')
+	.alias('s', 'airplay').describe('s', 'autoplay via AirPlay')
 	.alias('m', 'mplayer').describe('m', 'autoplay in mplayer*')
 	.alias('o', 'omx').describe('o', 'autoplay in omx**')
 	.alias('j', 'jack').describe('j', 'autoplay in omx** using the audio jack')
@@ -159,6 +160,16 @@ var ontorrent = function(torrent) {
 
 		if (argv.omx) proc.exec(OMX_EXEC+' '+href);
 		if (argv.mplayer) proc.exec(MPLAYER_EXEC+' '+href);
+		if (argv.airplay){
+      var browser = require( 'airplay2' ).createBrowser();
+      browser.on( 'deviceOn', function( device ) {
+        var resource = href
+        device.play(resource, 0, function() {
+        });
+      });
+      browser.start();
+    }
+
 		if (argv.quiet) return console.log('server is listening on '+href);
 
 		var bytes = function(num) {
@@ -175,6 +186,9 @@ var ontorrent = function(torrent) {
 
 			clivas.clear();
 			clivas.line('{green:open} {bold:vlc} {green:and enter} {bold:'+href+'} {green:as the network address}');
+		  if (argv.airplay){
+			    clivas.line('{green:Streaming to} {bold:AppleTV} {green:using Airplay}');
+      }
 			clivas.line('');
 			clivas.line('{yellow:info} {green:streaming} {bold:'+filename+' ('+bytes(filelength)+')} {green:-} {bold:'+bytes(swarm.downloadSpeed())+'/s} {green:from} {bold:'+unchoked.length +'/'+wires.length+'} {green:peers}    ');
 			clivas.line('{yellow:info} {green:path} {cyan:' + engine.path + '}');
