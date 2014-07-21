@@ -1,6 +1,6 @@
 {
   "name": "peerflix",
-  "version": "0.10.10",
+  "version": "0.12.0",
   "license": "MIT",
   "repository": "git://github.com/mafintosh/peerflix.git",
   "bin": {
