@@ -50,6 +50,18 @@ if (!filename) {
 	process.exit(1);
 }
 
+if (argv.airplay) {
+	try {
+		require('airplay2')
+	} catch (err) {
+		console.error('To use airplay you first install the airplay2 module\n')
+		console.error('  npm install -g airplay2\n')
+		console.error('This is needed since it is a native module.')
+		console.error('In future versions of peerflix a prebuilt version may be bundled')
+		process.exit(1)
+	}
+}
+
 var VLC_ARGS = '-q --video-on-top --play-and-exit';
 var OMX_EXEC = argv.jack ? 'omxplayer -r -o local ' : 'omxplayer -r -o hdmi ';
 var MPLAYER_EXEC = 'mplayer -ontop -really-quiet -noidx -loop 0 ';
