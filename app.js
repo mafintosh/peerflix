@@ -54,10 +54,10 @@ if (argv.airplay) {
 	try {
 		require('airplay2')
 	} catch (err) {
-		console.error('To use airplay you first install the airplay2 module\n')
+		console.error('To use airplay you must first install the airplay2 module\n')
 		console.error('  npm install -g airplay2\n')
 		console.error('This is needed since it is a native module.')
-		console.error('In future versions of peerflix a prebuilt version may be bundled')
+		console.error('In future versions of peerflix a prebuilt version will be used to fix this')
 		process.exit(1)
 	}
 }
