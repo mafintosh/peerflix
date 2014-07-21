@@ -23,6 +23,7 @@ var argv = rc('peerflix', {}, optimist
 	.alias('t', 'subtitles').describe('t', 'load subtitles file')
 	.alias('q', 'quiet').describe('q', 'be quiet')
 	.alias('v', 'vlc').describe('v', 'autoplay in vlc*')
+	.alias('s', 'airplay').describe('s', 'autoplay via AirPlay')
 	.alias('m', 'mplayer').describe('m', 'autoplay in mplayer*')
 	.alias('o', 'omx').describe('o', 'autoplay in omx**')
 	.alias('j', 'jack').describe('j', 'autoplay in omx** using the audio jack')
@@ -159,6 +160,15 @@ var ontorrent = function(torrent) {
 
 		if (argv.omx) proc.exec(OMX_EXEC+' '+href);
 		if (argv.mplayer) proc.exec(MPLAYER_EXEC+' '+href);
+		if (argv.airplay){
+      var browser = require( 'airplay-js' ).createBrowser();
+      browser.on( 'deviceOn', function( device ) {
+        var resource = href
+        device.play(resource, 0, function() {
+        });
+      });
+      browser.start();
+    }
 
 		if (argv.quiet) return console.log('server is listening on '+href);
 
