@@ -6,8 +6,10 @@
   "bin": {
     "peerflix": "./app.js"
   },
+  "optionalDependencies": {
+    "airplay2": "^0.1.4"
+  },
   "dependencies": {
-    "airplay2": "^0.1.4",
     "clivas": "^0.1.4",
     "mime": "^1.2.11",
     "network-address": "0.0.4",
