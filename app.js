@@ -161,7 +161,7 @@ var ontorrent = function(torrent) {
 		if (argv.omx) proc.exec(OMX_EXEC+' '+href);
 		if (argv.mplayer) proc.exec(MPLAYER_EXEC+' '+href);
 		if (argv.airplay){
-      var browser = require( 'airplay2' ).createBrowser();
+      var browser = require( 'airplay-js' ).createBrowser();
       browser.on( 'deviceOn', function( device ) {
         var resource = href
         device.play(resource, 0, function() {

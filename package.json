@@ -7,7 +7,7 @@
     "peerflix": "./app.js"
   },
   "dependencies": {
-    "airplay2": "^0.1.4",
+    "airplay-js": "^0.2.0",
     "clivas": "^0.1.4",
     "mime": "^1.2.11",
     "network-address": "0.0.4",
