@@ -23,7 +23,6 @@ var argv = rc('peerflix', {}, optimist
 	.alias('t', 'subtitles').describe('t', 'load subtitles file')
 	.alias('q', 'quiet').describe('q', 'be quiet')
 	.alias('v', 'vlc').describe('v', 'autoplay in vlc*')
-	.alias('s', 'airplay').describe('s', 'autoplay via AirPlay')
 	.alias('m', 'mplayer').describe('m', 'autoplay in mplayer*')
 	.alias('o', 'omx').describe('o', 'autoplay in omx**')
 	.alias('j', 'jack').describe('j', 'autoplay in omx** using the audio jack')
@@ -48,18 +47,6 @@ if (!filename) {
 	console.error('* Autoplay can take several seconds to start since it needs to wait for the first piece');
 	console.error('** OMX player is the default Raspbian video player\n');
 	process.exit(1);
-}
-
-if (argv.airplay) {
-	try {
-		require('airplay2')
-	} catch (err) {
-		console.error('To use airplay you must first install the airplay2 module\n')
-		console.error('  npm install -g airplay2\n')
-		console.error('This is needed since it is a native module.')
-		console.error('In future versions of peerflix a prebuilt version will be used to fix this')
-		process.exit(1)
-	}
 }
 
 var VLC_ARGS = '-q --video-on-top --play-and-exit';
@@ -172,13 +159,6 @@ var ontorrent = function(torrent) {
 
 		if (argv.omx) proc.exec(OMX_EXEC+' '+href);
 		if (argv.mplayer) proc.exec(MPLAYER_EXEC+' '+href);
-		if (argv.airplay) {
-			var browser = require('airplay2').createBrowser();
-			browser.on('deviceOn', function(device) {
-				device.play(href, 0, noop);
-			});
-			browser.start();
-		}
 
 		if (argv.quiet) return console.log('server is listening on '+href);
 
