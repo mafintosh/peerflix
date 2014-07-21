@@ -4,6 +4,12 @@ Streaming torrent client for Node.js
 
 	npm install -g peerflix
 
+## Dependencies
+
+* Ubuntu/Debian: `sudo apt-get install libavahi-compat-libdnssd-dev`.
+* Windows: please install [Bonjour SDK for Windows](https://developer.apple.com/bonjour/index.html).
+* Others: [Apple's mDNSResponder](https://opensource.apple.com/tarballs/mDNSResponder/) is recommended.
+
 ## Usage
 
 To try out peerflix start it with a magnet link or torrent file
