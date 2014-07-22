@@ -17,7 +17,7 @@
     "range-parser": "^1.0.0",
     "rc": "^0.4.0",
     "read-torrent": "^0.2.0",
-    "torrent-stream": "git+ssh://git@github.com:jamiees2/torrent-stream.git",
+    "torrent-stream": "^0.13.5",
     "windows-no-runnable": "~0.0.6"
   }
 }
