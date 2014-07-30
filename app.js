@@ -25,6 +25,7 @@ var argv = rc('peerflix', {}, optimist
 	.alias('v', 'vlc').describe('v', 'autoplay in vlc*')
 	.alias('s', 'airplay').describe('s', 'autoplay via AirPlay')
 	.alias('m', 'mplayer').describe('m', 'autoplay in mplayer*')
+	.alias('k', 'mpv').describe('k', 'autoplay in mpv*')
 	.alias('o', 'omx').describe('o', 'autoplay in omx**')
 	.alias('j', 'jack').describe('j', 'autoplay in omx** using the audio jack')
 	.alias('f', 'path').describe('f', 'change buffer file path')
@@ -53,11 +54,13 @@ if (!filename) {
 var VLC_ARGS = '-q --video-on-top --play-and-exit';
 var OMX_EXEC = argv.jack ? 'omxplayer -r -o local ' : 'omxplayer -r -o hdmi ';
 var MPLAYER_EXEC = 'mplayer -ontop -really-quiet -noidx -loop 0 ';
+var MPV_EXEC = 'mpv --ontop --really-quiet --loop=no ';
 
 if (argv.t) {
 	VLC_ARGS += ' --sub-file=' + argv.t;
 	OMX_EXEC += ' --subtitles ' + argv.t;
 	MPLAYER_EXEC += ' -sub ' + argv.t;
+	MPV_EXEC += ' --sub-file=' + argv.t;
 }
 
 var noop = function() {};
@@ -160,6 +163,7 @@ var ontorrent = function(torrent) {
 
 		if (argv.omx) proc.exec(OMX_EXEC+' '+href);
 		if (argv.mplayer) proc.exec(MPLAYER_EXEC+' '+href);
+		if (argv.mpv) proc.exec(MPV_EXEC+' '+href);
 		if (argv.airplay) {
 			var browser = require('airplay-js').createBrowser();
 			browser.on('deviceOn', function( device ) {
