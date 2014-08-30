@@ -34,6 +34,7 @@ var argv = rc('peerflix', {}, optimist
 	.alias('a', 'all').describe('a', 'select all files in the torrent')
 	.alias('r', 'remove').describe('r', 'remove files on exit')
 	.alias('e', 'peer').describe('e', 'add peer by ip:port')
+	.alias('x', 'peer-port').describe('x', 'set peer listening port')
 	.describe('version', 'prints current version')
 	.argv);
 
@@ -66,6 +67,8 @@ if (argv.t) {
 var noop = function() {};
 
 var ontorrent = function(torrent) {
+	if (argv['peer-port']) argv.peerPort = Number(argv['peer-port'])
+
 	var engine = peerflix(torrent, argv);
 	var hotswaps = 0;
 	var verified = 0;
@@ -78,6 +81,7 @@ var ontorrent = function(torrent) {
 	engine.on('invalid-piece', function() {
 		invalid++;
 	});
+
 
 	if (argv.list) {
 		var onready = function() {
