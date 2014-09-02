@@ -27,6 +27,10 @@ To get a full list of available options run
 
 If you want to build your own app using streaming bittorent in Node you should checkout [torrent-stream](https://github.com/mafintosh/torrent-stream)
 
+## Chromebook users
+Chromebooks are set to refuse all incoming connections by default - to change this:  
+	sudo iptables -P INPUT ACCEPT
+
 ## License
 
 MIT
