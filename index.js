@@ -49,6 +49,10 @@ var createServer = function(e, index) {
 	};
 
 	server.on('request', function(request, response) {
+
+		if(request.headers.origin) {
+			response.setHeader('Access-Control-Allow-Origin', request.headers.origin);
+		}
 		var u = url.parse(request.url);
 		var host = request.headers.host || 'localhost';
 
