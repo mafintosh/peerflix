@@ -52,6 +52,10 @@ var createServer = function(e, index) {
 		var u = url.parse(request.url);
 		var host = request.headers.host || 'localhost';
 
+		if(request.headers.origin) {
+			response.setHeader('Access-Control-Allow-Origin', request.headers.origin);
+		}
+
 		if (u.pathname === '/favicon.ico') return response.end();
 		if (u.pathname === '/') u.pathname = '/'+index;
 		if (u.pathname === '/.json') return response.end(toJSON(host));
