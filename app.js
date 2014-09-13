@@ -35,6 +35,7 @@ var argv = rc('peerflix', {}, optimist
 	.alias('r', 'remove').describe('r', 'remove files on exit')
 	.alias('e', 'peer').describe('e', 'add peer by ip:port')
 	.alias('x', 'peer-port').describe('x', 'set peer listening port')
+	.alias('d', 'not-on-top').describe('d', 'do not float video on top')
 	.describe('version', 'prints current version')
 	.argv);
 
@@ -44,6 +45,7 @@ if (argv.version) {
 }
 
 var filename = argv._[0];
+var onTop = !argv.d
 
 if (!filename) {
 	optimist.showHelp();
@@ -52,10 +54,10 @@ if (!filename) {
 	process.exit(1);
 }
 
-var VLC_ARGS = '-q --video-on-top --play-and-exit';
+var VLC_ARGS = '-q '+(onTop ? '--video-on-top' : '')+' --play-and-exit';
 var OMX_EXEC = argv.jack ? 'omxplayer -r -o local ' : 'omxplayer -r -o hdmi ';
-var MPLAYER_EXEC = 'mplayer -ontop -really-quiet -noidx -loop 0 ';
-var MPV_EXEC = 'mpv --ontop --really-quiet --loop=no ';
+var MPLAYER_EXEC = 'mplayer '+(onTop ? '-ontop' : '')+' -really-quiet -noidx -loop 0 ';
+var MPV_EXEC = 'mpv '+(onTop ? '--ontop' : '')+' --really-quiet --loop=no ';
 
 if (argv.t) {
 	VLC_ARGS += ' --sub-file=' + argv.t;
