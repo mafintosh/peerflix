@@ -119,7 +119,7 @@ module.exports = function(torrent, opts) {
 
 	// Listen when torrent-stream is ready, by default a random port.
 	engine.on('ready', function() {
-		engine.server.listen(opts.port || 0);
+		engine.server.listen(opts.port || 0, opts.hostname);
 	});
 
 	if (opts.peerPort) engine.listen(opts.peerPort);

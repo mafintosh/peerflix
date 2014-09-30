@@ -33,7 +33,7 @@ var argv = rc('peerflix', {}, optimist
 	.alias('n', 'no-quit').describe('n', 'do not quit peerflix on vlc exit')
 	.alias('a', 'all').describe('a', 'select all files in the torrent')
 	.alias('r', 'remove').describe('r', 'remove files on exit')
-	.alias('u', 'host').describe('u', 'the host external programs should use for streaming')
+	.alias('h', 'hostname').describe('h', 'host name or IP to bind the server to')
 	.alias('e', 'peer').describe('e', 'add peer by ip:port')
 	.alias('x', 'peer-port').describe('x', 'set peer listening port')
 	.alias('d', 'not-on-top').describe('d', 'do not float video on top')
@@ -115,7 +115,7 @@ var ontorrent = function(torrent) {
 	})
 
 	engine.server.on('listening', function() {
-		var host = argv.u ? argv.u : address()
+		var host = argv.hostname || address()
 		var href = 'http://'+host+':'+engine.server.address().port+'/';
 		var filename = engine.server.index.name.split('/').pop().replace(/\{|\}/g, '');
 		var filelength = engine.server.index.length;
@@ -229,7 +229,7 @@ var ontorrent = function(torrent) {
 	});
 
 	engine.server.once('error', function() {
-		engine.server.listen(0);
+		engine.server.listen(0, argv.hostname);
 	});
 
 	var onmagnet = function() {
