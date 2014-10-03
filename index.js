@@ -22,8 +22,15 @@ var parseBlocklist = function(filename) {
 	return blocklist;
 };
 
-var createServer = function(e, index) {
+var truthy = function() {
+	return true;
+};
+
+var createServer = function(e, opts) {
 	var server = http.createServer();
+	var index = opts.index;
+	var getType = opts.type || mime.lookup.bind(mime);
+	var filter = opts.filter || truthy;
 
 	var onready = function() {
 		if (typeof index !== 'number') {
@@ -35,36 +42,62 @@ var createServer = function(e, index) {
 
 		e.files[index].select();
 		server.index = e.files[index];
+
+		if (opts.sort) e.files.sort(opts.sort);
 	};
+
 
 	if (e.torrent) onready();
 	else e.on('ready', onready);
-
-	var toJSON = function(host) {
-		var list = [];
-		e.files.forEach(function(file, i) {
-			list.push({name:file.name, length:file.length, url:'http://'+host+'/'+i});
-		});
-		return JSON.stringify(list, null, '  ');
-	};
 
 	server.on('request', function(request, response) {
 		var u = url.parse(request.url);
 		var host = request.headers.host || 'localhost';
 
-		if(request.headers.origin) {
-			response.setHeader('Access-Control-Allow-Origin', request.headers.origin);
+		var toPlaylist = function() {
+			var toEntry = function(file, i) {
+				return '#EXTINF:-1,' + file.path + '\n' + 'http://' + host + '/' + i;
+			};
+
+			return '#EXTM3U\n' + e.files.filter(filter).map(toEntry).join('\n');
+		};
+
+		var toJSON = function() {
+			var toEntry = function(file, i) {
+				return {name:file.name, length:file.length, url:'http://'+host+'/'+i};
+			};
+
+			return JSON.stringify(e.files.filter(filter).map(toEntry), null, '  ');
+		};
+
+		if (request.headers.origin) response.setHeader('Access-Control-Allow-Origin', request.headers.origin);
+		if (u.pathname === '/') u.pathname = '/'+index;
+
+		if (u.pathname === '/favicon.ico') {
+			response.statusCode = 404;
+			response.end();
+			return;
 		}
 
-		if (u.pathname === '/favicon.ico') return response.end();
-		if (u.pathname === '/') u.pathname = '/'+index;
-		if (u.pathname === '/.json') return response.end(toJSON(host));
-		if (u.pathname === '/.m3u') {
-			response.setHeader('Content-Type', 'application/x-mpegurl; charset=utf-8');
-			return response.end('#EXTM3U\n' + e.files.map(function (f, i) {
-				return '#EXTINF:-1,' + f.path + '\n' + 'http://'+host+'/'+i;
-			}).join('\n'));
+		if (u.pathname === '/.json') {
+			var json = toJSON();
+			response.setHeader('Content-Type', 'application/json; charset=utf-8');
+			response.setHeader('Content-Length', Buffer.byteLength(json));
+			response.end(json);
+			return;
 		}
+
+		if (u.pathname === '/.m3u') {
+			var playlist = toPlaylist()
+			response.setHeader('Content-Type', 'application/x-mpegurl; charset=utf-8');
+			response.setHeader('Content-Length', Buffer.byteLength(playlist));
+			response.end(playlist);
+			return;
+		}
+
+		e.files.forEach(function(file, i) {
+			if (u.pathname.slice(1) === file.name) u.pathname = '/'+i;
+		});
 
 		var i = Number(u.pathname.slice(1));
 
@@ -78,7 +111,7 @@ var createServer = function(e, index) {
 		var range = request.headers.range;
 		range = range && rangeParser(file.length, range)[0];
 		response.setHeader('Accept-Ranges', 'bytes');
-		response.setHeader('Content-Type', mime.lookup(file.name));
+		response.setHeader('Content-Type', getType(file.name));
 
 		if (!range) {
 			response.setHeader('Content-Length', file.length);
@@ -93,7 +126,9 @@ var createServer = function(e, index) {
 
 		if (request.method === 'HEAD') return response.end();
 		pump(file.createReadStream(range), response);
-	}).on('connection', function(socket) {
+	});
+
+	server.on('connection', function(socket) {
 		socket.setTimeout(36000000);
 	});
 
@@ -115,7 +150,7 @@ module.exports = function(torrent, opts) {
 	engine.on('uninterested', function() { engine.swarm.pause();  });
 	engine.on('interested',   function() { engine.swarm.resume(); });
 
-	engine.server = createServer(engine, opts.index);
+	engine.server = createServer(engine, opts);
 
 	// Listen when torrent-stream is ready, by default a random port.
 	engine.on('ready', function() {
