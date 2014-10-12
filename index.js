@@ -70,14 +70,15 @@ var createServer = function(e, opts) {
 			return JSON.stringify(e.files.filter(filter).map(toEntry), null, '  ');
 		};
 
-		// Allow CORS requests to specify byte ranges.
-		// The `Range` header is not a "simple header", thus the browser
-		// will first send OPTIONS request and check Access-Control-Allow-Headers
-		// before allowing additional requests.
-		if (request.method === 'OPTIONS' && request.headers.origin) {
+		// Allow CORS requests to specify arbitrary headers, e.g. 'Range',
+		// by responding to the OPTIONS preflight request with the specified
+		// origin and requested headers.
+		if (request.method === 'OPTIONS' && request.headers['access-control-request-headers']) {
 			response.setHeader('Access-Control-Allow-Origin', request.headers.origin);
 			response.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-			response.setHeader('Access-Control-Allow-Headers', 'Range');
+			response.setHeader(
+					'Access-Control-Allow-Headers',
+					request.headers['access-control-request-headers']);
 			response.setHeader('Access-Control-Max-Age', '1728000');
 
 			response.end();
