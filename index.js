@@ -70,6 +70,21 @@ var createServer = function(e, opts) {
 			return JSON.stringify(e.files.filter(filter).map(toEntry), null, '  ');
 		};
 
+		// Allow CORS requests to specify arbitrary headers, e.g. 'Range',
+		// by responding to the OPTIONS preflight request with the specified
+		// origin and requested headers.
+		if (request.method === 'OPTIONS' && request.headers['access-control-request-headers']) {
+			response.setHeader('Access-Control-Allow-Origin', request.headers.origin);
+			response.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+			response.setHeader(
+					'Access-Control-Allow-Headers',
+					request.headers['access-control-request-headers']);
+			response.setHeader('Access-Control-Max-Age', '1728000');
+
+			response.end();
+			return;
+		}
+
 		if (request.headers.origin) response.setHeader('Access-Control-Allow-Origin', request.headers.origin);
 		if (u.pathname === '/') u.pathname = '/'+index;
 
