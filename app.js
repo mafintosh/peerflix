@@ -11,6 +11,7 @@ var proc = require('child_process');
 var peerflix = require('./');
 
 var path = require('path');
+var fs   = require('fs');
 
 process.title = 'peerflix';
 process.on('SIGINT', function() {
@@ -44,6 +45,7 @@ var argv = rc('peerflix', {}, optimist
 	.alias('e', 'peer').describe('e', 'add peer by ip:port')
 	.alias('x', 'peer-port').describe('x', 'set peer listening port')
 	.alias('d', 'not-on-top').describe('d', 'do not float video on top')
+	.describe('beamer', 'autoplay via Beamer')
 	.describe('version', 'prints current version')
 	.argv);
 
@@ -116,10 +118,40 @@ var ontorrent = function(torrent) {
 	var active = function(wire) {
 		return !wire.peerChoking;
 	};
-	
+
 	[].concat(argv.peer || []).forEach(function(peer) {
 		engine.connect(peer);
 	})
+
+	if (argv.beamer) {
+		var beamerApp = '/Applications/Beamer.app';
+
+		fs.exists(beamerApp, function(exists) {
+			if (!exists) {
+				console.error("Unable to find Beamer.app aborting stream.")
+				process.exit(0);
+			}
+
+			var ondownload = function() {
+				var targetFile = engine.torrent.files[0];
+				engine.torrent.files.forEach(function(file) {
+					if (file.length > targetFile.length) targetFile = file;
+				});
+
+				var beamer = proc.exec('open -a Beamer "' + path.join(engine.path, targetFile.path) + '"', function(error, stdout, stderror){
+					if (error) {
+						console.error(error);
+						process.exit(0);
+					}
+				});
+
+				engine.removeListener('download', ondownload);
+			};
+
+			engine.on('download', ondownload);
+		});
+
+	}
 
 	engine.server.on('listening', function() {
 		var host = argv.hostname || address()
@@ -204,6 +236,7 @@ var ontorrent = function(torrent) {
 			clivas.clear();
 			clivas.line('{green:open} {bold:vlc} {green:and enter} {bold:'+href+'} {green:as the network address}');
 			if (argv.airplay) clivas.line('{green:Streaming to} {bold:AppleTV} {green:using Airplay}');
+			if (argv.beamer) clivas.line('{green:Application} {bold:Beamer} {green:is waiting for stream to start}');
 			clivas.line('');
 			clivas.line('{yellow:info} {green:streaming} {bold:'+filename+' ('+bytes(filelength)+')} {green:-} {bold:'+bytes(swarm.downloadSpeed())+'/s} {green:from} {bold:'+unchoked.length +'/'+wires.length+'} {green:peers}    ');
 			clivas.line('{yellow:info} {green:path} {cyan:' + engine.path + '}');
