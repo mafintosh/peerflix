@@ -271,11 +271,12 @@ var ontorrent = function(torrent) {
 
 if (/^magnet:/.test(filename)) return ontorrent(filename);
 
-readTorrent(filename, function(err, torrent) {
+// TODO: don't use read-torrent anymore as we don't really use the parsing part of it...
+readTorrent(filename, function(err, torrent, raw) {
 	if (err) {
 		console.error(err.message);
 		process.exit(1);
 	}
 
-	ontorrent(torrent);
+	ontorrent(raw); // use raw so we don't get infohash/metadata issues in torrent-stream.
 });
