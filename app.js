@@ -130,7 +130,7 @@ var ontorrent = function(torrent) {
 	var active = function(wire) {
 		return !wire.peerChoking;
 	};
-	
+
 	[].concat(argv.peer || []).forEach(function(peer) {
 		engine.connect(peer);
 	})
@@ -228,7 +228,10 @@ var ontorrent = function(torrent) {
 			var peerslisted = 0;
 
 			clivas.clear();
-			clivas.line('{green:open} {bold:'+player+'} {green:and enter} {bold:'+href+'} {green:as the network address}');
+			if(!player)
+				clivas.line('{green:Open your player and enter} {bold:'+href+'} {green:as the network address}');
+			else
+				clivas.line('{green:open} {bold:'+player+'} {green:and enter} {bold:'+href+'} {green:as the network address}');
 			if (argv.airplay) clivas.line('{green:Streaming to} {bold:AppleTV} {green:using Airplay}');
 			clivas.line('');
 			clivas.line('{yellow:info} {green:streaming} {bold:'+filename+' ('+bytes(filelength)+')} {green:-} {bold:'+bytes(swarm.downloadSpeed())+'/s} {green:from} {bold:'+unchoked.length +'/'+wires.length+'} {green:peers}    ');
