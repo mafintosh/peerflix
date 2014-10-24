@@ -140,6 +140,7 @@ var ontorrent = function(torrent) {
 		var href = 'http://'+host+':'+engine.server.address().port+'/';
 		var filename = engine.server.index.name.split('/').pop().replace(/\{|\}/g, '');
 		var filelength = engine.server.index.length;
+		var player = null;
 
 		if (argv.all) {
 			filename = engine.torrent.name;
@@ -148,6 +149,7 @@ var ontorrent = function(torrent) {
 		}
 
 		if (argv.vlc && process.platform === 'win32') {
+			player = 'vlc';
 			var registry = require('windows-no-runnable').registry;
 			var key;
 			if (process.arch === 'x64') {
@@ -176,6 +178,7 @@ var ontorrent = function(torrent) {
 			}
 		} else {
 			if (argv.vlc) {
+				player = 'vlc';
 				var root = '/Applications/VLC.app/Contents/MacOS/VLC'
 				var home = (process.env.HOME || '') + root
 				var vlc = proc.exec('vlc '+href+' '+VLC_ARGS+' || '+root+' '+href+' '+VLC_ARGS+' || '+home+' '+href+' '+VLC_ARGS, function(error, stdout, stderror){
@@ -190,9 +193,18 @@ var ontorrent = function(torrent) {
 			}
 		}
 
-		if (argv.omx) proc.exec(OMX_EXEC+' '+href);
-		if (argv.mplayer) proc.exec(MPLAYER_EXEC+' '+href);
-		if (argv.mpv) proc.exec(MPV_EXEC+' '+href);
+		if (argv.omx) {
+			player = 'omx';
+			proc.exec(OMX_EXEC+' '+href);
+		}
+		if (argv.mplayer) {
+			player = 'mplayer';
+			proc.exec(MPLAYER_EXEC+' '+href);
+		}
+		if (argv.mpv) {
+			player = 'mpv';
+			proc.exec(MPV_EXEC+' '+href);
+		}
 		if (argv.airplay) {
 			var browser = require('airplay-js').createBrowser();
 			browser.on('deviceOn', function( device ) {
@@ -216,7 +228,7 @@ var ontorrent = function(torrent) {
 			var peerslisted = 0;
 
 			clivas.clear();
-			clivas.line('{green:open} {bold:vlc} {green:and enter} {bold:'+href+'} {green:as the network address}');
+			clivas.line('{green:open} {bold:'+player+'} {green:and enter} {bold:'+href+'} {green:as the network address}');
 			if (argv.airplay) clivas.line('{green:Streaming to} {bold:AppleTV} {green:using Airplay}');
 			clivas.line('');
 			clivas.line('{yellow:info} {green:streaming} {bold:'+filename+' ('+bytes(filelength)+')} {green:-} {bold:'+bytes(swarm.downloadSpeed())+'/s} {green:from} {bold:'+unchoked.length +'/'+wires.length+'} {green:peers}    ');
