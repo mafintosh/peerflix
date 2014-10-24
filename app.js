@@ -57,6 +57,10 @@ var onTop = !argv.d
 
 if (!filename) {
 	optimist.showHelp();
+	console.error('Options passed after -- will be passed to your player')
+	console.error('')
+	console.error('  "peerflix magnet-link --vlc -- --fullscreen" will pass --fullscreen to vlc')
+	console.error('')
 	console.error('* Autoplay can take several seconds to start since it needs to wait for the first piece');
 	console.error('** OMX player is the default Raspbian video player\n');
 	process.exit(1);
