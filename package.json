@@ -7,7 +7,6 @@
     "peerflix": "./app.js"
   },
   "dependencies": {
-    "airplay-js": "^0.2.0",
     "clivas": "^0.1.4",
     "mime": "^1.2.11",
     "network-address": "0.0.4",
@@ -19,5 +18,8 @@
     "read-torrent": "^1.1.0",
     "torrent-stream": "^0.15.1",
     "windows-no-runnable": "~0.0.6"
+  },
+  "optionalDependencies": {
+    "airplay-js": "^0.2.0"
   }
 }
