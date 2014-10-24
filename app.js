@@ -74,6 +74,16 @@ if (argv.t) {
 	MPV_EXEC += ' --sub-file=' + argv.t;
 }
 
+if (argv._.length > 1) {
+	var _args = argv._;
+	_args.shift();
+	var playerArgs = _args.join(' ');
+	VLC_ARGS += ' ' + playerArgs;
+	OMX_EXEC += ' ' + playerArgs;
+	MPLAYER_EXEC += ' ' + playerArgs;
+	MPV_EXEC += ' ' + playerArgs;
+}
+
 var noop = function() {};
 
 var ontorrent = function(torrent) {
