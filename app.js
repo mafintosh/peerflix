@@ -181,7 +181,7 @@ var ontorrent = function(torrent) {
 				player = 'vlc';
 				var root = '/Applications/VLC.app/Contents/MacOS/VLC'
 				var home = (process.env.HOME || '') + root
-				var vlc = proc.exec('vlc '+href+' '+VLC_ARGS+' || '+root+' '+href+' '+VLC_ARGS+' || '+home+' '+href+' '+VLC_ARGS, function(error, stdout, stderror){
+				var vlc = proc.exec('vlc '+VLC_ARGS+' '+href+' || '+root+' '+VLC_ARGS+' '+href+' || '+home+' '+VLC_ARGS+' '+href, function(error, stdout, stderror){
 					if (error) {
 						process.exit(0);
 					}
