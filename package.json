@@ -20,6 +20,6 @@
     "windows-no-runnable": "~0.0.6"
   },
   "optionalDependencies": {
-    "airplay-js": "^0.2.0"
+    "airplay-js": "^0.2.5"
   }
 }
