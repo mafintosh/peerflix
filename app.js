@@ -143,6 +143,8 @@ var ontorrent = function(torrent) {
 		var filelength = engine.server.index.length;
 		var player = null;
 		var paused = false;
+		var timePaused = 0;
+		var pausedAt = null;
 
 		keypress(process.stdin);
 		process.stdin.on('keypress', function(ch, key) {
@@ -155,6 +157,7 @@ var ontorrent = function(torrent) {
 					file.deselect();
 				});
 				paused = true;
+				pausedAt = Date.now();
 				return;
 			}
 
@@ -162,6 +165,7 @@ var ontorrent = function(torrent) {
 				file.select();
 			});
 			paused = false;
+			timePaused += Date.now() - pausedAt;
 		});
 		process.stdin.setRawMode(true);
 
@@ -246,7 +250,11 @@ var ontorrent = function(torrent) {
 
 		var draw = function() {
 			var unchoked = engine.swarm.wires.filter(active);
-			var runtime = Math.floor((Date.now() - started) / 1000);
+			var timeCurrentPause = 0;
+			if (paused === true) {
+				timeCurrentPause = Date.now() - pausedAt;
+			}
+			var runtime = Math.floor((Date.now() - started - timePaused - timeCurrentPause) / 1000);
 			var linesremaining = clivas.height;
 			var peerslisted = 0;
 
