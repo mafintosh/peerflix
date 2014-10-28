@@ -9,6 +9,7 @@
   "dependencies": {
     "airplay-js": "^0.2.0",
     "clivas": "^0.1.4",
+    "keypress": "^0.2.1",
     "mime": "^1.2.11",
     "network-address": "0.0.4",
     "numeral": "^1.5.3",
