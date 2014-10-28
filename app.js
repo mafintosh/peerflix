@@ -291,7 +291,7 @@ var ontorrent = function(torrent) {
 			clivas.flush();
 		};
 
-		setInterval(draw, 500);
+		setInterval(draw, 200);
 		draw();
 	});
 
