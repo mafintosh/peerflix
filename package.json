@@ -11,6 +11,7 @@
     "mime": "^1.2.11",
     "network-address": "0.0.4",
     "numeral": "^1.5.3",
+    "opensubtitles-client": "^1.2.0",
     "optimist": "^0.6.1",
     "pump": "^0.3.1",
     "range-parser": "^1.0.0",

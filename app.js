@@ -8,6 +8,7 @@ var os = require('os');
 var address = require('network-address');
 var readTorrent = require('read-torrent');
 var proc = require('child_process');
+var subtitles = require('opensubtitles-client');
 var peerflix = require('./');
 
 var path = require('path');
@@ -28,6 +29,7 @@ var argv = rc('peerflix', {}, optimist
 	.alias('i', 'index').describe('i', 'changed streamed file (index)')
 	.alias('l', 'list').describe('l', 'list available files with corresponding index').boolean('l')
 	.alias('t', 'subtitles').describe('t', 'load subtitles file')
+    .alias('z', 'opensubtitles').describe('z', 'search opensubtitles for given language')
 	.alias('q', 'quiet').describe('q', 'be quiet').boolean('v')
 	.alias('v', 'vlc').describe('v', 'autoplay in vlc*').boolean('v')
 	.alias('s', 'airplay').describe('s', 'autoplay via AirPlay').boolean('a')
@@ -135,19 +137,7 @@ var ontorrent = function(torrent) {
 		engine.connect(peer);
 	})
 
-	engine.server.on('listening', function() {
-		var host = argv.hostname || address()
-		var href = 'http://'+host+':'+engine.server.address().port+'/';
-		var filename = engine.server.index.name.split('/').pop().replace(/\{|\}/g, '');
-		var filelength = engine.server.index.length;
-		var player = null;
-
-		if (argv.all) {
-			filename = engine.torrent.name;
-			filelength = engine.torrent.length;
-			href += '.m3u';
-		}
-
+    var startPlayer = function(href) {
 		if (argv.vlc && process.platform === 'win32') {
 			player = 'vlc';
 			var registry = require('windows-no-runnable').registry;
@@ -212,6 +202,38 @@ var ontorrent = function(torrent) {
 			});
 			browser.start();
 		}
+    };
+
+	engine.server.on('listening', function() {
+		var host = argv.hostname || address()
+		var href = 'http://'+host+':'+engine.server.address().port+'/';
+		var filename = engine.server.index.name.split('/').pop().replace(/\{|\}/g, '');
+		var filelength = engine.server.index.length;
+		var player = null;
+
+		if (argv.all) {
+			filename = engine.torrent.name;
+			filelength = engine.torrent.length;
+			href += '.m3u';
+		}
+
+        if (argv.z) {
+            var login = subtitles.api.login().done(function(token) {
+                subtitles.api.search(token, argv.z, filename).done(function(results){
+                    subtitles.downloader.download(results, 1, filename);
+                    subtitles.downloader.on('downloaded', function(sub) {
+                        subtitles.api.logout(login);
+                        VLC_ARGS += ' --sub-file=' + sub.file;
+                        OMX_EXEC += ' --subtitles ' + sub.file;
+                        MPLAYER_EXEC += ' -sub ' + sub.file;
+                        MPV_EXEC += ' --sub-file=' + sub.file;
+                        startPlayer(href);
+                    });
+                });
+            });
+        } else {
+            startPlayer(href);
+        }
 
 		if (argv.quiet) return console.log('server is listening on '+href);
 
