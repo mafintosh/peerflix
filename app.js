@@ -137,13 +137,16 @@ var ontorrent = function(torrent) {
 		engine.connect(peer);
 	})
 
+	if (argv['on-downloaded']) engine.on('uninterested', function() {
+		proc.exec(argv['on-downloaded'])
+	});
+
 	engine.server.on('listening', function() {
 		var host = argv.hostname || address()
 		var href = 'http://'+host+':'+engine.server.address().port+'/';
 		var filename = engine.server.index.name.split('/').pop().replace(/\{|\}/g, '');
 		var filelength = engine.server.index.length;
 		var player = null;
-		var downloaded = false;
 
 		if (argv.all) {
 			filename = engine.torrent.name;
@@ -217,12 +220,6 @@ var ontorrent = function(torrent) {
 		}
 
 		if (argv['on-listening']) proc.exec(argv['on-listening']+' '+href);
-
-		var downloaded_test = function() {
-			if(!downloaded && (downloaded = swarm.downloaded >= filelength) && argv['on-downloaded']) proc.exec(argv['on-downloaded'])
-		}
-		setInterval(downloaded_test, 500)
-		downloaded_test();
 
 		if (argv.quiet) return console.log('server is listening on '+href);
 
