@@ -44,8 +44,8 @@ var argv = rc('peerflix', {}, optimist
 	.alias('e', 'peer').describe('e', 'add peer by ip:port')
 	.alias('x', 'peer-port').describe('x', 'set peer listening port')
 	.alias('d', 'not-on-top').describe('d', 'do not float video on top').boolean('d')
-	.describe('ondownloaded', 'script to call when file is 100% downloaded')
-	.describe('onlistening', 'script to call when server goes live')
+	.describe('on-downloaded', 'script to call when file is 100% downloaded')
+	.describe('on-listening', 'script to call when server goes live')
 	.describe('version', 'prints current version').boolean('boolean')
 	.argv);
 
@@ -145,10 +145,6 @@ var ontorrent = function(torrent) {
 		var player = null;
 		var downloaded = false;
 
-		if (argv.onlistening) {
-			proc.exec(argv.onlistening+' '+href);
-		}
-
 		if (argv.all) {
 			filename = engine.torrent.name;
 			filelength = engine.torrent.length;
@@ -220,6 +216,14 @@ var ontorrent = function(torrent) {
 			browser.start();
 		}
 
+		if (argv['on-listening']) proc.exec(argv['on-listening']+' '+href);
+
+		var downloaded_test = function() {
+			if(!downloaded && (downloaded = swarm.downloaded >= filelength) && argv['on-downloaded']) proc.exec(argv['on-downloaded'])
+		}
+		setInterval(downloaded_test, 500)
+		downloaded_test();
+
 		if (argv.quiet) return console.log('server is listening on '+href);
 
 		var bytes = function(num) {
@@ -233,8 +237,6 @@ var ontorrent = function(torrent) {
 			var runtime = Math.floor((Date.now() - started) / 1000);
 			var linesremaining = clivas.height;
 			var peerslisted = 0;
-
-			if(!downloaded && (downloaded = swarm.downloaded >= filelength) && argv.ondownloaded) proc.exec(argv.ondownloaded)
 
 			clivas.clear();
 			if (argv.airplay) clivas.line('{green:streaming to} {bold:apple-tv} {green:using airplay}');
