@@ -137,9 +137,13 @@ var ontorrent = function(torrent) {
 		engine.connect(peer);
 	})
 
-	if (argv['on-downloaded']) engine.on('uninterested', function() {
-		proc.exec(argv['on-downloaded'])
-	});
+	if (argv['on-downloaded']){
+		var downloaded = false;
+		engine.on('uninterested', function() {
+			if(!downloaded) proc.exec(argv['on-downloaded'])
+			downloaded = true;
+		});
+	}
 
 	engine.server.on('listening', function() {
 		var host = argv.hostname || address()
