@@ -148,6 +148,7 @@ var ontorrent = function(torrent) {
 	engine.server.on('listening', function() {
 		var host = argv.hostname || address()
 		var href = 'http://'+host+':'+engine.server.address().port+'/';
+		var localHref = 'http://localhost:'+engine.server.address().port+'/';
 		var filename = engine.server.index.name.split('/').pop().replace(/\{|\}/g, '');
 		var filelength = engine.server.index.length;
 		var player = null;
@@ -156,6 +157,7 @@ var ontorrent = function(torrent) {
 			filename = engine.torrent.name;
 			filelength = engine.torrent.length;
 			href += '.m3u';
+			localHref += '.m3u'
 		}
 
 		if (argv.vlc && process.platform === 'win32') {
@@ -183,7 +185,7 @@ var ontorrent = function(torrent) {
 			if (key) {
 				var vlcPath = key['InstallDir'].value + path.sep + 'vlc';
 				VLC_ARGS = VLC_ARGS.split(' ');
-				VLC_ARGS.unshift(href);
+				VLC_ARGS.unshift(localHref);
 				proc.execFile(vlcPath, VLC_ARGS);
 			}
 		} else {
@@ -191,7 +193,7 @@ var ontorrent = function(torrent) {
 				player = 'vlc';
 				var root = '/Applications/VLC.app/Contents/MacOS/VLC'
 				var home = (process.env.HOME || '') + root
-				var vlc = proc.exec('vlc '+VLC_ARGS+' '+href+' || '+root+' '+VLC_ARGS+' '+href+' || '+home+' '+VLC_ARGS+' '+href, function(error, stdout, stderror){
+				var vlc = proc.exec('vlc '+VLC_ARGS+' '+localHref+' || '+root+' '+VLC_ARGS+' '+localHref+' || '+home+' '+VLC_ARGS+' '+localHref, function(error, stdout, stderror){
 					if (error) {
 						process.exit(0);
 					}
@@ -205,15 +207,15 @@ var ontorrent = function(torrent) {
 
 		if (argv.omx) {
 			player = 'omx';
-			proc.exec(OMX_EXEC+' '+href);
+			proc.exec(OMX_EXEC+' '+localHref);
 		}
 		if (argv.mplayer) {
 			player = 'mplayer';
-			proc.exec(MPLAYER_EXEC+' '+href);
+			proc.exec(MPLAYER_EXEC+' '+localHref);
 		}
 		if (argv.mpv) {
 			player = 'mpv';
-			proc.exec(MPV_EXEC+' '+href);
+			proc.exec(MPV_EXEC+' '+localHref);
 		}
 		if (argv.airplay) {
 			var browser = require('airplay-js').createBrowser();
