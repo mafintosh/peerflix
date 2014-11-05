@@ -9,7 +9,7 @@
   "dependencies": {
     "clivas": "^0.1.4",
     "mime": "^1.2.11",
-    "network-address": "0.0.4",
+    "network-address": "0.0.5",
     "numeral": "^1.5.3",
     "optimist": "^0.6.1",
     "pump": "^0.3.1",
