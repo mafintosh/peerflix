@@ -13,13 +13,6 @@ var peerflix = require('./');
 var path = require('path');
 
 process.title = 'peerflix';
-process.on('SIGINT', function() {
-	// we're doing some heavy lifting so it can take some time to exit... let's
-	// better output a status message so the user knows we're working on it :)
-	clivas.line('');
-	clivas.line('{yellow:info} {green:peerflix is exiting...}');
-	process.exit();
-});
 
 var argv = rc('peerflix', {}, optimist
 	.usage('Usage: $0 magnet-link-or-torrent [options]')
@@ -297,8 +290,16 @@ var ontorrent = function(torrent) {
 		});
 	});
 
+	var onexit = function() {
+		// we're doing some heavy lifting so it can take some time to exit... let's
+		// better output a status message so the user knows we're working on it :)
+		clivas.line('');
+		clivas.line('{yellow:info} {green:peerflix is exiting...}');
+	}
+
 	if(argv.remove) {
 		var remove = function() {
+			onexit()
 			engine.remove(function() {
 				process.exit();
 			});
@@ -306,6 +307,11 @@ var ontorrent = function(torrent) {
 
 		process.on('SIGINT', remove);
 		process.on('SIGTERM', remove);
+	} else {
+		process.on('SIGINT', function() {
+			onexit()
+			process.exit()
+		})
 	}
 };
 
