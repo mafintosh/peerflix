@@ -101,11 +101,14 @@ var ontorrent = function(torrent) {
 		invalid++;
 	});
 
+	var bytes = function(num) {
+		return numeral(num).format('0.0b');
+	};
 
 	if (argv.list) {
 		var onready = function() {
 			engine.files.forEach(function(file, i, files) {
-				clivas.line('{3+bold:'+i+'} : {magenta:'+file.name+'} : {blue:'+file.length+'}');
+				clivas.line('{3+bold:'+i+'} : {magenta:'+file.name+'} : {blue:'+bytes(file.length)+'}');
 			});
 			process.exit(0);
 		};
@@ -221,10 +224,6 @@ var ontorrent = function(torrent) {
 		if (argv['on-listening']) proc.exec(argv['on-listening']+' '+href);
 
 		if (argv.quiet) return console.log('server is listening on '+href);
-
-		var bytes = function(num) {
-			return numeral(num).format('0.0b');
-		};
 
 		process.stdout.write(new Buffer('G1tIG1sySg==', 'base64')); // clear for drawing
 
