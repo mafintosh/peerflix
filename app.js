@@ -105,7 +105,7 @@ var ontorrent = function(torrent) {
 	if (argv.list) {
 		var onready = function() {
 			engine.files.forEach(function(file, i, files) {
-				clivas.line('{3+bold:'+i+'} : {magenta:'+file.name+'}');
+				clivas.line('{3+bold:'+i+'} : {magenta:'+file.name+'} : {blue:'+file.length+'}');
 			});
 			process.exit(0);
 		};
