@@ -1,6 +1,6 @@
 {
   "name": "peerflix",
-  "version": "0.20.4",
+  "version": "0.21.3",
   "license": "MIT",
   "repository": "git://github.com/mafintosh/peerflix.git",
   "bin": {
@@ -10,7 +10,7 @@
     "clivas": "^0.1.4",
     "keypress": "^0.2.1",
     "mime": "^1.2.11",
-    "network-address": "0.0.4",
+    "network-address": "0.0.5",
     "numeral": "^1.5.3",
     "optimist": "^0.6.1",
     "pump": "^0.3.1",

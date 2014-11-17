@@ -14,13 +14,6 @@ var keypress = require('keypress');
 var path = require('path');
 
 process.title = 'peerflix';
-process.on('SIGINT', function() {
-	// we're doing some heavy lifting so it can take some time to exit... let's
-	// better output a status message so the user knows we're working on it :)
-	clivas.line('');
-	clivas.line('{yellow:info} {green:peerflix is exiting...}');
-	process.exit();
-});
 
 var argv = rc('peerflix', {}, optimist
 	.usage('Usage: $0 magnet-link-or-torrent [options]')
@@ -45,6 +38,8 @@ var argv = rc('peerflix', {}, optimist
 	.alias('e', 'peer').describe('e', 'add peer by ip:port')
 	.alias('x', 'peer-port').describe('x', 'set peer listening port')
 	.alias('d', 'not-on-top').describe('d', 'do not float video on top').boolean('d')
+	.describe('on-downloaded', 'script to call when file is 100% downloaded')
+	.describe('on-listening', 'script to call when server goes live')
 	.describe('version', 'prints current version').boolean('boolean')
 	.argv);
 
@@ -107,11 +102,14 @@ var ontorrent = function(torrent) {
 		invalid++;
 	});
 
+	var bytes = function(num) {
+		return numeral(num).format('0.0b');
+	};
 
 	if (argv.list) {
 		var onready = function() {
 			engine.files.forEach(function(file, i, files) {
-				clivas.line('{3+bold:'+i+'} : {magenta:'+file.name+'}');
+				clivas.line('{3+bold:'+i+'} : {magenta:'+file.name+'} : {blue:'+bytes(file.length)+'}');
 			});
 			process.exit(0);
 		};
@@ -136,9 +134,18 @@ var ontorrent = function(torrent) {
 		engine.connect(peer);
 	})
 
+	if (argv['on-downloaded']){
+		var downloaded = false;
+		engine.on('uninterested', function() {
+			if(!downloaded) proc.exec(argv['on-downloaded'])
+			downloaded = true;
+		});
+	}
+
 	engine.server.on('listening', function() {
 		var host = argv.hostname || address()
 		var href = 'http://'+host+':'+engine.server.address().port+'/';
+		var localHref = 'http://localhost:'+engine.server.address().port+'/';
 		var filename = engine.server.index.name.split('/').pop().replace(/\{|\}/g, '');
 		var filelength = engine.server.index.length;
 		var player = null;
@@ -173,6 +180,7 @@ var ontorrent = function(torrent) {
 			filename = engine.torrent.name;
 			filelength = engine.torrent.length;
 			href += '.m3u';
+			localHref += '.m3u'
 		}
 
 		if (argv.vlc && process.platform === 'win32') {
@@ -200,7 +208,7 @@ var ontorrent = function(torrent) {
 			if (key) {
 				var vlcPath = key['InstallDir'].value + path.sep + 'vlc';
 				VLC_ARGS = VLC_ARGS.split(' ');
-				VLC_ARGS.unshift(href);
+				VLC_ARGS.unshift(localHref);
 				proc.execFile(vlcPath, VLC_ARGS);
 			}
 		} else {
@@ -208,7 +216,7 @@ var ontorrent = function(torrent) {
 				player = 'vlc';
 				var root = '/Applications/VLC.app/Contents/MacOS/VLC'
 				var home = (process.env.HOME || '') + root
-				var vlc = proc.exec('vlc '+VLC_ARGS+' '+href+' || '+root+' '+VLC_ARGS+' '+href+' || '+home+' '+VLC_ARGS+' '+href, function(error, stdout, stderror){
+				var vlc = proc.exec('vlc '+VLC_ARGS+' '+localHref+' || '+root+' '+VLC_ARGS+' '+localHref+' || '+home+' '+VLC_ARGS+' '+localHref, function(error, stdout, stderror){
 					if (error) {
 						process.exit(0);
 					}
@@ -222,15 +230,15 @@ var ontorrent = function(torrent) {
 
 		if (argv.omx) {
 			player = 'omx';
-			proc.exec(OMX_EXEC+' '+href);
+			proc.exec(OMX_EXEC+' '+localHref);
 		}
 		if (argv.mplayer) {
 			player = 'mplayer';
-			proc.exec(MPLAYER_EXEC+' '+href);
+			proc.exec(MPLAYER_EXEC+' '+localHref);
 		}
 		if (argv.mpv) {
 			player = 'mpv';
-			proc.exec(MPV_EXEC+' '+href);
+			proc.exec(MPV_EXEC+' '+localHref);
 		}
 		if (argv.airplay) {
 			var browser = require('airplay-js').createBrowser();
@@ -240,11 +248,9 @@ var ontorrent = function(torrent) {
 			browser.start();
 		}
 
-		if (argv.quiet) return console.log('server is listening on '+href);
+		if (argv['on-listening']) proc.exec(argv['on-listening']+' '+href);
 
-		var bytes = function(num) {
-			return numeral(num).format('0.0b');
-		};
+		if (argv.quiet) return console.log('server is listening on '+href);
 
 		process.stdout.write(new Buffer('G1tIG1sySg==', 'base64')); // clear for drawing
 
@@ -317,8 +323,16 @@ var ontorrent = function(torrent) {
 		});
 	});
 
+	var onexit = function() {
+		// we're doing some heavy lifting so it can take some time to exit... let's
+		// better output a status message so the user knows we're working on it :)
+		clivas.line('');
+		clivas.line('{yellow:info} {green:peerflix is exiting...}');
+	}
+
 	if(argv.remove) {
 		var remove = function() {
+			onexit()
 			engine.remove(function() {
 				process.exit();
 			});
@@ -326,6 +340,11 @@ var ontorrent = function(torrent) {
 
 		process.on('SIGINT', remove);
 		process.on('SIGTERM', remove);
+	} else {
+		process.on('SIGINT', function() {
+			onexit()
+			process.exit()
+		})
 	}
 };
 
