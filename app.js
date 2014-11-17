@@ -159,6 +159,7 @@ var ontorrent = function(torrent) {
 
 			if (key.name !== 'space') return;
 
+			if(player) return;
 			if (paused === false) {
 				if(!argv.all) {
 					engine.server.index.deselect();
@@ -283,8 +284,12 @@ var ontorrent = function(torrent) {
 			clivas.line('{yellow:info} {green:verified} {bold:'+verified+'} {green:pieces and received} {bold:'+invalid+'} {green:invalid pieces}');
 			clivas.line('{yellow:info} {green:peer queue size is} {bold:'+swarm.queued+'}');
 			clivas.line('{80:}');
-			if (paused) clivas.line('{yellow:PAUSED} {green:Press SPACE to continue download}');
-			else clivas.line('{50+green:Press SPACE to pause download}');
+
+			if (!player) {
+				if (paused) clivas.line('{yellow:PAUSED} {green:Press SPACE to continue download}');
+				else clivas.line('{50+green:Press SPACE to pause download}');
+			}
+
 			clivas.line('');
 			linesremaining -= 9;
 
