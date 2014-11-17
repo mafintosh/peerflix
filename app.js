@@ -160,17 +160,26 @@ var ontorrent = function(torrent) {
 			if (key.name !== 'space') return;
 
 			if (paused === false) {
-				engine.files.forEach(function(file) {
-					file.deselect();
-				});
+				if(!argv.all) {
+					engine.server.index.deselect();
+				} else {
+					engine.files.forEach(function(file) {
+						file.deselect();
+					});
+				}
 				paused = true;
 				pausedAt = Date.now();
 				return;
 			}
 
-			engine.files.forEach(function(file) {
-				file.select();
-			});
+			if(!argv.all) {
+				engine.server.index.select();
+			} else {
+				engine.files.forEach(function(file) {
+					file.select();
+				});
+			}
+
 			paused = false;
 			timePaused += Date.now() - pausedAt;
 		});
