@@ -173,6 +173,7 @@ module.exports = function(torrent, opts) {
 	});
 
 	if (opts.peerPort) engine.listen(opts.peerPort);
+	else engine.listen();
 
 	return engine;
 };
