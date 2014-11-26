@@ -2,6 +2,7 @@ var torrentStream = require('torrent-stream');
 var http = require('http');
 var fs = require('fs');
 var rangeParser = require('range-parser');
+var xtend = require('xtend');
 var url = require('url');
 var mime = require('mime');
 var pump = require('pump');
@@ -156,7 +157,7 @@ module.exports = function(torrent, opts) {
 	// Parse blocklist
 	if (opts.blocklist) opts.blocklist = parseBlocklist(opts.blocklist);
 
-	var engine = torrentStream(torrent, opts);
+	var engine = torrentStream(torrent, xtend(opts, {port:opts.peerPort}));
 
 	// Just want torrent-stream to list files.
 	if (opts.list) return engine;
@@ -172,8 +173,7 @@ module.exports = function(torrent, opts) {
 		engine.server.listen(opts.port || 0, opts.hostname);
 	});
 
-	if (opts.peerPort) engine.listen(opts.peerPort);
-	else engine.listen();
+	engine.listen();
 
 	return engine;
 };
