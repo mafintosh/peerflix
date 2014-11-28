@@ -9,6 +9,7 @@ var address = require('network-address');
 var readTorrent = require('read-torrent');
 var proc = require('child_process');
 var peerflix = require('./');
+var keypress = require('keypress');
 
 var path = require('path');
 
@@ -148,6 +149,42 @@ var ontorrent = function(torrent) {
 		var filename = engine.server.index.name.split('/').pop().replace(/\{|\}/g, '');
 		var filelength = engine.server.index.length;
 		var player = null;
+		var paused = false;
+		var timePaused = 0;
+		var pausedAt = null;
+
+		keypress(process.stdin);
+		process.stdin.on('keypress', function(ch, key) {
+			if (key.name === 'c' && key.ctrl === true) return process.kill(process.pid, 'SIGINT');
+
+			if (key.name !== 'space') return;
+
+			if(player) return;
+			if (paused === false) {
+				if(!argv.all) {
+					engine.server.index.deselect();
+				} else {
+					engine.files.forEach(function(file) {
+						file.deselect();
+					});
+				}
+				paused = true;
+				pausedAt = Date.now();
+				return;
+			}
+
+			if(!argv.all) {
+				engine.server.index.select();
+			} else {
+				engine.files.forEach(function(file) {
+					file.select();
+				});
+			}
+
+			paused = false;
+			timePaused += Date.now() - pausedAt;
+		});
+		process.stdin.setRawMode(true);
 
 		if (argv.all) {
 			filename = engine.torrent.name;
@@ -229,7 +266,11 @@ var ontorrent = function(torrent) {
 
 		var draw = function() {
 			var unchoked = engine.swarm.wires.filter(active);
-			var runtime = Math.floor((Date.now() - started) / 1000);
+			var timeCurrentPause = 0;
+			if (paused === true) {
+				timeCurrentPause = Date.now() - pausedAt;
+			}
+			var runtime = Math.floor((Date.now() - started - timePaused - timeCurrentPause) / 1000);
 			var linesremaining = clivas.height;
 			var peerslisted = 0;
 
@@ -243,7 +284,14 @@ var ontorrent = function(torrent) {
 			clivas.line('{yellow:info} {green:verified} {bold:'+verified+'} {green:pieces and received} {bold:'+invalid+'} {green:invalid pieces}');
 			clivas.line('{yellow:info} {green:peer queue size is} {bold:'+swarm.queued+'}');
 			clivas.line('{80:}');
-			linesremaining -= 8;
+
+			if (!player) {
+				if (paused) clivas.line('{yellow:PAUSED} {green:Press SPACE to continue download}');
+				else clivas.line('{50+green:Press SPACE to pause download}');
+			}
+
+			clivas.line('');
+			linesremaining -= 9;
 
 			wires.every(function(wire) {
 				var tags = [];
@@ -263,7 +311,7 @@ var ontorrent = function(torrent) {
 			clivas.flush();
 		};
 
-		setInterval(draw, 500);
+		setInterval(draw, 200);
 		draw();
 	});
 
