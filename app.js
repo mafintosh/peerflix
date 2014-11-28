@@ -153,39 +153,6 @@ var ontorrent = function(torrent) {
 		var timePaused = 0;
 		var pausedAt = null;
 
-		keypress(process.stdin);
-		process.stdin.on('keypress', function(ch, key) {
-			if (key.name === 'c' && key.ctrl === true) return process.kill(process.pid, 'SIGINT');
-
-			if (key.name !== 'space') return;
-
-			if(player) return;
-			if (paused === false) {
-				if(!argv.all) {
-					engine.server.index.deselect();
-				} else {
-					engine.files.forEach(function(file) {
-						file.deselect();
-					});
-				}
-				paused = true;
-				pausedAt = Date.now();
-				return;
-			}
-
-			if(!argv.all) {
-				engine.server.index.select();
-			} else {
-				engine.files.forEach(function(file) {
-					file.select();
-				});
-			}
-
-			paused = false;
-			timePaused += Date.now() - pausedAt;
-		});
-		process.stdin.setRawMode(true);
-
 		if (argv.all) {
 			filename = engine.torrent.name;
 			filelength = engine.torrent.length;
@@ -263,6 +230,41 @@ var ontorrent = function(torrent) {
 		if (argv.quiet) return console.log('server is listening on '+href);
 
 		process.stdout.write(new Buffer('G1tIG1sySg==', 'base64')); // clear for drawing
+
+		if (!player) {
+			keypress(process.stdin);
+			process.stdin.on('keypress', function(ch, key) {
+				if (key.name === 'c' && key.ctrl === true) return process.kill(process.pid, 'SIGINT');
+
+				if (key.name !== 'space') return;
+
+				if(player) return;
+				if (paused === false) {
+					if(!argv.all) {
+						engine.server.index.deselect();
+					} else {
+						engine.files.forEach(function(file) {
+							file.deselect();
+						});
+					}
+					paused = true;
+					pausedAt = Date.now();
+					return;
+				}
+
+				if(!argv.all) {
+					engine.server.index.select();
+				} else {
+					engine.files.forEach(function(file) {
+						file.select();
+					});
+				}
+
+				paused = false;
+				timePaused += Date.now() - pausedAt;
+			});
+			process.stdin.setRawMode(true);
+		}
 
 		var draw = function() {
 			var unchoked = engine.swarm.wires.filter(active);
