@@ -231,7 +231,9 @@ var ontorrent = function(torrent) {
 
 		process.stdout.write(new Buffer('G1tIG1sySg==', 'base64')); // clear for drawing
 
-		if (!player) {
+		var interactive = !player && process.stdin.isTTY && !!process.stdin.setRawMode
+
+		if (interactive) {
 			keypress(process.stdin);
 			process.stdin.on('keypress', function(ch, key) {
 				if (key.name === 'c' && key.ctrl === true) return process.kill(process.pid, 'SIGINT');
@@ -287,7 +289,7 @@ var ontorrent = function(torrent) {
 			clivas.line('{yellow:info} {green:peer queue size is} {bold:'+swarm.queued+'}');
 			clivas.line('{80:}');
 
-			if (!player) {
+			if (interactive) {
 				if (paused) clivas.line('{yellow:PAUSED} {green:Press SPACE to continue download}');
 				else clivas.line('{50+green:Press SPACE to pause download}');
 			}
