@@ -240,7 +240,7 @@ var ontorrent = function(torrent) {
 
 				if (key.name !== 'space') return;
 
-				if(player) return;
+				if (player) return;
 				if (paused === false) {
 					if(!argv.all) {
 						engine.server.index.deselect();
@@ -251,10 +251,11 @@ var ontorrent = function(torrent) {
 					}
 					paused = true;
 					pausedAt = Date.now();
+					draw();
 					return;
 				}
 
-				if(!argv.all) {
+				if (!argv.all) {
 					engine.server.index.select();
 				} else {
 					engine.files.forEach(function(file) {
@@ -264,6 +265,7 @@ var ontorrent = function(torrent) {
 
 				paused = false;
 				timePaused += Date.now() - pausedAt;
+				draw();
 			});
 			process.stdin.setRawMode(true);
 		}
@@ -315,7 +317,7 @@ var ontorrent = function(torrent) {
 			clivas.flush();
 		};
 
-		setInterval(draw, 200);
+		setInterval(draw, 500);
 		draw();
 	});
 
