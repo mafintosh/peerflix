@@ -2,13 +2,17 @@
 
 Streaming torrent client for Node.js
 
-	npm install -g peerflix
+```
+npm install -g peerflix
+```
 
 ## Usage
 
 To try out peerflix start it with a magnet link or torrent file
 
-	peerflix "magnet:?xt=urn:btih:ef330b39f4801d25b4245212e75a38634bfc856e" --vlc
+```
+peerflix "magnet:?xt=urn:btih:ef330b39f4801d25b4245212e75a38634bfc856e" --vlc
+```
 
 Remember to put `"` around your magnet link since they usually contain `&`.
 
@@ -21,7 +25,9 @@ Simply open this address in vlc or similar to start viewing the file. If the tor
 
 To get a full list of available options run
 
-	peerflix --help
+```
+peerflix --help
+```
 
 ## Programmatic usage
 
@@ -31,8 +37,9 @@ If you want to build your own app using streaming bittorent in Node you should c
 
 Chromebooks are set to refuse all incoming connections by default - to change this:  
 
-
-	sudo iptables -P INPUT ACCEPT
+```
+sudo iptables -P INPUT ACCEPT
+```
 
 ## License
 
