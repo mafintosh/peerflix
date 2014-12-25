@@ -237,8 +237,8 @@ var ontorrent = function(torrent) {
     if (interactive) {
       keypress(process.stdin)
       process.stdin.on('keypress', function(ch, key) {
+        if (!key) return
         if (key.name === 'c' && key.ctrl === true) return process.kill(process.pid, 'SIGINT')
-
         if (key.name !== 'space') return
 
         if (player) return
