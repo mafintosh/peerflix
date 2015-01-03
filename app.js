@@ -10,6 +10,7 @@ var readTorrent = require('read-torrent')
 var proc = require('child_process')
 var peerflix = require('./')
 var keypress = require('keypress')
+var open = require('open')
 
 var path = require('path')
 
@@ -28,6 +29,7 @@ var argv = rc('peerflix', {}, optimist
   .alias('m', 'mplayer').describe('m', 'autoplay in mplayer*').boolean('m')
   .alias('k', 'mpv').describe('k', 'autoplay in mpv*').boolean('k')
   .alias('o', 'omx').describe('o', 'autoplay in omx**').boolean('o')
+  .alias('w', 'webplay').describe('w', 'autoplay in webplay').boolean('w')
   .alias('j', 'jack').describe('j', 'autoplay in omx** using the audio jack').boolean('j')
   .alias('f', 'path').describe('f', 'change buffer file path')
   .alias('b', 'blocklist').describe('b', 'use the specified blocklist')
@@ -217,6 +219,10 @@ var ontorrent = function(torrent) {
     if (argv.mpv) {
       player = 'mpv'
       proc.exec(MPV_EXEC+' '+localHref)
+    }
+    if (argv.webplay) {
+      player = 'webplay'
+      open('https://85d514b3e548d934d8ff7c45a54732e65a3162fe.htmlb.in/#'+localHref)
     }
     if (argv.airplay) {
       var browser = require('airplay-js').createBrowser()

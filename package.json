@@ -17,11 +17,13 @@
     "peerflix": "./app.js"
   },
   "dependencies": {
+    "airplay-js": "^0.2.5",
     "clivas": "^0.1.4",
     "keypress": "^0.2.1",
     "mime": "^1.2.11",
     "network-address": "0.0.5",
     "numeral": "^1.5.3",
+    "open": "0.0.5",
     "optimist": "^0.6.1",
     "pump": "^0.3.1",
     "range-parser": "^1.0.0",
@@ -29,8 +31,7 @@
     "read-torrent": "^1.1.0",
     "torrent-stream": "^0.16.2",
     "windows-no-runnable": "~0.0.6",
-    "xtend": "^4.0.0",
-    "airplay-js": "^0.2.5"
+    "xtend": "^4.0.0"
   },
   "devDependencies": {},
   "optionalDependencies": {
