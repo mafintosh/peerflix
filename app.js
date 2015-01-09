@@ -27,6 +27,7 @@ var argv = rc('peerflix', {}, optimist
   .alias('v', 'vlc').describe('v', 'autoplay in vlc*').boolean('v')
   .alias('s', 'airplay').describe('s', 'autoplay via AirPlay').boolean('a')
   .alias('m', 'mplayer').describe('m', 'autoplay in mplayer*').boolean('m')
+  .describe('mpc-hc', 'autoplay in MPC-HC player*').boolean('boolean')
   .alias('k', 'mpv').describe('k', 'autoplay in mpv*').boolean('k')
   .alias('o', 'omx').describe('o', 'autoplay in omx**').boolean('o')
   .alias('w', 'webplay').describe('w', 'autoplay in webplay').boolean('w')
@@ -68,6 +69,7 @@ var VLC_ARGS = '-q '+(onTop ? '--video-on-top' : '')+' --play-and-exit'
 var OMX_EXEC = argv.jack ? 'omxplayer -r -o local ' : 'omxplayer -r -o hdmi '
 var MPLAYER_EXEC = 'mplayer '+(onTop ? '-ontop' : '')+' -really-quiet -noidx -loop 0 '
 var MPV_EXEC = 'mpv '+(onTop ? '--ontop' : '')+' --really-quiet --loop=no '
+var MPC_HC_ARGS = '/play'
 
 if (argv.t) {
   VLC_ARGS += ' --sub-file=' + argv.t
@@ -84,6 +86,7 @@ if (argv._.length > 1) {
   OMX_EXEC += ' ' + playerArgs
   MPLAYER_EXEC += ' ' + playerArgs
   MPV_EXEC += ' ' + playerArgs
+  MPC_HC_ARGS += ' ' + playerArgs
 }
 
 var noop = function() {}
@@ -191,6 +194,13 @@ var ontorrent = function(torrent) {
         VLC_ARGS.unshift(localHref)
         proc.execFile(vlcPath, VLC_ARGS)
       }
+    } else if (argv.mpchc && process.platform === 'win32') {
+      player = 'mph-hc'
+      var registry = require('windows-no-runnable').registry
+      var key = registry('SOFTWARE/MPC-HC/MPC-HC')
+
+      var exePath = key['ExePath']
+      proc.execFile(exePath, '"' + localHref + '" ' + MPH_HC_ARGS)
     } else {
       if (argv.vlc) {
         player = 'vlc'
