@@ -27,7 +27,7 @@ var argv = rc('peerflix', {}, optimist
   .alias('v', 'vlc').describe('v', 'autoplay in vlc*').boolean('v')
   .alias('s', 'airplay').describe('s', 'autoplay via AirPlay').boolean('a')
   .alias('m', 'mplayer').describe('m', 'autoplay in mplayer*').boolean('m')
-  .describe('mpc-hc', 'autoplay in MPC-HC player*').boolean('boolean')
+  .describe('mpchc', 'autoplay in MPC-HC player*').boolean('boolean')
   .alias('k', 'mpv').describe('k', 'autoplay in mpv*').boolean('k')
   .alias('o', 'omx').describe('o', 'autoplay in omx**').boolean('o')
   .alias('w', 'webplay').describe('w', 'autoplay in webplay').boolean('w')
