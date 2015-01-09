@@ -86,7 +86,7 @@ if (argv._.length > 1) {
   VLC_ARGS += ' ' + playerArgs
   OMX_EXEC += ' ' + playerArgs
   MPLAYER_EXEC += ' ' + playerArgs
-  SMPLAYER_EXEC += ' ' + playerArgs;
+  SMPLAYER_EXEC += ' ' + playerArgs
   MPV_EXEC += ' ' + playerArgs
 }
 
@@ -221,8 +221,8 @@ var ontorrent = function(torrent) {
       proc.exec(MPLAYER_EXEC+' '+localHref)
     }
     if (argv.smplayer) {
-      player = 'smplayer';
-      proc.exec(SMPLAYER_EXEC+' '+localHref);
+      player = 'smplayer'
+      proc.exec(SMPLAYER_EXEC+' '+localHref)
     }
     if (argv.mpv) {
       player = 'mpv'
