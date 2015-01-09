@@ -197,7 +197,7 @@ var ontorrent = function(torrent) {
     } else if (argv.mpchc && process.platform === 'win32') {
       player = 'mph-hc'
       var registry = require('windows-no-runnable').registry
-      var key = registry('SOFTWARE/MPC-HC/MPC-HC')
+      var key = registry('HKCU/Software/MPC-HC/MPC-HC')
 
       var exePath = key['ExePath']
       proc.execFile(exePath, '"' + localHref + '" ' + MPH_HC_ARGS)
