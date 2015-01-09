@@ -27,6 +27,7 @@ var argv = rc('peerflix', {}, optimist
   .alias('v', 'vlc').describe('v', 'autoplay in vlc*').boolean('v')
   .alias('s', 'airplay').describe('s', 'autoplay via AirPlay').boolean('a')
   .alias('m', 'mplayer').describe('m', 'autoplay in mplayer*').boolean('m')
+  .alias('g', 'smplayer').describe('g', 'autoplay in smplayer*').boolean('g')
   .alias('k', 'mpv').describe('k', 'autoplay in mpv*').boolean('k')
   .alias('o', 'omx').describe('o', 'autoplay in omx**').boolean('o')
   .alias('w', 'webplay').describe('w', 'autoplay in webplay').boolean('w')
@@ -67,12 +68,14 @@ if (!filename) {
 var VLC_ARGS = '-q '+(onTop ? '--video-on-top' : '')+' --play-and-exit'
 var OMX_EXEC = argv.jack ? 'omxplayer -r -o local ' : 'omxplayer -r -o hdmi '
 var MPLAYER_EXEC = 'mplayer '+(onTop ? '-ontop' : '')+' -really-quiet -noidx -loop 0 '
+var SMPLAYER_EXEC = 'smplayer '+(onTop ? '-ontop' : '')
 var MPV_EXEC = 'mpv '+(onTop ? '--ontop' : '')+' --really-quiet --loop=no '
 
 if (argv.t) {
   VLC_ARGS += ' --sub-file=' + argv.t
   OMX_EXEC += ' --subtitles ' + argv.t
   MPLAYER_EXEC += ' -sub ' + argv.t
+  SMPLAYER_EXEC += ' -sub ' + argv.t
   MPV_EXEC += ' --sub-file=' + argv.t
 }
 
@@ -83,6 +86,7 @@ if (argv._.length > 1) {
   VLC_ARGS += ' ' + playerArgs
   OMX_EXEC += ' ' + playerArgs
   MPLAYER_EXEC += ' ' + playerArgs
+  SMPLAYER_EXEC += ' ' + playerArgs;
   MPV_EXEC += ' ' + playerArgs
 }
 
@@ -215,6 +219,10 @@ var ontorrent = function(torrent) {
     if (argv.mplayer) {
       player = 'mplayer'
       proc.exec(MPLAYER_EXEC+' '+localHref)
+    }
+    if (argv.smplayer) {
+      player = 'smplayer';
+      proc.exec(SMPLAYER_EXEC+' '+localHref);
     }
     if (argv.mpv) {
       player = 'mpv'
