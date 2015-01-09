@@ -200,7 +200,7 @@ var ontorrent = function(torrent) {
       var key = registry('HKCU/Software/MPC-HC/MPC-HC')
 
       var exePath = key['ExePath']
-      proc.execFile(exePath, '"' + localHref + '" ' + MPH_HC_ARGS)
+      proc.exec('"' + exePath + '" "' + localHref + '" ' + MPC_HC_ARGS)
     } else {
       if (argv.vlc) {
         player = 'vlc'
