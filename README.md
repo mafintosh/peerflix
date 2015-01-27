@@ -23,10 +23,10 @@ Remember to put `"` around your magnet link since they usually contain `&`.
 To stream music with a torrent file use the following command.
 
 ```
-peerflix "http://some-torrent/music.torrent" --a --vlc
+peerflix "http://some-torrent/music.torrent" -a --vlc
 ```
 
-The `--a` flag ensures that all files in the music repository are played with vlc.
+The `-a` flag ensures that all files in the music repository are played with vlc.
 Otherwise if the torrent contains multiple files, `peerflix` will choose the biggest one.
 To get a full list of available options run peerflix with the help flag.
 
