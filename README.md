@@ -8,22 +8,27 @@ npm install -g peerflix
 
 ## Usage
 
-To try out peerflix start it with a magnet link or torrent file
+Peerflix can be used with a magnet link or a torrent file.
+To stream a video with its magnet link use the following command.
 
 ```
 peerflix "magnet:?xt=urn:btih:ef330b39f4801d25b4245212e75a38634bfc856e" --vlc
 ```
 
 Remember to put `"` around your magnet link since they usually contain `&`.
-
-`peerflix` will print a terminal interface. this first line contains an address to a http server.
-Using `--vlc` will open the file in vlc when it's ready to stream.
+`peerflix` will print a terminal interface. The first line contains an address to a http server. The `--vlc` flag ensures vlc is opened when the torrent is ready to stream.
 
 ![peerflix](https://raw.github.com/mafintosh/peerflix/master/screenshot.png)
 
-Simply open this address in vlc or similar to start viewing the file. If the torrent contains multiple files `peerflix` will choose the biggest one.
+To stream music with a torrent file use the following command.
 
-To get a full list of available options run
+```
+peerflix "http://some-torrent/music.torrent" --a --vlc
+```
+
+The `--a` flag ensures that all files in the music repository are played with vlc.
+Otherwise if the torrent contains multiple files, `peerflix` will choose the biggest one.
+To get a full list of available options run peerflix with the help flag.
 
 ```
 peerflix --help
