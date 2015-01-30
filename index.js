@@ -7,11 +7,11 @@ var url = require('url')
 var mime = require('mime')
 var pump = require('pump')
 
-var parseBlocklist = function(filename) {
+var parseBlocklist = function (filename) {
   // TODO: support gzipped files
   var blocklistData = fs.readFileSync(filename, { encoding: 'utf8' })
   var blocklist = []
-  blocklistData.split('\n').forEach(function(line) {
+  blocklistData.split('\n').forEach(function (line) {
     var match = null
     if ((match = /^\s*[^#].*?\s*:\s*([a-f0-9.:]+?)\s*-\s*([a-f0-9.:]+?)\s*$/.exec(line))) {
       blocklist.push({
@@ -23,19 +23,19 @@ var parseBlocklist = function(filename) {
   return blocklist
 }
 
-var truthy = function() {
+var truthy = function () {
   return true
 }
 
-var createServer = function(e, opts) {
+var createServer = function (e, opts) {
   var server = http.createServer()
   var index = opts.index
   var getType = opts.type || mime.lookup.bind(mime)
   var filter = opts.filter || truthy
 
-  var onready = function() {
+  var onready = function () {
     if (typeof index !== 'number') {
-      index = e.files.reduce(function(a, b) {
+      index = e.files.reduce(function (a, b) {
         return a.length > b.length ? a : b
       })
       index = e.files.indexOf(index)
@@ -50,21 +50,21 @@ var createServer = function(e, opts) {
   if (e.torrent) onready()
   else e.on('ready', onready)
 
-  server.on('request', function(request, response) {
+  server.on('request', function (request, response) {
     var u = url.parse(request.url)
     var host = request.headers.host || 'localhost'
 
-    var toPlaylist = function() {
-      var toEntry = function(file, i) {
+    var toPlaylist = function () {
+      var toEntry = function (file, i) {
         return '#EXTINF:-1,' + file.path + '\n' + 'http://' + host + '/' + i
       }
 
       return '#EXTM3U\n' + e.files.filter(filter).map(toEntry).join('\n')
     }
 
-    var toJSON = function() {
-      var toEntry = function(file, i) {
-        return {name:file.name, length:file.length, url:'http://'+host+'/'+i}
+    var toJSON = function () {
+      var toEntry = function (file, i) {
+        return {name: file.name, length: file.length, url: 'http://' + host + '/' + i}
       }
 
       return JSON.stringify(e.files.filter(filter).map(toEntry), null, '  ')
@@ -86,7 +86,7 @@ var createServer = function(e, opts) {
     }
 
     if (request.headers.origin) response.setHeader('Access-Control-Allow-Origin', request.headers.origin)
-    if (u.pathname === '/') u.pathname = '/'+index
+    if (u.pathname === '/') u.pathname = '/' + index
 
     if (u.pathname === '/favicon.ico') {
       response.statusCode = 404
@@ -110,8 +110,8 @@ var createServer = function(e, opts) {
       return
     }
 
-    e.files.forEach(function(file, i) {
-      if (u.pathname.slice(1) === file.name) u.pathname = '/'+i
+    e.files.forEach(function (file, i) {
+      if (u.pathname.slice(1) === file.name) u.pathname = '/' + i
     })
 
     var i = Number(u.pathname.slice(1))
@@ -138,44 +138,44 @@ var createServer = function(e, opts) {
 
     response.statusCode = 206
     response.setHeader('Content-Length', range.end - range.start + 1)
-    response.setHeader('Content-Range', 'bytes '+range.start+'-'+range.end+'/'+file.length)
+    response.setHeader('Content-Range', 'bytes ' + range.start + '-' + range.end + '/' + file.length)
     response.setHeader('transferMode.dlna.org', 'Streaming')
     response.setHeader('contentFeatures.dlna.org', 'DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=017000 00000000000000000000000000')
     if (request.method === 'HEAD') return response.end()
     pump(file.createReadStream(range), response)
   })
 
-  server.on('connection', function(socket) {
+  server.on('connection', function (socket) {
     socket.setTimeout(36000000)
   })
 
   return server
 }
 
-module.exports = function(torrent, opts) {
+module.exports = function (torrent, opts) {
   if (!opts) opts = {}
 
   // Parse blocklist
   if (opts.blocklist) opts.blocklist = parseBlocklist(opts.blocklist)
 
-  var engine = torrentStream(torrent, xtend(opts, {port:opts.peerPort}))
+  var engine = torrentStream(torrent, xtend(opts, {port: opts.peerPort}))
 
   // Just want torrent-stream to list files.
   if (opts.list) return engine
 
   // Pause/Resume downloading as needed
-  engine.on('uninterested', function() {
+  engine.on('uninterested', function () {
     engine.swarm.pause()
   })
-  
-  engine.on('interested',   function() {
+
+  engine.on('interested',   function () {
     engine.swarm.resume()
   })
 
   engine.server = createServer(engine, opts)
 
   // Listen when torrent-stream is ready, by default a random port.
-  engine.on('ready', function() {
+  engine.on('ready', function () {
     engine.server.listen(opts.port || 0, opts.hostname)
   })
 

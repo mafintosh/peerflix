@@ -33,8 +33,13 @@
     "windows-no-runnable": "~0.0.6",
     "xtend": "^4.0.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "standard": "^2.2.3"
+  },
   "optionalDependencies": {
     "airplay-js": "^0.2.5"
+  },
+  "scripts": {
+    "test": "standard"
   }
 }
