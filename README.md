@@ -6,6 +6,8 @@ Streaming torrent client for Node.js
 npm install -g peerflix
 ```
 
+[![build status](http://img.shields.io/travis/mafintosh/peerflix.svg?style=flat)](http://travis-ci.org/mafintosh/peerflix)
+
 ## Usage
 
 Peerflix can be used with a magnet link or a torrent file.
