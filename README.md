@@ -48,6 +48,11 @@ Chromebooks are set to refuse all incoming connections by default - to change th
 sudo iptables -P INPUT ACCEPT
 ```
 
+## Chromecast
+
+If you wanna use peerflix on your chromecast checkout [peercast](https://github.com/mafintosh/peercast)
+or [castnow](https://github.com/xat/castnow)
+
 ## License
 
 MIT
