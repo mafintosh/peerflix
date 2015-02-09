@@ -168,7 +168,7 @@ module.exports = function (torrent, opts) {
     engine.swarm.pause()
   })
 
-  engine.on('interested',   function () {
+  engine.on('interested', function () {
     engine.swarm.resume()
   })
 
