@@ -29,6 +29,8 @@ var argv = rc('peerflix', {}, optimist
   .alias('m', 'mplayer').describe('m', 'autoplay in mplayer*').boolean('m')
   .alias('g', 'smplayer').describe('g', 'autoplay in smplayer*').boolean('g')
   .describe('mpchc', 'autoplay in MPC-HC player*').boolean('boolean')
+  .describe('potplayer', 'autoplay in Potplayer*').boolean('boolean')
+  .describe('potplayer64', 'autoplay in Potplayer 64-bit*').boolean('boolean')
   .alias('k', 'mpv').describe('k', 'autoplay in mpv*').boolean('k')
   .alias('o', 'omx').describe('o', 'autoplay in omx**').boolean('o')
   .alias('w', 'webplay').describe('w', 'autoplay in webplay').boolean('w')
@@ -72,6 +74,8 @@ var MPLAYER_EXEC = 'mplayer ' + (onTop ? '-ontop' : '') + ' -really-quiet -noidx
 var SMPLAYER_EXEC = 'smplayer ' + (onTop ? '-ontop' : '')
 var MPV_EXEC = 'mpv ' + (onTop ? '--ontop' : '') + ' --really-quiet --loop=no '
 var MPC_HC_ARGS = '/play'
+var POTPLAYER_ARGS = ''
+var POTPLAYER64_ARGS = ''
 
 if (argv.t) {
   VLC_ARGS += ' --sub-file=' + argv.t
@@ -91,6 +95,8 @@ if (argv._.length > 1) {
   SMPLAYER_EXEC += ' ' + playerArgs
   MPV_EXEC += ' ' + playerArgs
   MPC_HC_ARGS += ' ' + playerArgs
+  POTPLAYER_ARGS += ' ' + playerArgs
+  POTPLAYER64_ARGS += ' ' + playerArgs
 }
 
 var noop = function () {}
@@ -205,6 +211,18 @@ var ontorrent = function (torrent) {
 
       var exePath = key['ExePath']
       proc.exec('"' + exePath + '" "' + localHref + '" ' + MPC_HC_ARGS)
+    } else if (argv.potplayer && process.platform === 'win32') {
+      player = 'potplayer'
+      registry = require('windows-no-runnable').registry
+      key = registry('HKCU/SOFTWARE/DAUM/PotPlayer')
+      var potplayerPath = key['ProgramPath'].value
+      proc.exec('"' + potplayerPath + '" "' + localHref + '" ' + POTPLAYER_ARGS)
+    } else if (argv.potplayer64 && process.platform === 'win32') {
+      player = 'potplayer64'
+      registry = require('windows-no-runnable').registry
+      key = registry('HKCU/SOFTWARE/DAUM/PotPlayer64')
+      var potplayer64Path = key['ProgramPath'].value
+      proc.exec('"' + potplayer64Path + '" "' + localHref + '" ' + POTPLAYER64_ARGS)
     } else {
       if (argv.vlc) {
         player = 'vlc'
