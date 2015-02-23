@@ -127,7 +127,7 @@ var ontorrent = function (torrent) {
           message: 'Choose one file',
           choices: engine.files.map(function (file, i) {
             return {
-              name: file.name,
+              name: file.name + ' : ' + bytes(file.length),
               value: i
           } })}], function (answers) {
             argv.index = answers.file
