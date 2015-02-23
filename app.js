@@ -11,6 +11,7 @@ var proc = require('child_process')
 var peerflix = require('./')
 var keypress = require('keypress')
 var openUrl = require('open')
+var inquirer = require('inquirer')
 
 var path = require('path')
 
@@ -116,11 +117,29 @@ var ontorrent = function (torrent) {
   }
 
   if (argv.list) {
+    var interactive = process.stdin.isTTY && !!process.stdin.setRawMode
+
     var onready = function () {
-      engine.files.forEach(function (file, i, files) {
-        clivas.line('{3+bold:' + i + '} : {magenta:' + file.name + '} : {blue:' + bytes(file.length) + '}')
-      })
-      process.exit(0)
+      if (interactive) {
+        inquirer.prompt([{
+          type: 'list',
+          name: 'file',
+          message: 'Choose one file',
+          choices: engine.files.map(function (file, i) {
+            return {
+              name: file.name + ' : ' + bytes(file.length),
+              value: i
+          } })}], function (answers) {
+            argv.index = answers.file
+            delete argv.list
+            ontorrent(torrent)
+          })
+      } else {
+        engine.files.forEach(function (file, i, files) {
+          clivas.line('{3+bold:' + i + '} : {magenta:' + file.name + '} : {blue:' + bytes(file.length) + '}')
+        })
+        process.exit(0)
+      }
     }
     if (engine.torrent) onready()
     else engine.on('ready', onready)
