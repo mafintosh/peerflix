@@ -30,6 +30,7 @@ var argv = rc('peerflix', {}, optimist
   .alias('m', 'mplayer').describe('m', 'autoplay in mplayer*').boolean('m')
   .alias('g', 'smplayer').describe('g', 'autoplay in smplayer*').boolean('g')
   .describe('mpchc', 'autoplay in MPC-HC player*').boolean('boolean')
+  .describe('potplayer', 'autoplay in Potplayer*').boolean('boolean')
   .alias('k', 'mpv').describe('k', 'autoplay in mpv*').boolean('k')
   .alias('o', 'omx').describe('o', 'autoplay in omx**').boolean('o')
   .alias('w', 'webplay').describe('w', 'autoplay in webplay').boolean('w')
@@ -73,6 +74,7 @@ var MPLAYER_EXEC = 'mplayer ' + (onTop ? '-ontop' : '') + ' -really-quiet -noidx
 var SMPLAYER_EXEC = 'smplayer ' + (onTop ? '-ontop' : '')
 var MPV_EXEC = 'mpv ' + (onTop ? '--ontop' : '') + ' --really-quiet --loop=no '
 var MPC_HC_ARGS = '/play'
+var POTPLAYER_ARGS = ''
 
 var enc = function (s) {
   return /\s/.test(s) ? JSON.stringify(s) : s
@@ -84,6 +86,7 @@ if (argv.t) {
   MPLAYER_EXEC += ' -sub ' + enc(argv.t)
   SMPLAYER_EXEC += ' -sub ' + enc(argv.t)
   MPV_EXEC += ' --sub-file=' + enc(argv.t)
+  POTPLAYER_ARGS += ' ' + enc(argv.t)
 }
 
 if (argv._.length > 1) {
@@ -96,6 +99,7 @@ if (argv._.length > 1) {
   SMPLAYER_EXEC += ' ' + playerArgs
   MPV_EXEC += ' ' + playerArgs
   MPC_HC_ARGS += ' ' + playerArgs
+  POTPLAYER_ARGS += ' ' + playerArgs
 }
 
 var noop = function () {}
@@ -228,6 +232,19 @@ var ontorrent = function (torrent) {
 
       var exePath = key['ExePath']
       proc.exec('"' + exePath + '" "' + localHref + '" ' + MPC_HC_ARGS)
+    } else if (argv.potplayer && process.platform === 'win32') {
+      player = 'potplayer'
+      registry = require('windows-no-runnable').registry
+      if (process.arch === 'x64')
+        key = registry('HKCU/Software/DAUM/PotPlayer64')
+
+      if (!key['ProgramPath'])
+        key = registry('HKCU/Software/DAUM/PotPlayer')
+
+      if (key['ProgramPath']) {
+        var potplayerPath = key['ProgramPath'].value
+        proc.exec('"' + potplayerPath + '" "' + localHref + '" ' + POTPLAYER_ARGS)
+      }
     } else {
       if (argv.vlc) {
         player = 'vlc'
