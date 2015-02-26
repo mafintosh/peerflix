@@ -74,12 +74,16 @@ var SMPLAYER_EXEC = 'smplayer ' + (onTop ? '-ontop' : '')
 var MPV_EXEC = 'mpv ' + (onTop ? '--ontop' : '') + ' --really-quiet --loop=no '
 var MPC_HC_ARGS = '/play'
 
+var enc = function (s) {
+  return /\s/.test(s) ? JSON.stringify(s) : s
+}
+
 if (argv.t) {
-  VLC_ARGS += ' --sub-file=' + argv.t
-  OMX_EXEC += ' --subtitles ' + argv.t
-  MPLAYER_EXEC += ' -sub ' + argv.t
-  SMPLAYER_EXEC += ' -sub ' + argv.t
-  MPV_EXEC += ' --sub-file=' + argv.t
+  VLC_ARGS += ' --sub-file=' + enc(argv.t)
+  OMX_EXEC += ' --subtitles ' + enc(argv.t)
+  MPLAYER_EXEC += ' -sub ' + enc(argv.t)
+  SMPLAYER_EXEC += ' -sub ' + enc(argv.t)
+  MPV_EXEC += ' --sub-file=' + enc(argv.t)
 }
 
 if (argv._.length > 1) {
