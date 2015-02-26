@@ -36,6 +36,15 @@ To get a full list of available options run peerflix with the help flag.
 peerflix --help
 ```
 
+Examples of usage of could be
+
+```
+peerflix magnet-link --vlc -- --fullscreen # will pass --fullscreen to vlc
+peerflix magnet-link --mplayer --subtitles subtitle-file.srt # play in mplayer with subtitles
+peerflix magnet-link --connection 200 # set max connection to 200
+```
+
+
 ## Programmatic usage
 
 If you want to build your own app using streaming bittorent in Node you should checkout [torrent-stream](https://github.com/mafintosh/torrent-stream)
