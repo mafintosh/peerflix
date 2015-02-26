@@ -11,6 +11,7 @@ var proc = require('child_process')
 var peerflix = require('./')
 var keypress = require('keypress')
 var openUrl = require('open')
+var inquirer = require('inquirer')
 
 var path = require('path')
 
@@ -30,7 +31,6 @@ var argv = rc('peerflix', {}, optimist
   .alias('g', 'smplayer').describe('g', 'autoplay in smplayer*').boolean('g')
   .describe('mpchc', 'autoplay in MPC-HC player*').boolean('boolean')
   .describe('potplayer', 'autoplay in Potplayer*').boolean('boolean')
-  .describe('potplayer64', 'autoplay in Potplayer 64-bit*').boolean('boolean')
   .alias('k', 'mpv').describe('k', 'autoplay in mpv*').boolean('k')
   .alias('o', 'omx').describe('o', 'autoplay in omx**').boolean('o')
   .alias('w', 'webplay').describe('w', 'autoplay in webplay').boolean('w')
@@ -75,14 +75,18 @@ var SMPLAYER_EXEC = 'smplayer ' + (onTop ? '-ontop' : '')
 var MPV_EXEC = 'mpv ' + (onTop ? '--ontop' : '') + ' --really-quiet --loop=no '
 var MPC_HC_ARGS = '/play'
 var POTPLAYER_ARGS = ''
-var POTPLAYER64_ARGS = ''
+
+var enc = function (s) {
+  return /\s/.test(s) ? JSON.stringify(s) : s
+}
 
 if (argv.t) {
-  VLC_ARGS += ' --sub-file=' + argv.t
-  OMX_EXEC += ' --subtitles ' + argv.t
-  MPLAYER_EXEC += ' -sub ' + argv.t
-  SMPLAYER_EXEC += ' -sub ' + argv.t
-  MPV_EXEC += ' --sub-file=' + argv.t
+  VLC_ARGS += ' --sub-file=' + enc(argv.t)
+  OMX_EXEC += ' --subtitles ' + enc(argv.t)
+  MPLAYER_EXEC += ' -sub ' + enc(argv.t)
+  SMPLAYER_EXEC += ' -sub ' + enc(argv.t)
+  MPV_EXEC += ' --sub-file=' + enc(argv.t)
+  POTPLAYER_ARGS += ' ' + enc(argv.t)
 }
 
 if (argv._.length > 1) {
@@ -96,7 +100,6 @@ if (argv._.length > 1) {
   MPV_EXEC += ' ' + playerArgs
   MPC_HC_ARGS += ' ' + playerArgs
   POTPLAYER_ARGS += ' ' + playerArgs
-  POTPLAYER64_ARGS += ' ' + playerArgs
 }
 
 var noop = function () {}
@@ -122,11 +125,29 @@ var ontorrent = function (torrent) {
   }
 
   if (argv.list) {
+    var interactive = process.stdin.isTTY && !!process.stdin.setRawMode
+
     var onready = function () {
-      engine.files.forEach(function (file, i, files) {
-        clivas.line('{3+bold:' + i + '} : {magenta:' + file.name + '} : {blue:' + bytes(file.length) + '}')
-      })
-      process.exit(0)
+      if (interactive) {
+        inquirer.prompt([{
+          type: 'list',
+          name: 'file',
+          message: 'Choose one file',
+          choices: engine.files.map(function (file, i) {
+            return {
+              name: file.name + ' : ' + bytes(file.length),
+              value: i
+          } })}], function (answers) {
+            argv.index = answers.file
+            delete argv.list
+            ontorrent(torrent)
+          })
+      } else {
+        engine.files.forEach(function (file, i, files) {
+          clivas.line('{3+bold:' + i + '} : {magenta:' + file.name + '} : {blue:' + bytes(file.length) + '}')
+        })
+        process.exit(0)
+      }
     }
     if (engine.torrent) onready()
     else engine.on('ready', onready)
@@ -214,15 +235,16 @@ var ontorrent = function (torrent) {
     } else if (argv.potplayer && process.platform === 'win32') {
       player = 'potplayer'
       registry = require('windows-no-runnable').registry
-      key = registry('HKCU/SOFTWARE/DAUM/PotPlayer')
-      var potplayerPath = key['ProgramPath'].value
-      proc.exec('"' + potplayerPath + '" "' + localHref + '" ' + POTPLAYER_ARGS)
-    } else if (argv.potplayer64 && process.platform === 'win32') {
-      player = 'potplayer64'
-      registry = require('windows-no-runnable').registry
-      key = registry('HKCU/SOFTWARE/DAUM/PotPlayer64')
-      var potplayer64Path = key['ProgramPath'].value
-      proc.exec('"' + potplayer64Path + '" "' + localHref + '" ' + POTPLAYER64_ARGS)
+      if (process.arch === 'x64')
+        key = registry('HKCU/Software/DAUM/PotPlayer64')
+
+      if (!key['ProgramPath'])
+        key = registry('HKCU/Software/DAUM/PotPlayer')
+
+      if (key['ProgramPath']) {
+        var potplayerPath = key['ProgramPath'].value
+        proc.exec('"' + potplayerPath + '" "' + localHref + '" ' + POTPLAYER_ARGS)
+      }
     } else {
       if (argv.vlc) {
         player = 'vlc'
