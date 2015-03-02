@@ -67,7 +67,7 @@ var createServer = function (e, opts) {
       var activePeers = totalPeers.filter(function (wire) {
         return !wire.peerChoking
       })
-      var totalLength = e.files.reduce(function(prevFileLength, currFile) {
+      var totalLength = e.files.reduce(function (prevFileLength, currFile) {
         return prevFileLength + currFile.length
       }, 0)
 
@@ -75,8 +75,8 @@ var createServer = function (e, opts) {
         totalLength: totalLength,
         downloaded: e.swarm.downloaded,
         uploaded: e.swarm.uploaded,
-        downloadSpeed: parseInt(e.swarm.downloadSpeed()),
-        uploadSpeed: parseInt(e.swarm.uploadSpeed()),
+        downloadSpeed: parseInt(e.swarm.downloadSpeed(), 10),
+        uploadSpeed: parseInt(e.swarm.uploadSpeed(), 10),
         totalPeers: totalPeers.length,
         activePeers: activePeers.length
       }
