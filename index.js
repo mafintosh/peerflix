@@ -63,26 +63,35 @@ var createServer = function (e, opts) {
     }
 
     var toJSON = function () {
-      var toEntry = function (file, i) {
-        var totalPeers = e.swarm.wires
-        var activePeers = totalPeers.filter(function (wire) {
-          return !wire.peerChoking
-        })
+      var totalPeers = e.swarm.wires
+      var activePeers = totalPeers.filter(function (wire) {
+        return !wire.peerChoking
+      })
+      var totalLength = e.files.reduce(function(prevFileLength, currFile) {
+        return prevFileLength + currFile.length
+      }, 0)
 
+      var swarmStats = {
+        totalLength: totalLength,
+        downloaded: e.swarm.downloaded,
+        uploaded: e.swarm.uploaded,
+        downloadSpeed: parseInt(e.swarm.downloadSpeed()),
+        uploadSpeed: parseInt(e.swarm.uploadSpeed()),
+        totalPeers: totalPeers.length,
+        activePeers: activePeers.length
+      }
+
+      var toEntry = function (file, i) {
         return {
-          url: 'http://' + host + '/' + i,
           name: file.name,
-          length: file.length,
-          downloaded: e.swarm.downloaded,
-          uploaded: e.swarm.uploaded,
-          downloadSpeed: parseInt(e.swarm.downloadSpeed()),
-          uploadSpeed: parseInt(e.swarm.uploadSpeed()),
-          totalPeers: totalPeers.length,
-          activePeers: activePeers.length
+          url: 'http://' + host + '/' + i,
+          length: file.length
         }
       }
 
-      return JSON.stringify(e.files.filter(filter).map(toEntry), null, '  ')
+      swarmStats.files = e.files.filter(filter).map(toEntry)
+
+      return JSON.stringify(swarmStats, null, '  ')
     }
 
     // Allow CORS requests to specify arbitrary headers, e.g. 'Range',
