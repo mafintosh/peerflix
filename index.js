@@ -64,7 +64,22 @@ var createServer = function (e, opts) {
 
     var toJSON = function () {
       var toEntry = function (file, i) {
-        return {name: file.name, length: file.length, url: 'http://' + host + '/' + i}
+        var totalPeers = e.swarm.wires
+        var activePeers = totalPeers.filter(function (wire) {
+          return !wire.peerChoking
+        })
+
+        return {
+          url: 'http://' + host + '/' + i,
+          name: file.name,
+          length: file.length,
+          downloaded: e.swarm.downloaded,
+          uploaded: e.swarm.uploaded,
+          downloadSpeed: parseInt(e.swarm.downloadSpeed()),
+          uploadSpeed: parseInt(e.swarm.uploadSpeed()),
+          totalPeers: totalPeers.length,
+          activePeers: activePeers.length
+        }
       }
 
       return JSON.stringify(e.files.filter(filter).map(toEntry), null, '  ')
