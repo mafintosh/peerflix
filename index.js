@@ -32,6 +32,7 @@ var createServer = function (e, opts) {
   var index = opts.index
   var getType = opts.type || mime.lookup.bind(mime)
   var filter = opts.filter || truthy
+  var videoPath = opts.videoPath || '/'
 
   var onready = function () {
     if (typeof index !== 'number') {
@@ -86,7 +87,7 @@ var createServer = function (e, opts) {
     }
 
     if (request.headers.origin) response.setHeader('Access-Control-Allow-Origin', request.headers.origin)
-    if (u.pathname === '/') u.pathname = '/' + index
+    if (u.pathname === videoPath) u.pathname = '/' + index
 
     if (u.pathname === '/favicon.ico') {
       response.statusCode = 404
