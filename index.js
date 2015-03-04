@@ -128,7 +128,7 @@ var createServer = function (e, opts) {
     response.setHeader('Accept-Ranges', 'bytes')
     response.setHeader('Content-Type', getType(file.name))
     response.setHeader('transferMode.dlna.org', 'Streaming')
-    response.setHeader('contentFeatures.dlna.org', 'DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=017000 00000000000000000000000000')
+    response.setHeader('contentFeatures.dlna.org', 'DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01700000000000000000000000000000')
     if (!range) {
       response.setHeader('Content-Length', file.length)
       if (request.method === 'HEAD') return response.end()
@@ -139,8 +139,6 @@ var createServer = function (e, opts) {
     response.statusCode = 206
     response.setHeader('Content-Length', range.end - range.start + 1)
     response.setHeader('Content-Range', 'bytes ' + range.start + '-' + range.end + '/' + file.length)
-    response.setHeader('transferMode.dlna.org', 'Streaming')
-    response.setHeader('contentFeatures.dlna.org', 'DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=017000 00000000000000000000000000')
     if (request.method === 'HEAD') return response.end()
     pump(file.createReadStream(range), response)
   })
