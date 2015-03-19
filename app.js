@@ -238,7 +238,7 @@ var ontorrent = function (torrent) {
       if (process.arch === 'x64')
         key = registry('HKCU/Software/DAUM/PotPlayer64')
 
-      if (!key['ProgramPath'])
+      if (!key || !key['ProgramPath'])
         key = registry('HKCU/Software/DAUM/PotPlayer')
 
       if (key['ProgramPath']) {
