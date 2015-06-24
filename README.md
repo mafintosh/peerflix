@@ -62,6 +62,14 @@ sudo iptables -P INPUT ACCEPT
 If you wanna use peerflix on your chromecast checkout [peercast](https://github.com/mafintosh/peercast)
 or [castnow](https://github.com/xat/castnow)
 
+
+## Network Traffic Shapers
+
+Shapers allow you to stream while on a shared network by limiting bandwidth.
+On Windows you can use netlimiter.
+On Linux you can use tc, trickle, or wondershaper.
+On OSX you can use Network Link Conditioner
+
 ## License
 
 MIT
