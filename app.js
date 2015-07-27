@@ -11,7 +11,7 @@ var peerflix = require('./')
 var keypress = require('keypress')
 var openUrl = require('open')
 var inquirer = require('inquirer')
-var simpleGet = require('simple-get');
+var simpleGet = require('simple-get')
 
 var path = require('path')
 
@@ -235,12 +235,12 @@ var ontorrent = function (torrent) {
     } else if (argv.potplayer && process.platform === 'win32') {
       player = 'potplayer'
       registry = require('windows-no-runnable').registry
-      if (process.arch === 'x64')
+      if (process.arch === 'x64') {
         key = registry('HKCU/Software/DAUM/PotPlayer64')
-
-      if (!key || !key['ProgramPath'])
+      }
+      if (!key || !key['ProgramPath']) {
         key = registry('HKCU/Software/DAUM/PotPlayer')
-
+      }
       if (key['ProgramPath']) {
         var potplayerPath = key['ProgramPath'].value
         proc.exec('"' + potplayerPath + '" "' + localHref + '" ' + POTPLAYER_ARGS)
@@ -436,14 +436,14 @@ var ontorrent = function (torrent) {
 if (/^magnet:/.test(filename)) {
   ontorrent(filename)
 } else if (/^https?:/.test(filename)) {
-  simpleGet.concat(filename, function(err, data){
+  simpleGet.concat(filename, function (err, data) {
     if (err) {
-        console.error(err.message)
-        process.exit(1)
+      console.error(err.message)
+      process.exit(1)
     } else {
-        ontorrent(data)
+      ontorrent(data)
     }
   })
 } else {
-    console.log('Invalid torrent identifier!');
+  console.log('Invalid torrent identifier!')
 }
