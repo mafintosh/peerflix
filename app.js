@@ -179,7 +179,7 @@ var ontorrent = function (torrent) {
   if (argv['on-downloaded']) {
     var downloaded = false
     engine.on('uninterested', function () {
-      if (!downloaded) proc.exec(argv['on-downloaded'])
+      if (!downloaded) spawn(argv['on-downloaded'])
       downloaded = true
     })
   }
@@ -295,7 +295,7 @@ var ontorrent = function (torrent) {
       browser.start()
     }
 
-    if (argv['on-listening']) proc.exec(argv['on-listening'] + ' ' + href)
+    if (argv['on-listening']) spawn(argv['on-listening'] + ' ' + href)
 
     if (argv.quiet) return console.log('server is listening on ' + href)
 
