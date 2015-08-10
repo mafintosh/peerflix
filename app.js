@@ -104,6 +104,11 @@ if (argv._.length > 1) {
 
 var noop = function () {}
 
+var spawn = function (commandString) {
+  var parts = commandString.split(/\s+/g)
+  proc.spawn(parts[0], parts.slice(1), { stdio: 'inherit' })
+}
+
 var ontorrent = function (torrent) {
   if (argv['peer-port']) argv.peerPort = Number(argv['peer-port'])
 
@@ -264,7 +269,7 @@ var ontorrent = function (torrent) {
 
     if (argv.omx) {
       player = 'omx'
-      proc.exec(OMX_EXEC + ' ' + localHref)
+      spawn(OMX_EXEC + ' ' + localHref)
     }
     if (argv.mplayer) {
       player = 'mplayer'
