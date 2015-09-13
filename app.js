@@ -180,7 +180,7 @@ var ontorrent = function (torrent) {
   }
 
   engine.server.on('listening', function () {
-    var host = argv.hostname || address()
+    var host = argv.hostname || 'localhost'
     var href = 'http://' + host + ':' + engine.server.address().port + '/'
     var localHref = 'http://localhost:' + engine.server.address().port + '/'
     var filename = engine.server.index.name.split('/').pop().replace(/\{|\}/g, '')
