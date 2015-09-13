@@ -22,7 +22,6 @@
     "inquirer": "^0.8.0",
     "keypress": "^0.2.1",
     "mime": "^1.2.11",
-    "network-address": "0.0.5",
     "numeral": "^1.5.3",
     "open": "0.0.5",
     "optimist": "^0.6.1",
