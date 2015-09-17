@@ -435,7 +435,7 @@ var ontorrent = function (torrent) {
 
 if (/^magnet:/.test(filename)) {
   ontorrent(filename)
-} else if (filename.length === 40) {
+} else if (/^([a-f0-9]){40}$/i.test(filename)) {
   ontorrent('magnet:?xt=urn:btih:' + filename)
 } else {
   // TODO: don't use read-torrent anymore as we don't really use the parsing part of it...
