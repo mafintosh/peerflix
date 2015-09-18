@@ -6,12 +6,12 @@ var clivas = require('clivas')
 var numeral = require('numeral')
 var os = require('os')
 var address = require('network-address')
-var readTorrent = require('read-torrent')
 var proc = require('child_process')
 var peerflix = require('./')
 var keypress = require('keypress')
 var openUrl = require('open')
 var inquirer = require('inquirer')
+var parsetorrent = require('parse-torrent')
 
 var path = require('path')
 
@@ -433,18 +433,16 @@ var ontorrent = function (torrent) {
   }
 }
 
-if (/^magnet:/.test(filename)) {
-  ontorrent(filename)
-} else if (/^([a-f0-9]){40}$/i.test(filename)) {
-  ontorrent('magnet:?xt=urn:btih:' + filename)
-} else {
-  // TODO: don't use read-torrent anymore as we don't really use the parsing part of it...
-  readTorrent(filename, function (err, torrent, raw) {
-    if (err) {
-      console.error(err.message)
-      process.exit(1)
-    }
-
-    ontorrent(raw) // use raw so we don't get infohash/metadata issues in torrent-stream.
-  })
+try {
+  try {
+    ontorrent(parsetorrent(filename))
+  } catch (err) {
+    parsetorrent.remote(filename, function (error, parsedtorrent) {
+      if (error) throw error
+      ontorrent(parsedtorrent)
+    })
+  }
+} catch (err) {
+  console.error(err.message)
+  process.exit(1)
 }
