@@ -433,16 +433,10 @@ var ontorrent = function (torrent) {
   }
 }
 
-try {
-  try {
-    ontorrent(parsetorrent(filename))
-  } catch (err) {
-    parsetorrent.remote(filename, function (error, parsedtorrent) {
-      if (error) throw error
-      ontorrent(parsedtorrent)
-    })
+parsetorrent.remote(filename, function (err, parsedtorrent) {
+  if (err) {
+    console.error(err.message)
+    process.exit(1)
   }
-} catch (err) {
-  console.error(err.message)
-  process.exit(1)
-}
+  ontorrent(parsedtorrent)
+})
