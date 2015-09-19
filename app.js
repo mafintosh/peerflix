@@ -104,6 +104,11 @@ if (argv._.length > 1) {
 
 var noop = function () {}
 
+var spawn = function (commandString) {
+  var parts = commandString.split(/\s+/g)
+  proc.spawn(parts[0], parts.slice(1), { stdio: 'inherit' })
+}
+
 var ontorrent = function (torrent) {
   if (argv['peer-port']) argv.peerPort = Number(argv['peer-port'])
 
@@ -174,7 +179,7 @@ var ontorrent = function (torrent) {
   if (argv['on-downloaded']) {
     var downloaded = false
     engine.on('uninterested', function () {
-      if (!downloaded) proc.exec(argv['on-downloaded'])
+      if (!downloaded) spawn(argv['on-downloaded'])
       downloaded = true
     })
   }
@@ -264,7 +269,7 @@ var ontorrent = function (torrent) {
 
     if (argv.omx) {
       player = 'omx'
-      proc.exec(OMX_EXEC + ' ' + localHref)
+      spawn(OMX_EXEC + ' ' + localHref)
     }
     if (argv.mplayer) {
       player = 'mplayer'
@@ -290,7 +295,7 @@ var ontorrent = function (torrent) {
       browser.start()
     }
 
-    if (argv['on-listening']) proc.exec(argv['on-listening'] + ' ' + href)
+    if (argv['on-listening']) spawn(argv['on-listening'] + ' ' + href)
 
     if (argv.quiet) return console.log('server is listening on ' + href)
 
