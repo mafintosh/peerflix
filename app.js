@@ -264,19 +264,31 @@ var ontorrent = function (torrent) {
 
     if (argv.omx) {
       player = 'omx'
-      proc.exec(OMX_EXEC + ' ' + localHref)
+      omx = proc.exec(OMX_EXEC + ' ' + localHref)
+      omx.on('exit', function () {
+        if (!argv.n && argv.quit !== false) process.exit(0)
+      })
     }
     if (argv.mplayer) {
       player = 'mplayer'
-      proc.exec(MPLAYER_EXEC + ' ' + localHref)
+      mplayer = proc.exec(MPLAYER_EXEC + ' ' + localHref)
+      mplayer.on('exit', function () {
+        if (!argv.n && argv.quit !== false) process.exit(0)
+      })
     }
     if (argv.smplayer) {
       player = 'smplayer'
-      proc.exec(SMPLAYER_EXEC + ' ' + localHref)
+      smplayer = proc.exec(SMPLAYER_EXEC + ' ' + localHref)
+      smplayer.on('exit', function () {
+        if (!argv.n && argv.quit !== false) process.exit(0)
+      })
     }
     if (argv.mpv) {
       player = 'mpv'
-      proc.exec(MPV_EXEC + ' ' + localHref)
+      mpv = proc.exec(MPV_EXEC + ' ' + localHref)
+      mpv.on('exit', function () {
+        if (!argv.n && argv.quit !== false) process.exit(0)
+      })
     }
     if (argv.webplay) {
       player = 'webplay'
