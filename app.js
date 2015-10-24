@@ -125,7 +125,7 @@ var ontorrent = function (torrent) {
   }
 
   if (argv.list) {
-    var interactive = process.stdin.isTTY && !!process.stdin.setRawMode
+    var interactive = process.stdout.isTTY && process.stdin.isTTY && !!process.stdin.setRawMode
 
     var onready = function () {
       if (interactive) {
