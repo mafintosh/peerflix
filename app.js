@@ -27,6 +27,7 @@ var argv = rc('peerflix', {}, optimist
   .alias('q', 'quiet').describe('q', 'be quiet').boolean('v')
   .alias('v', 'vlc').describe('v', 'autoplay in vlc*').boolean('v')
   .alias('s', 'airplay').describe('s', 'autoplay via AirPlay').boolean('a')
+  .alias('u', 'dlna').describe('u', 'autoplay via DLNA').boolean('u')
   .alias('m', 'mplayer').describe('m', 'autoplay in mplayer*').boolean('m')
   .alias('g', 'smplayer').describe('g', 'autoplay in smplayer*').boolean('g')
   .describe('mpchc', 'autoplay in MPC-HC player*').boolean('boolean')
@@ -300,6 +301,50 @@ var ontorrent = function (torrent) {
         device.play(href, 0, noop)
       })
       browser.start()
+    }
+    if (argv.dlna) {
+      var Browser = require('nodecast-js')
+      var Client = require('upnp-mediarenderer-client')
+      var xmlb = require('xmlbuilder')
+
+      var nodecast = new Browser()
+
+      // Apparently, the metadata constructed in
+      // upnp-mediarenderer-client doesn't work
+      var metadata = xmlb.create('DIDL-Lite', {
+          'headless': true
+        }).att({
+          'xmlns': 'urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/',
+          'xmlns:dc': 'http://purl.org/dc/elements/1.1/',
+          'xmlns:upnp': 'urn:schemas-upnp-org:metadata-1-0/upnp/',
+          'xmlns:dlna': 'urn:schemas-dlna-org:metadata-1-0/',
+          'xmlns:sec': 'http://www.sec.co.kr/',
+          'xmlns:xbmc': 'urn:schemas-xbmc-org:metadata-1-0/'
+        })
+        .ele('item', {
+          'id': '0',
+          'parentID': '-1',
+          'restricted': '1'
+        })
+        .ele('dc:title', {}, filename)
+        .insertAfter('res', { 'protocolInfo': 'http-get:*:video/mp4:*' }, href)
+        .insertAfter('upnp:class', {}, 'object.item.videoItem.movie')
+        .end({ pretty: false })
+
+      nodecast.onDevice(function (device) {
+        device.onError(function (err) {
+          throw err
+        })
+
+        new Client(device.xml).load(href, {
+          autoplay: true,
+          metadata: metadata
+        }, function (err, result) {
+          if (err) throw err
+        })
+      })
+
+      nodecast.start()
     }
 
     if (argv['on-listening']) proc.exec(argv['on-listening'] + ' ' + href)
