@@ -7,28 +7,6 @@ var url = require('url')
 var mime = require('mime')
 var pump = require('pump')
 
-var subtitlesUrl = false
-var getIPAddress= function () {
-  var ip, alias = 0
-  var ifaces = require('os').networkInterfaces()
-  for (var dev in ifaces) {
-    ifaces[dev].forEach(function (details) {
-      if (details.family === 'IPv4') {
-        if (!/(loopback|vmware|internal|hamachi|vboxnet)/gi.test(dev + (alias ? ':' + alias : ''))) {
-          if (details.address.substring(0, 8) === '192.168.' ||
-            details.address.substring(0, 7) === '172.16.' ||
-            details.address.substring(0, 5) === '10.0.'
-          ) {
-            ip = details.address
-            ++alias
-          }
-        }
-      }
-    })
-  }
-  return ip
-}
-
 var parseBlocklist = function (filename) {
   // TODO: support gzipped files
   var blocklistData = fs.readFileSync(filename, { encoding: 'utf8' })
@@ -75,8 +53,6 @@ var createServer = function (e, opts) {
   server.on('request', function (request, response) {
     var u = url.parse(request.url)
     var host = request.headers.host || 'localhost'
-
-    subtitlesUrl = 'http://'+ getIPAddress() + ':9999/video.srt'
 
     var toPlaylist = function () {
       var toEntry = function (file, i) {
@@ -178,7 +154,6 @@ var createServer = function (e, opts) {
     response.setHeader('Content-Type', getType(file.name))
     response.setHeader('transferMode.dlna.org', 'Streaming')
     response.setHeader('contentFeatures.dlna.org', 'DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=017000 00000000000000000000000000')
-    response.setHeader('CaptionInfo.sec', subtitlesUrl)
     if (!range) {
       response.setHeader('Content-Length', file.length)
       if (request.method === 'HEAD') return response.end()
@@ -191,7 +166,6 @@ var createServer = function (e, opts) {
     response.setHeader('Content-Range', 'bytes ' + range.start + '-' + range.end + '/' + file.length)
     response.setHeader('transferMode.dlna.org', 'Streaming')
     response.setHeader('contentFeatures.dlna.org', 'DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=017000 00000000000000000000000000')
-    response.setHeader('CaptionInfo.sec', subtitlesUrl)
     if (request.method === 'HEAD') return response.end()
     pump(file.createReadStream(range), response)
   })
