@@ -39,6 +39,7 @@ peerflix --help
 Examples of usage of could be
 
 ```
+peerflix magnet-link --list # Select from a list of files to download
 peerflix magnet-link --vlc -- --fullscreen # will pass --fullscreen to vlc
 peerflix magnet-link --mplayer --subtitles subtitle-file.srt # play in mplayer with subtitles
 peerflix magnet-link --connection 200 # set max connection to 200
