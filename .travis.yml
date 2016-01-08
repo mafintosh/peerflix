@@ -1,6 +1,9 @@
 sudo: false
 language: node_js
 node_js:
-  - "0.10"
+  - "4.1"
+  - "4.0"
   - "0.12"
-  - "4"
+  - "0.11"
+  - "0.10"
+  - "iojs"
