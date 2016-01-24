@@ -204,6 +204,9 @@ var ontorrent = function (torrent) {
       if (process.arch === 'x64') {
         try {
           key = registry('HKLM/Software/Wow6432Node/VideoLAN/VLC')
+          if (!key['InstallDir']) {
+            throw new Error('no install dir')
+          }
         } catch (e) {
           try {
             key = registry('HKLM/Software/VideoLAN/VLC')
