@@ -127,6 +127,14 @@ var ontorrent = function (torrent) {
   if (argv.list) {
     var interactive = process.stdout.isTTY && process.stdin.isTTY && !!process.stdin.setRawMode
 
+	function compare(a,b) {
+	  if (a.name < b.name)
+		return -1;
+	  if (a.name > b.name)
+		return 1;
+	  return 0;
+	}
+	
     var onready = function () {
       if (interactive) {
         inquirer.prompt([{
@@ -137,7 +145,7 @@ var ontorrent = function (torrent) {
             return {
               name: file.name + ' : ' + bytes(file.length),
               value: i
-          } })}], function (answers) {
+          } }).sort(compare)}], function (answers) {
             argv.index = answers.file
             delete argv.list
             ontorrent(torrent)
