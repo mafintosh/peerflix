@@ -1,7 +1,7 @@
 {
   "name": "peerflix",
   "description": "Streaming torrent client for Node.js",
-  "version": "0.32.4",
+  "version": "0.33.0",
   "author": "Mathias Buus (@mafintosh)",
   "license": "MIT",
   "homepage": "https://github.com/mafintosh/peerflix",
