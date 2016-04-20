@@ -318,7 +318,13 @@ var ontorrent = function (torrent) {
       process.stdin.on('keypress', function (ch, key) {
         if (!key) return
         if (key.name === 'c' && key.ctrl === true) return process.kill(process.pid, 'SIGINT')
-        if (key.name === 'l' && key.ctrl === true) return proc.exec('open ' + engine.path)
+        if (key.name === 'l' && key.ctrl === true) {
+          var command = 'xdg-open'
+          if (process.platform === 'win32')  { command = 'explorer' }
+          if (process.platform === 'darwin') { command = 'open' }
+
+          return proc.exec(command + ' ' + engine.path)
+        }
         if (key.name !== 'space') return
 
         if (player) return
