@@ -320,7 +320,7 @@ var ontorrent = function (torrent) {
         if (key.name === 'c' && key.ctrl === true) return process.kill(process.pid, 'SIGINT')
         if (key.name === 'l' && key.ctrl === true) {
           var command = 'xdg-open'
-          if (process.platform === 'win32')  { command = 'explorer' }
+          if (process.platform === 'win32') { command = 'explorer' }
           if (process.platform === 'darwin') { command = 'open' }
 
           return proc.exec(command + ' ' + engine.path)
