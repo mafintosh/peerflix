@@ -81,7 +81,7 @@ var enc = function (s) {
 }
 
 if (argv.t) {
-  VLC_ARGS += ' --sub-file=' + enc(argv.t)
+  VLC_ARGS += ' --sub-file=' + (process.platform === 'win32') ? argv.t : enc(argv.t)
   OMX_EXEC += ' --subtitles ' + enc(argv.t)
   MPLAYER_EXEC += ' -sub ' + enc(argv.t)
   SMPLAYER_EXEC += ' -sub ' + enc(argv.t)
