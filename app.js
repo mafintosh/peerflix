@@ -318,6 +318,13 @@ var ontorrent = function (torrent) {
       process.stdin.on('keypress', function (ch, key) {
         if (!key) return
         if (key.name === 'c' && key.ctrl === true) return process.kill(process.pid, 'SIGINT')
+        if (key.name === 'l' && key.ctrl === true) {
+          var command = 'xdg-open'
+          if (process.platform === 'win32') { command = 'explorer' }
+          if (process.platform === 'darwin') { command = 'open' }
+
+          return proc.exec(command + ' ' + engine.path)
+        }
         if (key.name !== 'space') return
 
         if (player) return
@@ -372,8 +379,9 @@ var ontorrent = function (torrent) {
       clivas.line('{80:}')
 
       if (interactive) {
-        if (paused) clivas.line('{yellow:PAUSED} {green:Press SPACE to continue download}')
-        else clivas.line('{50+green:Press SPACE to pause download}')
+        var openLoc = ' or CTRL+L to open download location}'
+        if (paused) clivas.line('{yellow:PAUSED} {green:Press SPACE to continue download' + openLoc)
+        else clivas.line('{50+green:Press SPACE to pause download' + openLoc)
       }
 
       clivas.line('')
