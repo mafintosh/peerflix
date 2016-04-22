@@ -298,8 +298,8 @@ var ontorrent = function (torrent) {
       openUrl('https://85d514b3e548d934d8ff7c45a54732e65a3162fe.htmlb.in/#' + localHref)
     }
     if (argv.airplay) {
-      var browser = require('airplay-js').createBrowser()
-      browser.on('deviceOn', function (device) {
+      var browser = require('airplay').createBrowser()
+      browser.on('deviceOnline', function (device) {
         device.play(href, 0, noop)
       })
       browser.start()
