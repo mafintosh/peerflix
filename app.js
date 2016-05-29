@@ -12,6 +12,9 @@ var keypress = require('keypress')
 var openUrl = require('open')
 var inquirer = require('inquirer')
 var parsetorrent = require('parse-torrent')
+var opensubtitles = require('opensubtitles-api')
+var http = require('http')
+var fs = require('fs')
 
 var path = require('path')
 
@@ -320,7 +323,7 @@ var ontorrent = function (torrent) {
         subtitlesLanguageId = 'eng'
       }
       openSubtitlesAPI.search({
-        sublanguageid: subtitlesLanguageId
+        sublanguageid: subtitlesLanguageId,
         filesize: filelength,
         filename: filename,
         extensions: ['srt'],
