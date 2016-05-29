@@ -104,6 +104,9 @@ if (argv._.length > 1) {
 }
 
 var openPlayer = function (subtitlesPath, localHref) {
+  if (argv.vlc && !VLC_ARGS.match("--sub-file") && subtitlesPath) {
+    VLC_ARGS += ' --sub-file=' + (process.platform === 'win32' ? subtitlesPath : enc(subtitlesPath))
+  }
   var registry, key
   if (argv.vlc && process.platform === 'win32') {
     player = 'vlc'
