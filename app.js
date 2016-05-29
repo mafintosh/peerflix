@@ -12,6 +12,9 @@ var keypress = require('keypress')
 var openUrl = require('open')
 var inquirer = require('inquirer')
 var parsetorrent = require('parse-torrent')
+var opensubtitles = require('opensubtitles-api')
+var http = require('http')
+var fs = require('fs')
 
 var path = require('path')
 
@@ -44,6 +47,7 @@ var argv = rc('peerflix', {}, optimist
   .alias('e', 'peer').describe('e', 'add peer by ip:port')
   .alias('x', 'peer-port').describe('x', 'set peer listening port')
   .alias('d', 'not-on-top').describe('d', 'do not float video on top').boolean('d')
+  .describe('download-subtitles', 'download subtitles in given language(s) using opensubtitles.org API')
   .describe('on-downloaded', 'script to call when file is 100% downloaded')
   .describe('on-listening', 'script to call when server goes live')
   .describe('version', 'prints current version').boolean('boolean')
@@ -100,6 +104,119 @@ if (argv._.length > 1) {
   MPV_EXEC += ' ' + playerArgs
   MPC_HC_ARGS += ' ' + playerArgs
   POTPLAYER_ARGS += ' ' + playerArgs
+}
+
+var openPlayer = function (subtitlesPath, localHref) {
+  if (argv.vlc && !VLC_ARGS.match("--sub-file") && subtitlesPath) {
+    VLC_ARGS += ' --sub-file=' + (process.platform === 'win32' ? subtitlesPath : enc(subtitlesPath))
+  }
+  var registry, key
+  if (argv.vlc && process.platform === 'win32') {
+    player = 'vlc'
+    registry = require('windows-no-runnable').registry
+    if (process.arch === 'x64') {
+      try {
+        key = registry('HKLM/Software/Wow6432Node/VideoLAN/VLC')
+        if (!key['InstallDir']) {
+          throw new Error('no install dir')
+        }
+      } catch (e) {
+        try {
+          key = registry('HKLM/Software/VideoLAN/VLC')
+        } catch (err) {}
+      }
+    } else {
+      try {
+        key = registry('HKLM/Software/VideoLAN/VLC')
+      } catch (err) {
+        try {
+          key = registry('HKLM/Software/Wow6432Node/VideoLAN/VLC')
+        } catch (e) {}
+      }
+    }
+
+    if (key) {
+      var vlcPath = key['InstallDir'].value + path.sep + 'vlc'
+      VLC_ARGS = VLC_ARGS.split(' ')
+      VLC_ARGS.unshift(localHref)
+      proc.execFile(vlcPath, VLC_ARGS)
+    }
+  } else if (argv.mpchc && process.platform === 'win32') {
+    player = 'mph-hc'
+    registry = require('windows-no-runnable').registry
+    key = registry('HKCU/Software/MPC-HC/MPC-HC')
+
+    var exePath = key['ExePath']
+    proc.exec('"' + exePath + '" "' + localHref + '" ' + MPC_HC_ARGS)
+  } else if (argv.potplayer && process.platform === 'win32') {
+    player = 'potplayer'
+    registry = require('windows-no-runnable').registry
+    if (process.arch === 'x64')
+      key = registry('HKCU/Software/DAUM/PotPlayer64')
+
+    if (!key || !key['ProgramPath'])
+      key = registry('HKCU/Software/DAUM/PotPlayer')
+
+    if (key['ProgramPath']) {
+      var potplayerPath = key['ProgramPath'].value
+      proc.exec('"' + potplayerPath + '" "' + localHref + '" ' + POTPLAYER_ARGS)
+    }
+  } else {
+    if (argv.vlc) {
+      player = 'vlc'
+      var root = '/Applications/VLC.app/Contents/MacOS/VLC'
+      var home = (process.env.HOME || '') + root
+      var vlc = proc.exec('vlc ' + VLC_ARGS + ' ' + localHref + ' || ' + root + ' ' + VLC_ARGS + ' ' + localHref + ' || ' + home + ' ' + VLC_ARGS + ' ' + localHref, function (error, stdout, stderror) {
+        if (error) {
+          process.exit(0)
+        }
+      })
+
+      vlc.on('exit', function () {
+        if (!argv.n && argv.quit !== false) process.exit(0)
+      })
+    }
+  }
+
+  if (argv.omx) {
+    player = 'omx'
+    var omx = proc.exec(OMX_EXEC + ' ' + localHref)
+    omx.on('exit', function () {
+      if (!argv.n && argv.quit !== false) process.exit(0)
+    })
+  }
+  if (argv.mplayer) {
+    player = 'mplayer'
+    var mplayer = proc.exec(MPLAYER_EXEC + ' ' + localHref)
+    mplayer.on('exit', function () {
+      if (!argv.n && argv.quit !== false) process.exit(0)
+    })
+  }
+  if (argv.smplayer) {
+    player = 'smplayer'
+    var smplayer = proc.exec(SMPLAYER_EXEC + ' ' + localHref)
+    smplayer.on('exit', function () {
+      if (!argv.n && argv.quit !== false) process.exit(0)
+    })
+  }
+  if (argv.mpv) {
+    player = 'mpv'
+    var mpv = proc.exec(MPV_EXEC + ' ' + localHref)
+    mpv.on('exit', function () {
+      if (!argv.n && argv.quit !== false) process.exit(0)
+    })
+  }
+  if (argv.webplay) {
+    player = 'webplay'
+    openUrl('https://85d514b3e548d934d8ff7c45a54732e65a3162fe.htmlb.in/#' + localHref)
+  }
+  if (argv.airplay) {
+    var list = require('airplayer')()
+    list.once('update', function (player) {
+      list.destroy()
+      player.play(href)
+    })
+  }
 }
 
 var ontorrent = function (torrent) {
@@ -187,6 +304,7 @@ var ontorrent = function (torrent) {
     var paused = false
     var timePaused = 0
     var pausedAt = null
+    var subtitlesDownload = false
 
     if (argv.all) {
       filename = engine.torrent.name
@@ -195,113 +313,39 @@ var ontorrent = function (torrent) {
       localHref += '.m3u'
     }
 
-    var registry, key
-    if (argv.vlc && process.platform === 'win32') {
-      player = 'vlc'
-      registry = require('windows-no-runnable').registry
-      if (process.arch === 'x64') {
-        try {
-          key = registry('HKLM/Software/Wow6432Node/VideoLAN/VLC')
-          if (!key['InstallDir']) {
-            throw new Error('no install dir')
-          }
-        } catch (e) {
-          try {
-            key = registry('HKLM/Software/VideoLAN/VLC')
-          } catch (err) {}
-        }
+    if (argv['download-subtitles']) {
+      subtitlesDownload = true
+      var openSubtitlesAPI = new opensubtitles({useragent: 'OSTestUserAgent'})
+      var subtitlesLanguageId
+      if (typeof argv['download-subtitles'] == 'string') {
+        subtitlesLanguageId = argv['download-subtitles']
       } else {
-        try {
-          key = registry('HKLM/Software/VideoLAN/VLC')
-        } catch (err) {
-          try {
-            key = registry('HKLM/Software/Wow6432Node/VideoLAN/VLC')
-          } catch (e) {}
+        subtitlesLanguageId = 'eng'
+      }
+      openSubtitlesAPI.search({
+        sublanguageid: subtitlesLanguageId,
+        filesize: filelength,
+        filename: filename,
+        extensions: ['srt'],
+        limit: 'best',
+      }).then(function (subtitles) {
+        if (Object.keys(subtitles).length > 0) {
+          for (var subsId in subtitles) break
+          subs = (subtitles[subsId] instanceof Array) ? subtitles[subsId][0] : subtitles[subsId]
+          http.get(subs['url'], function(response) {
+            subtitlesFilename = subs['url'].split('/').pop()
+            subtitlesPath = engine.path + '/' + subtitlesFilename
+            file = fs.createWriteStream(subtitlesPath)
+            response.pipe(file)
+            openPlayer(subtitlesPath, localHref)
+          })
+        } else {
+          openPlayer(null, localHref)
         }
-      }
-
-      if (key) {
-        var vlcPath = key['InstallDir'].value + path.sep + 'vlc'
-        VLC_ARGS = VLC_ARGS.split(' ')
-        VLC_ARGS.unshift(localHref)
-        proc.execFile(vlcPath, VLC_ARGS)
-      }
-    } else if (argv.mpchc && process.platform === 'win32') {
-      player = 'mph-hc'
-      registry = require('windows-no-runnable').registry
-      key = registry('HKCU/Software/MPC-HC/MPC-HC')
-
-      var exePath = key['ExePath']
-      proc.exec('"' + exePath + '" "' + localHref + '" ' + MPC_HC_ARGS)
-    } else if (argv.potplayer && process.platform === 'win32') {
-      player = 'potplayer'
-      registry = require('windows-no-runnable').registry
-      if (process.arch === 'x64')
-        key = registry('HKCU/Software/DAUM/PotPlayer64')
-
-      if (!key || !key['ProgramPath'])
-        key = registry('HKCU/Software/DAUM/PotPlayer')
-
-      if (key['ProgramPath']) {
-        var potplayerPath = key['ProgramPath'].value
-        proc.exec('"' + potplayerPath + '" "' + localHref + '" ' + POTPLAYER_ARGS)
-      }
-    } else {
-      if (argv.vlc) {
-        player = 'vlc'
-        var root = '/Applications/VLC.app/Contents/MacOS/VLC'
-        var home = (process.env.HOME || '') + root
-        var vlc = proc.exec('vlc ' + VLC_ARGS + ' ' + localHref + ' || ' + root + ' ' + VLC_ARGS + ' ' + localHref + ' || ' + home + ' ' + VLC_ARGS + ' ' + localHref, function (error, stdout, stderror) {
-          if (error) {
-            process.exit(0)
-          }
-        })
-
-        vlc.on('exit', function () {
-          if (!argv.n && argv.quit !== false) process.exit(0)
-        })
-      }
-    }
-
-    if (argv.omx) {
-      player = 'omx'
-      var omx = proc.exec(OMX_EXEC + ' ' + localHref)
-      omx.on('exit', function () {
-        if (!argv.n && argv.quit !== false) process.exit(0)
       })
     }
-    if (argv.mplayer) {
-      player = 'mplayer'
-      var mplayer = proc.exec(MPLAYER_EXEC + ' ' + localHref)
-      mplayer.on('exit', function () {
-        if (!argv.n && argv.quit !== false) process.exit(0)
-      })
-    }
-    if (argv.smplayer) {
-      player = 'smplayer'
-      var smplayer = proc.exec(SMPLAYER_EXEC + ' ' + localHref)
-      smplayer.on('exit', function () {
-        if (!argv.n && argv.quit !== false) process.exit(0)
-      })
-    }
-    if (argv.mpv) {
-      player = 'mpv'
-      var mpv = proc.exec(MPV_EXEC + ' ' + localHref)
-      mpv.on('exit', function () {
-        if (!argv.n && argv.quit !== false) process.exit(0)
-      })
-    }
-    if (argv.webplay) {
-      player = 'webplay'
-      openUrl('https://85d514b3e548d934d8ff7c45a54732e65a3162fe.htmlb.in/#' + localHref)
-    }
-    if (argv.airplay) {
-      var list = require('airplayer')()
-      list.once('update', function (player) {
-        list.destroy()
-        player.play(href)
-      })
-    }
+
+    if (!subtitlesDownload) openPlayer(null, localHref)
 
     if (argv['on-listening']) proc.exec(argv['on-listening'] + ' ' + href)
 
