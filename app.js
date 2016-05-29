@@ -317,11 +317,11 @@ var ontorrent = function (torrent) {
         extensions: ['srt'],
         limit: 'best',
       }).then(function (subtitles) {
-        if (subtitles["en"][0]) {
-          url = subtitles["en"][0]["url"]
-          filename = url.split('/').pop()
-          subtitlesPath = engine.path + "/" + filename
-          console.log(subtitlesPath)
+        subs = (subtitles instanceof Array) ? subtitles["en"][0] : subtitles["en"]
+        if (subs) {
+          url = subs["url"]
+          subtitlesFilename = url.split('/').pop()
+          subtitlesPath = engine.path + "/" + subtitlesFilename
           file = fs.createWriteStream(subtitlesPath)
           http.get(url, function(response) { response.pipe(file) })
           openPlayer(subtitlesPath, localHref)
