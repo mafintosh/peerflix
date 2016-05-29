@@ -44,7 +44,7 @@ var argv = rc('peerflix', {}, optimist
   .alias('e', 'peer').describe('e', 'add peer by ip:port')
   .alias('x', 'peer-port').describe('x', 'set peer listening port')
   .alias('d', 'not-on-top').describe('d', 'do not float video on top').boolean('d')
-  .describe('download-subtitles', 'download subtitles using opensubtitles.org API')
+  .describe('download-subtitles', 'download subtitles in given language(s) using opensubtitles.org API')
   .describe('on-downloaded', 'script to call when file is 100% downloaded')
   .describe('on-listening', 'script to call when server goes live')
   .describe('version', 'prints current version').boolean('boolean')
@@ -313,21 +313,29 @@ var ontorrent = function (torrent) {
     if (argv['download-subtitles']) {
       subtitlesDownload = true
       var openSubtitlesAPI = new opensubtitles({useragent: 'OSTestUserAgent'})
+      var subtitlesLanguageId
+      if (typeof argv['download-subtitles'] == 'string') {
+        subtitlesLanguageId = argv['download-subtitles']
+      } else {
+        subtitlesLanguageId = 'eng'
+      }
       openSubtitlesAPI.search({
-        sublanguageid: 'eng',
+        sublanguageid: subtitlesLanguageId
         filesize: filelength,
         filename: filename,
         extensions: ['srt'],
         limit: 'best',
       }).then(function (subtitles) {
-        subs = (subtitles instanceof Array) ? subtitles["en"][0] : subtitles["en"]
-        if (subs) {
-          url = subs["url"]
-          subtitlesFilename = url.split('/').pop()
-          subtitlesPath = engine.path + "/" + subtitlesFilename
-          file = fs.createWriteStream(subtitlesPath)
-          http.get(url, function(response) { response.pipe(file) })
-          openPlayer(subtitlesPath, localHref)
+        if (Object.keys(subtitles).length > 0) {
+          for (var subsId in subtitles) break
+          subs = (subtitles[subsId] instanceof Array) ? subtitles[subsId][0] : subtitles[subsId]
+          http.get(subs['url'], function(response) {
+            subtitlesFilename = subs['url'].split('/').pop()
+            subtitlesPath = engine.path + '/' + subtitlesFilename
+            file = fs.createWriteStream(subtitlesPath)
+            response.pipe(file)
+            openPlayer(subtitlesPath, localHref)
+          })
         } else {
           openPlayer(null, localHref)
         }
