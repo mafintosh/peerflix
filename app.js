@@ -44,6 +44,7 @@ var argv = rc('peerflix', {}, optimist
   .alias('e', 'peer').describe('e', 'add peer by ip:port')
   .alias('x', 'peer-port').describe('x', 'set peer listening port')
   .alias('d', 'not-on-top').describe('d', 'do not float video on top').boolean('d')
+  .describe('download-subtitles', 'download subtitles using opensubtitles.org API')
   .describe('on-downloaded', 'script to call when file is 100% downloaded')
   .describe('on-listening', 'script to call when server goes live')
   .describe('version', 'prints current version').boolean('boolean')
@@ -297,6 +298,7 @@ var ontorrent = function (torrent) {
     var paused = false
     var timePaused = 0
     var pausedAt = null
+    var subtitlesDownload = false
 
     if (argv.all) {
       filename = engine.torrent.name
@@ -304,6 +306,32 @@ var ontorrent = function (torrent) {
       href += '.m3u'
       localHref += '.m3u'
     }
+
+    if (argv['download-subtitles']) {
+      subtitlesDownload = true
+      var openSubtitlesAPI = new opensubtitles({useragent: 'OSTestUserAgent'})
+      openSubtitlesAPI.search({
+        sublanguageid: 'eng',
+        filesize: filelength,
+        filename: filename,
+        extensions: ['srt'],
+        limit: 'best',
+      }).then(function (subtitles) {
+        if (subtitles["en"][0]) {
+          url = subtitles["en"][0]["url"]
+          filename = url.split('/').pop()
+          subtitlesPath = engine.path + "/" + filename
+          console.log(subtitlesPath)
+          file = fs.createWriteStream(subtitlesPath)
+          http.get(url, function(response) { response.pipe(file) })
+          openPlayer(subtitlesPath, localHref)
+        } else {
+          openPlayer(null, localHref)
+        }
+      })
+    }
+
+    if (!subtitlesDownload) openPlayer(null, localHref)
 
     if (argv['on-listening']) proc.exec(argv['on-listening'] + ' ' + href)
 
