@@ -303,7 +303,6 @@ var ontorrent = function (torrent) {
         player.play(href)
       })
     }
-
     if (argv.dlna) {
       var Browser = require('nodecast-js')
       var Client = require('upnp-mediarenderer-client')
@@ -317,10 +316,10 @@ var ontorrent = function (torrent) {
 
         new Client(device.xml).load(href, {
           autoplay: true,
-          // contentType: 'video/' + path.extname(filename).substring(1),
           metadata: {
             title: filename,
-            type: 'video'
+            type: 'video',
+            subtitlesUrl: href + 'subtitles.srt'
           }
         }, function (err, result) {
           if (err) throw err
