@@ -323,7 +323,7 @@ var ontorrent = function (torrent) {
             type: 'video'
           }
         }, function (err, result) {
-          if (err) throw err;
+          if (err) throw err
         })
       })
 
