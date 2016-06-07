@@ -1,7 +1,7 @@
 {
   "name": "peerflix",
   "description": "Streaming torrent client for Node.js",
-  "version": "0.34.0",
+  "version": "0.35.0",
   "author": "Mathias Buus (@mafintosh)",
   "license": "MIT",
   "homepage": "https://github.com/mafintosh/peerflix",
@@ -17,7 +17,7 @@
     "peerflix": "./app.js"
   },
   "dependencies": {
-    "airplay-js": "^0.2.5",
+    "airplayer": "^2.0.0",
     "clivas": "^0.1.4",
     "inquirer": "^0.8.0",
     "keypress": "^0.2.1",
@@ -40,7 +40,7 @@
     "standard": "^2.2.3"
   },
   "optionalDependencies": {
-    "airplay-js": "^0.2.5"
+    "airplayer": "^2.0.0"
   },
   "scripts": {
     "test": "standard"

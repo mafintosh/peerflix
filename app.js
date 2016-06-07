@@ -103,8 +103,6 @@ if (argv._.length > 1) {
   POTPLAYER_ARGS += ' ' + playerArgs
 }
 
-var noop = function () {}
-
 var ontorrent = function (torrent) {
   if (argv['peer-port']) argv.peerPort = Number(argv['peer-port'])
 
@@ -299,11 +297,11 @@ var ontorrent = function (torrent) {
       openUrl('https://85d514b3e548d934d8ff7c45a54732e65a3162fe.htmlb.in/#' + localHref)
     }
     if (argv.airplay) {
-      var browser = require('airplay-js').createBrowser()
-      browser.on('deviceOn', function (device) {
-        device.play(href, 0, noop)
+      var list = require('airplayer')()
+      list.once('update', function (player) {
+        list.destroy()
+        player.play(href)
       })
-      browser.start()
     }
 
     if (argv.dlna) {
