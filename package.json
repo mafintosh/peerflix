@@ -1,17 +1,17 @@
 {
   "name": "peerflix",
   "description": "Streaming torrent client for Node.js",
-  "version": "0.35.0",
+  "version": "0.35.0 - iovis9 fork",
   "author": "Mathias Buus (@mafintosh)",
   "license": "MIT",
-  "homepage": "https://github.com/mafintosh/peerflix",
+  "homepage": "https://github.com/iovis9/peerflix",
   "main": "index.js",
   "bugs": {
-    "url": "https://github.com/mafintosh/peerflix/issues"
+    "url": "https://github.com/iovis9/peerflix/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/mafintosh/peerflix.git"
+    "url": "git://github.com/iovis9/peerflix.git"
   },
   "bin": {
     "peerflix": "./app.js"
