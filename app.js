@@ -319,7 +319,7 @@ var ontorrent = function (torrent) {
           metadata: {
             title: filename,
             type: 'video',
-            subtitlesUrl: href + 'subtitles.srt'
+            subtitlesUrl: href + 'subtitles'
           }
         }, function (err, result) {
           if (err) throw err

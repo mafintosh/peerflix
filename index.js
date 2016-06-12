@@ -135,9 +135,10 @@ var createServer = function (e, opts) {
       return
     }
 
-    if (opts.t && u.pathname === '/subtitles.srt') {
+    if (opts.t && u.pathname === '/subtitles') {
       var subtitles = fs.readFileSync(opts.t, 'utf8')
-      response.setHeader('Content-Type', 'text/srt')
+      var subs_mime = mime.lookup(opts.t)
+      response.setHeader('Content-Type', subs_mime)
       response.setHeader('Content-Length', Buffer.byteLength(subtitles))
       response.end(subtitles)
       return
@@ -158,11 +159,12 @@ var createServer = function (e, opts) {
     var file = e.files[i]
     var range = request.headers.range
     range = range && rangeParser(file.length, range)[0]
+
     response.setHeader('Accept-Ranges', 'bytes')
     response.setHeader('Content-Type', getType(file.name))
     response.setHeader('transferMode.dlna.org', 'Streaming')
     response.setHeader('contentFeatures.dlna.org', 'DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01700000000000000000000000000000')
-    response.setHeader('CaptionInfo.sec', 'http://' + host + '/subtitles.srt')
+    if (opts.t) response.setHeader('CaptionInfo.sec', 'http://' + host + '/subtitles')
 
     if (!range) {
       response.setHeader('Content-Length', file.length)
@@ -184,7 +186,6 @@ var createServer = function (e, opts) {
 
   return server
 }
-
 
 
 module.exports = function (torrent, opts) {
