@@ -68,7 +68,7 @@ if (!filename) {
   process.exit(1)
 }
 
-var VLC_ARGS = '-q ' + (onTop ? '--video-on-top' : '') + ' --play-and-exit'
+var VLC_ARGS = '-q' + (onTop ? ' --video-on-top' : '') + ' --play-and-exit'
 var OMX_EXEC = argv.jack ? 'omxplayer -r -o local ' : 'omxplayer -r -o hdmi '
 var MPLAYER_EXEC = 'mplayer ' + (onTop ? '-ontop' : '') + ' -really-quiet -noidx -loop 0 '
 var SMPLAYER_EXEC = 'smplayer ' + (onTop ? '-ontop' : '')
