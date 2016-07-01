@@ -27,6 +27,7 @@ var argv = rc('peerflix', {}, optimist
   .alias('q', 'quiet').describe('q', 'be quiet').boolean('v')
   .alias('v', 'vlc').describe('v', 'autoplay in vlc*').boolean('v')
   .alias('s', 'airplay').describe('s', 'autoplay via AirPlay').boolean('a')
+  .alias('u', 'dlna').describe('u', 'autoplay via DLNA').boolean('u')
   .alias('m', 'mplayer').describe('m', 'autoplay in mplayer*').boolean('m')
   .alias('g', 'smplayer').describe('g', 'autoplay in smplayer*').boolean('g')
   .describe('mpchc', 'autoplay in MPC-HC player*').boolean('boolean')
@@ -81,7 +82,7 @@ var enc = function (s) {
 }
 
 if (argv.t) {
-  VLC_ARGS += ' --sub-file=' + (process.platform === 'win32') ? argv.t : enc(argv.t)
+  VLC_ARGS += ' --sub-file=' + ((process.platform === 'win32') ? argv.t : enc(argv.t))
   OMX_EXEC += ' --subtitles ' + enc(argv.t)
   MPLAYER_EXEC += ' -sub ' + enc(argv.t)
   SMPLAYER_EXEC += ' -sub ' + enc(argv.t)
@@ -301,6 +302,31 @@ var ontorrent = function (torrent) {
         list.destroy()
         player.play(href)
       })
+    }
+    if (argv.dlna) {
+      var Browser = require('nodecast-js')
+      var Client = require('upnp-mediarenderer-client')
+
+      var nodecast = new Browser()
+
+      nodecast.onDevice(function (device) {
+        device.onError(function (err) {
+          throw err
+        })
+
+        new Client(device.xml).load(href, {
+          autoplay: true,
+          metadata: {
+            title: filename,
+            type: 'video',
+            subtitlesUrl: href + 'subtitles'
+          }
+        }, function (err, result) {
+          if (err) throw err
+        })
+      })
+
+      nodecast.start()
     }
 
     if (argv['on-listening']) proc.exec(argv['on-listening'] + ' ' + href)

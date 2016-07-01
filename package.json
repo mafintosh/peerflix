@@ -18,24 +18,26 @@
   },
   "dependencies": {
     "airplayer": "^2.0.0",
-    "clivas": "^0.1.4",
-    "inquirer": "^0.8.0",
+    "clivas": "^0.2.0",
+    "inquirer": "^1.0.3",
     "keypress": "^0.2.1",
     "mime": "^1.2.11",
-    "network-address": "0.0.5",
+    "network-address": "^1.1.0",
+    "nodecast-js": "^1.0.3",
     "numeral": "^1.5.3",
     "open": "0.0.5",
     "optimist": "^0.6.1",
     "parse-torrent": "^5.4.0",
-    "pump": "^0.3.1",
-    "range-parser": "^1.0.0",
-    "rc": "^0.4.0",
-    "torrent-stream": "^1.0.1",
+    "pump": "^1.0.1",
+    "range-parser": "^1.2.0",
+    "rc": "^1.1.6",
+    "torrent-stream": "^1.0.3",
+    "upnp-mediarenderer-client": "^1.2.3",
     "windows-no-runnable": "~0.0.6",
     "xtend": "^4.0.0"
   },
   "devDependencies": {
-    "standard": "^2.2.3"
+    "standard": "^7.1.2"
   },
   "optionalDependencies": {
     "airplayer": "^2.0.0"
