@@ -138,13 +138,15 @@ var ontorrent = function(torrent) {
 			var runtime = Math.floor((Date.now() - started) / 1000);
 			var linesremaining = clivas.height;
 			var peerslisted = 0;
+			var percentageDownloaded = parseInt(swarm.downloaded * 100 / filelength,10);
+      		if (percentageDownloaded > 100) percentageDownloaded = 100;
 
 			clivas.clear();
 			clivas.line('{green:open} {bold:vlc} {green:and enter} {bold:'+href+'} {green:as the network address}');
 			clivas.line('');
 			clivas.line('{yellow:info} {green:streaming} {bold:'+filename+' ('+bytes(filelength)+')} {green:-} {bold:'+bytes(swarm.downloadSpeed())+'/s} {green:from} {bold:'+unchoked.length +'/'+wires.length+'} {green:peers}    ');
 			clivas.line('{yellow:info path} {cyan:' + engine.path + '}');
-			clivas.line('{yellow:info} {green:downloaded} {bold:'+bytes(swarm.downloaded)+'} {green:and uploaded }{bold:'+bytes(swarm.uploaded)+'} {green:in }{bold:'+runtime+'s} {green:with} {bold:'+hotswaps+'} {green:hotswaps}     ');
+			clivas.line('{yellow:info} {green:downloaded} {bold:' + bytes(swarm.downloaded) + '} (' + percentageDownloaded + '%) {green:and uploaded }{bold:' + bytes(swarm.uploaded) + '} {green:in }{bold:' + runtime + 's} {green:with} {bold:' + hotswaps + '} {green:hotswaps}     ')
 			clivas.line('{yellow:info} {green:peer queue size is} {bold:'+swarm.queued+'}     ');
 			clivas.line('{80:}');
 			linesremaining -= 8;
