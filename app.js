@@ -364,7 +364,7 @@ var ontorrent = function (torrent) {
       var runtime = Math.floor((Date.now() - started - timePaused - timeCurrentPause) / 1000)
       var linesremaining = clivas.height
       var peerslisted = 0
-      var percentageDownloaded = parseInt(swarm.downloaded * 100 / filelength,10)
+      var percentageDownloaded = parseInt(swarm.downloaded * 100 / filelength, 10)
       if (percentageDownloaded > 100) percentageDownloaded = 100
 
       clivas.clear()
