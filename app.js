@@ -109,6 +109,20 @@ var ontorrent = function (torrent) {
   var hotswaps = 0
   var verified = 0
   var invalid = 0
+  var downloadedPercentage = 0
+
+  function updateDownloadedPercentage () {
+    var downloaded = 0
+    for (var i = 0; i < engine.torrent.pieces.length; i++) {
+      if (engine.bitfield.get(i)) downloaded++
+    }
+
+    engine.on('download', function () {
+      downloaded++
+    })
+
+    downloadedPercentage = parseInt((downloaded / engine.torrent.pieces.length) * 100, 10)
+  }
 
   engine.on('verify', function () {
     verified++
@@ -364,8 +378,7 @@ var ontorrent = function (torrent) {
       var runtime = Math.floor((Date.now() - started - timePaused - timeCurrentPause) / 1000)
       var linesremaining = clivas.height
       var peerslisted = 0
-      var percentageDownloaded = parseInt(swarm.downloaded * 100 / filelength, 10)
-      if (percentageDownloaded > 100) percentageDownloaded = 100
+      updateDownloadedPercentage()
 
       clivas.clear()
       if (argv.airplay) clivas.line('{green:streaming to} {bold:apple-tv} {green:using airplay}')
@@ -373,7 +386,7 @@ var ontorrent = function (torrent) {
       clivas.line('')
       clivas.line('{yellow:info} {green:streaming} {bold:' + filename + ' (' + bytes(filelength) + ')} {green:-} {bold:' + bytes(swarm.downloadSpeed()) + '/s} {green:from} {bold:' + unchoked.length + '/' + wires.length + '} {green:peers}    ')
       clivas.line('{yellow:info} {green:path} {cyan:' + engine.path + '}')
-      clivas.line('{yellow:info} {green:downloaded} {bold:' + bytes(swarm.downloaded) + '} (' + percentageDownloaded + '%) {green:and uploaded }{bold:' + bytes(swarm.uploaded) + '} {green:in }{bold:' + runtime + 's} {green:with} {bold:' + hotswaps + '} {green:hotswaps}     ')
+      clivas.line('{yellow:info} {green:downloaded} {bold:' + bytes(swarm.downloaded) + '} (' + downloadedPercentage + '%) {green:and uploaded }{bold:' + bytes(swarm.uploaded) + '} {green:in }{bold:' + runtime + 's} {green:with} {bold:' + hotswaps + '} {green:hotswaps}     ')
       clivas.line('{yellow:info} {green:verified} {bold:' + verified + '} {green:pieces and received} {bold:' + invalid + '} {green:invalid pieces}')
       clivas.line('{yellow:info} {green:peer queue size is} {bold:' + swarm.queued + '}')
       clivas.line('{80:}')
@@ -424,6 +437,8 @@ var ontorrent = function (torrent) {
   }
 
   engine.on('ready', function () {
+    // updateDownloadedPercentage()
+
     engine.swarm.removeListener('wire', onmagnet)
     if (!argv.all) return
     engine.files.forEach(function (file) {
