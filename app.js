@@ -111,18 +111,9 @@ var ontorrent = function (torrent) {
   var invalid = 0
   var downloadedPercentage = 0
 
-  function updateDownloadedPercentage () {
-    var downloaded = 0
-    for (var i = 0; i < engine.torrent.pieces.length; i++) {
-      if (engine.bitfield.get(i)) downloaded++
-    }
-
-    downloadedPercentage = parseInt((downloaded / engine.torrent.pieces.length) * 100, 10)
-  }
-
   engine.on('verify', function () {
     verified++
-    updateDownloadedPercentage()
+    downloadedPercentage = Math.floor(verified / engine.torrent.pieces.length * 100)
   })
 
   engine.on('invalid-piece', function () {
