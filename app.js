@@ -117,15 +117,12 @@ var ontorrent = function (torrent) {
       if (engine.bitfield.get(i)) downloaded++
     }
 
-    engine.on('download', function () {
-      downloaded++
-    })
-
     downloadedPercentage = parseInt((downloaded / engine.torrent.pieces.length) * 100, 10)
   }
 
   engine.on('verify', function () {
     verified++
+    updateDownloadedPercentage()
   })
 
   engine.on('invalid-piece', function () {
@@ -378,7 +375,6 @@ var ontorrent = function (torrent) {
       var runtime = Math.floor((Date.now() - started - timePaused - timeCurrentPause) / 1000)
       var linesremaining = clivas.height
       var peerslisted = 0
-      updateDownloadedPercentage()
 
       clivas.clear()
       if (argv.airplay) clivas.line('{green:streaming to} {bold:apple-tv} {green:using airplay}')
@@ -437,8 +433,6 @@ var ontorrent = function (torrent) {
   }
 
   engine.on('ready', function () {
-    // updateDownloadedPercentage()
-
     engine.swarm.removeListener('wire', onmagnet)
     if (!argv.all) return
     engine.files.forEach(function (file) {
