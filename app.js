@@ -109,9 +109,11 @@ var ontorrent = function (torrent) {
   var hotswaps = 0
   var verified = 0
   var invalid = 0
+  var downloadedPercentage = 0
 
   engine.on('verify', function () {
     verified++
+    downloadedPercentage = Math.floor(verified / engine.torrent.pieces.length * 100)
   })
 
   engine.on('invalid-piece', function () {
@@ -371,7 +373,7 @@ var ontorrent = function (torrent) {
       clivas.line('')
       clivas.line('{yellow:info} {green:streaming} {bold:' + filename + ' (' + bytes(filelength) + ')} {green:-} {bold:' + bytes(swarm.downloadSpeed()) + '/s} {green:from} {bold:' + unchoked.length + '/' + wires.length + '} {green:peers}    ')
       clivas.line('{yellow:info} {green:path} {cyan:' + engine.path + '}')
-      clivas.line('{yellow:info} {green:downloaded} {bold:' + bytes(swarm.downloaded) + '} {green:and uploaded }{bold:' + bytes(swarm.uploaded) + '} {green:in }{bold:' + runtime + 's} {green:with} {bold:' + hotswaps + '} {green:hotswaps}     ')
+      clivas.line('{yellow:info} {green:downloaded} {bold:' + bytes(swarm.downloaded) + '} (' + downloadedPercentage + '%) {green:and uploaded }{bold:' + bytes(swarm.uploaded) + '} {green:in }{bold:' + runtime + 's} {green:with} {bold:' + hotswaps + '} {green:hotswaps}     ')
       clivas.line('{yellow:info} {green:verified} {bold:' + verified + '} {green:pieces and received} {bold:' + invalid + '} {green:invalid pieces}')
       clivas.line('{yellow:info} {green:peer queue size is} {bold:' + swarm.queued + '}')
       clivas.line('{80:}')
