@@ -137,11 +137,11 @@ var ontorrent = function (torrent) {
             return {
               name: file.name + ' : ' + bytes(file.length),
               value: i
-          } })}], function (answers) {
-            argv.index = answers.file
-            delete argv.list
-            ontorrent(torrent)
-          })
+            } })}], function (answers) {
+          argv.index = answers.file
+          delete argv.list
+          ontorrent(torrent)
+        })
       } else {
         engine.files.forEach(function (file, i, files) {
           clivas.line('{3+bold:' + i + '} : {magenta:' + file.name + '} : {blue:' + bytes(file.length) + '}')
@@ -238,11 +238,13 @@ var ontorrent = function (torrent) {
     } else if (argv.potplayer && process.platform === 'win32') {
       player = 'potplayer'
       registry = require('windows-no-runnable').registry
-      if (process.arch === 'x64')
+      if (process.arch === 'x64') {
         key = registry('HKCU/Software/DAUM/PotPlayer64')
+      }
 
-      if (!key || !key['ProgramPath'])
+      if (!key || !key['ProgramPath']) {
         key = registry('HKCU/Software/DAUM/PotPlayer')
+      }
 
       if (key['ProgramPath']) {
         var potplayerPath = key['ProgramPath'].value
