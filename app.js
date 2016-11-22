@@ -137,7 +137,9 @@ var ontorrent = function (torrent) {
             return {
               name: file.name + ' : ' + bytes(file.length),
               value: i
-            } })}]).then(function (answers) {
+            }
+          })
+        }]).then(function (answers) {
           argv.index = answers.file
           delete argv.list
           ontorrent(torrent)
