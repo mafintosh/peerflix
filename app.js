@@ -184,8 +184,8 @@ var ontorrent = function (torrent) {
   engine.server.on('listening', function () {
     var host = argv.hostname || address()
     var filename = engine.server.index.name.split('/').pop().replace(/\{|\}/g, '')
-    var href = 'http://' + host + ':' + engine.server.address().port + '/' + filename
-    var localHref = 'http://localhost:' + engine.server.address().port + '/' + filename
+    var href = 'http://' + host + ':' + engine.server.address().port + '/' + encodeURI(filename)
+    var localHref = 'http://localhost:' + engine.server.address().port + '/' + encodeURI(filename)
     var filelength = engine.server.index.length
     var player = null
     var paused = false
