@@ -111,7 +111,7 @@ var watchVerifying = function (engine) {
 
   var startShowVerifying = function () {
     showVerifying(-1)
-    engine.on('verify', showVerifying);
+    engine.on('verify', showVerifying)
   }
 
   var stopShowVerifying = function () {
@@ -468,7 +468,7 @@ var ontorrent = function (torrent) {
     clivas.line('{yellow:info} {green:peerflix is exiting...}')
   }
 
-  watchVerifying(engine);
+  watchVerifying(engine)
 
   if (argv.remove) {
     var remove = function () {
