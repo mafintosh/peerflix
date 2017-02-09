@@ -199,51 +199,53 @@ var ontorrent = function (torrent) {
       localHref += '.m3u'
     }
 
-    var key, registry = function (hive, key, name, cb) {
-        var Registry = require('winreg')
-        var regKey = new Registry({
-            hive: Registry[hive],
-            key:  key
-        })
-        regKey.get(name, cb)
+    var registry = function (hive, key, name, cb) {
+      var Registry = require('winreg')
+      var regKey = new Registry({
+        hive: Registry[hive],
+        key: key
+      })
+      regKey.get(name, cb)
     }
 
     if (argv.vlc && process.platform === 'win32') {
       player = 'vlc'
-      var runVLC = function(regItem) {
-          VLC_ARGS = VLC_ARGS.split(' ')
-          VLC_ARGS.unshift(localHref)
-          proc.execFile(regItem.value + path.sep + 'vlc.exe', VLC_ARGS)
+      var runVLC = function (regItem) {
+        VLC_ARGS = VLC_ARGS.split(' ')
+        VLC_ARGS.unshift(localHref)
+        proc.execFile(regItem.value + path.sep + 'vlc.exe', VLC_ARGS)
       }
-      registry('HKLM', '\\Software\\VideoLAN\\VLC', 'InstallDir', function(err, regItem) {
-          if (err)
-              registry('HKLM', '\\Software\\WOW6432Node\\VideoLAN\\VLC', 'InstallDir', function(err, regItem) {
-                  if (err) return
-                  runVLC(regItem)
-              })
-          else
-              runVLC(regItem)
+      registry('HKLM', '\\Software\\VideoLAN\\VLC', 'InstallDir', function (err, regItem) {
+        if (err) {
+          registry('HKLM', '\\Software\\WOW6432Node\\VideoLAN\\VLC', 'InstallDir', function (err, regItem) {
+            if (err) return
+            runVLC(regItem)
+          })
+        } else {
+          runVLC(regItem)
+        }
       })
     } else if (argv.mpchc && process.platform === 'win32') {
       player = 'mph-hc'
-      registry('HKCU', '\\Software\\MPC-HC\\MPC-HC', 'ExePath', function(err, regItem) {
-        if (err) return;
+      registry('HKCU', '\\Software\\MPC-HC\\MPC-HC', 'ExePath', function (err, regItem) {
+        if (err) return
         proc.exec('"' + regItem.value + '" "' + localHref + '" ' + MPC_HC_ARGS)
-      });
+      })
     } else if (argv.potplayer && process.platform === 'win32') {
       player = 'potplayer'
-      var runPotPlayer = function(regItem) {
-          proc.exec('"' + regItem.value + '" "' + localHref + '" ' + POTPLAYER_ARGS)
+      var runPotPlayer = function (regItem) {
+        proc.exec('"' + regItem.value + '" "' + localHref + '" ' + POTPLAYER_ARGS)
       }
-      registry('HKCU', '\\Software\\DAUM\\PotPlayer64', 'ProgramPath', function(err, regItem) {
-          if (err)
-              registry('HKCU', '\\Software\\DAUM\\PotPlayer', 'ProgramPath', function(err, regItem) {
-                  if (err) return
-                  runPotPlayer(regItem)
-              })
-          else
+      registry('HKCU', '\\Software\\DAUM\\PotPlayer64', 'ProgramPath', function (err, regItem) {
+        if (err) {
+          registry('HKCU', '\\Software\\DAUM\\PotPlayer', 'ProgramPath', function (err, regItem) {
+            if (err) return
             runPotPlayer(regItem)
-      });
+          })
+        } else {
+          runPotPlayer(regItem)
+        }
+      })
     } else {
       if (argv.vlc) {
         player = 'vlc'
