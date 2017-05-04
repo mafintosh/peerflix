@@ -8,6 +8,12 @@ npm install -g peerflix
 
 [![build status](http://img.shields.io/travis/mafintosh/peerflix.svg?style=flat)](http://travis-ci.org/mafintosh/peerflix)
 
+## Dependencies
+
+* Ubuntu/Debian: `sudo apt-get install libavahi-compat-libdnssd-dev`.
+* Windows: please install [Bonjour SDK for Windows](https://developer.apple.com/bonjour/index.html).
+* Others: [Apple's mDNSResponder](https://opensource.apple.com/tarballs/mDNSResponder/) is recommended.
+
 ## Usage
 
 Peerflix can be used with a magnet link or a torrent file.
