@@ -31,7 +31,7 @@
     "range-parser": "^1.0.0",
     "rc": "^1.1.6",
     "torrent-stream": "^1.0.1",
-    "windows-no-runnable": "0.0.6",
+    "winreg": "1.2.3",
     "xtend": "^4.0.0"
   },
   "devDependencies": {
