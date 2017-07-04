@@ -102,6 +102,28 @@ if (argv._.length > 1) {
   POTPLAYER_ARGS += ' ' + playerArgs
 }
 
+var watchVerifying = function (engine) {
+  var showVerifying = function (i) {
+    var percentage = Math.round(((i + 1) / engine.torrent.pieces.length) * 100.0)
+    clivas.clear()
+    clivas.line('{yellow:Verifying downloaded:} ' + percentage + '%')
+  }
+
+  var startShowVerifying = function () {
+    showVerifying(-1)
+    engine.on('verify', showVerifying)
+  }
+
+  var stopShowVerifying = function () {
+    clivas.clear()
+    engine.removeListener('verify', showVerifying)
+    engine.removeListener('verifying', startShowVerifying)
+  }
+
+  engine.on('verifying', startShowVerifying)
+  engine.on('ready', stopShowVerifying)
+}
+
 var ontorrent = function (torrent) {
   if (argv['peer-port']) argv.peerPort = Number(argv['peer-port'])
 
@@ -152,8 +174,12 @@ var ontorrent = function (torrent) {
         process.exit(0)
       }
     }
+
     if (engine.torrent) onready()
-    else engine.on('ready', onready)
+    else {
+      watchVerifying(engine)
+      engine.on('ready', onready)
+    }
     return
   }
 
@@ -447,6 +473,8 @@ var ontorrent = function (torrent) {
     clivas.line('')
     clivas.line('{yellow:info} {green:peerflix is exiting...}')
   }
+
+  watchVerifying(engine)
 
   if (argv.remove) {
     var remove = function () {
