@@ -109,6 +109,7 @@ var ontorrent = function (torrent) {
   var hotswaps = 0
   var verified = 0
   var invalid = 0
+  var airplayServer = null
   var downloadedPercentage = 0
 
   engine.on('verify', function () {
@@ -304,6 +305,7 @@ var ontorrent = function (torrent) {
     if (argv.airplay) {
       var list = require('airplayer')()
       list.once('update', function (player) {
+        airplayServer = player
         list.destroy()
         player.play(href)
       })
@@ -372,8 +374,12 @@ var ontorrent = function (torrent) {
       var peerslisted = 0
 
       clivas.clear()
-      if (argv.airplay) clivas.line('{green:streaming to} {bold:apple-tv} {green:using airplay}')
-      else clivas.line('{green:open} {bold:' + (player || 'vlc') + '} {green:and enter} {bold:' + href + '} {green:as the network address}')
+      if (argv.airplay) {
+        if (airplayServer) clivas.line('{green:streaming to} {bold:' + airplayServer.name + '} {green:using airplay}')
+        else clivas.line('{green:streaming} {green:using airplay}')
+      } else {
+        clivas.line('{green:open} {bold:' + (player || 'vlc') + '} {green:and enter} {bold:' + href + '} {green:as the network address}')
+      }
       clivas.line('')
       clivas.line('{yellow:info} {green:streaming} {bold:' + filename + ' (' + bytes(filelength) + ')} {green:-} {bold:' + bytes(swarm.downloadSpeed()) + '/s} {green:from} {bold:' + unchoked.length + '/' + wires.length + '} {green:peers}    ')
       clivas.line('{yellow:info} {green:path} {cyan:' + engine.path + '}')
