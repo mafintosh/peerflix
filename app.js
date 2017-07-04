@@ -219,6 +219,8 @@ var ontorrent = function (torrent) {
     var timePaused = 0
     var pausedAt = null
 
+    VLC_ARGS += ' --meta-title="' + filename.replace(/"/g, '\\"') + '"'
+
     if (argv.all) {
       filename = engine.torrent.name
       filelength = engine.torrent.length
