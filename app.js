@@ -338,10 +338,10 @@ var ontorrent = function (torrent) {
       var fs = require('fs')
       var crypto = require('crypto')
       var iinaPlaylist =
-        '/tmp/' + crypto.randomBytes(16).toString("hex") + '.m3u'
+        '/tmp/' + crypto.randomBytes(16).toString('hex') + '.m3u'
       fs.writeFileSync(iinaPlaylist, localHref)
       var iina = proc.exec('open -a IINA -W ' + iinaPlaylist)
-      iina.on('exit', function() {
+      iina.on('exit', function () {
         fs.unlink(iinaPlaylist)
         if (!argv.n && argv.quit !== false) process.exit(0)
       })
