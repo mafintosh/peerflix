@@ -31,6 +31,7 @@ var argv = rc('peerflix', {}, optimist
   .alias('g', 'smplayer').describe('g', 'autoplay in smplayer*').boolean('g')
   .describe('mpchc', 'autoplay in MPC-HC player*').boolean('boolean')
   .describe('potplayer', 'autoplay in Potplayer*').boolean('boolean')
+  .describe('iina', 'autoplay in IINA (experimental)*').boolean('boolean')
   .alias('k', 'mpv').describe('k', 'autoplay in mpv*').boolean('k')
   .alias('o', 'omx').describe('o', 'autoplay in omx**').boolean('o')
   .alias('w', 'webplay').describe('w', 'autoplay in webplay').boolean('w')
@@ -330,6 +331,19 @@ var ontorrent = function (torrent) {
         airplayServer = player
         list.destroy()
         player.play(href)
+      })
+    }
+    if (argv.iina) {
+      player = 'iina'
+      var fs = require('fs')
+      var crypto = require('crypto')
+      var iinaPlaylist =
+        '/tmp/' + crypto.randomBytes(16).toString("hex") + '.m3u'
+      fs.writeFileSync(iinaPlaylist, localHref)
+      var iina = proc.exec('open -a IINA -W ' + iinaPlaylist)
+      iina.on('exit', function() {
+        fs.unlink(iinaPlaylist)
+        if (!argv.n && argv.quit !== false) process.exit(0)
       })
     }
 
