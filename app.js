@@ -156,12 +156,14 @@ var ontorrent = function (torrent) {
           type: 'list',
           name: 'file',
           message: 'Choose one file',
-          choices: engine.files.map(function (file, i) {
-            return {
-              name: file.name + ' : ' + bytes(file.length),
-              value: i
-            }
-          })
+          choices: engine.files
+            .sort((file1, file2) => file1.name > file2.name ? 1 : -1)
+            .map(function (file, i) {
+              return {
+                name: file.name + ' : ' + bytes(file.length),
+                value: i
+              }
+            })
         }]).then(function (answers) {
           argv.index = answers.file
           delete argv.list
