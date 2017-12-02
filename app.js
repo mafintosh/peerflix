@@ -287,7 +287,7 @@ var ontorrent = function (torrent) {
         })
 
         vlc.on('exit', function () {
-          if (!argv.n && argv.quit !== false) process.exit(0)
+          if (!argv.n && argv.quit !== false) onexit()
         })
       }
     }
@@ -296,28 +296,28 @@ var ontorrent = function (torrent) {
       player = 'omx'
       var omx = proc.exec(OMX_EXEC + ' ' + localHref)
       omx.on('exit', function () {
-        if (!argv.n && argv.quit !== false) process.exit(0)
+        if (!argv.n && argv.quit !== false) onexit()
       })
     }
     if (argv.mplayer) {
       player = 'mplayer'
       var mplayer = proc.exec(MPLAYER_EXEC + ' ' + localHref)
       mplayer.on('exit', function () {
-        if (!argv.n && argv.quit !== false) process.exit(0)
+        if (!argv.n && argv.quit !== false) onexit()
       })
     }
     if (argv.smplayer) {
       player = 'smplayer'
       var smplayer = proc.exec(SMPLAYER_EXEC + ' ' + localHref)
       smplayer.on('exit', function () {
-        if (!argv.n && argv.quit !== false) process.exit(0)
+        if (!argv.n && argv.quit !== false) onexit()
       })
     }
     if (argv.mpv) {
       player = 'mpv'
       var mpv = proc.exec(MPV_EXEC + ' ' + localHref)
       mpv.on('exit', function () {
-        if (!argv.n && argv.quit !== false) process.exit(0)
+        if (!argv.n && argv.quit !== false) onexit()
       })
     }
     if (argv.webplay) {
