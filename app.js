@@ -468,7 +468,7 @@ var ontorrent = function (torrent) {
     // better output a status message so the user knows we're working on it :)
     clivas.line('')
     clivas.line('{yellow:info} {green:peerflix is exiting...}')
-    if(argv.remove){
+    if (argv.remove) {
       engine.remove(() => process.exit())
     } else {
       process.exit()
