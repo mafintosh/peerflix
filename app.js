@@ -468,26 +468,16 @@ var ontorrent = function (torrent) {
     // better output a status message so the user knows we're working on it :)
     clivas.line('')
     clivas.line('{yellow:info} {green:peerflix is exiting...}')
+    if(argv.remove){
+      engine.remove(() => process.exit())
+    } else {
+      process.exit()
+    }
   }
 
   watchVerifying(engine)
 
-  if (argv.remove) {
-    var remove = function () {
-      onexit()
-      engine.remove(function () {
-        process.exit()
-      })
-    }
-
-    process.on('SIGINT', remove)
-    process.on('SIGTERM', remove)
-  } else {
-    process.on('SIGINT', function () {
-      onexit()
-      process.exit()
-    })
-  }
+  process.on('SIGINT' || 'SIGTERM', onexit)
 }
 
 parsetorrent.remote(filename, function (err, parsedtorrent) {
