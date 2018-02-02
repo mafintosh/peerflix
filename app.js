@@ -337,7 +337,7 @@ var ontorrent = function (torrent) {
 
     if (argv.quiet) return console.log('server is listening on ' + href)
 
-    process.stdout.write(new Buffer('G1tIG1sySg==', 'base64')) // clear for drawing
+    process.stdout.write(Buffer.from('G1tIG1sySg==', 'base64')) // clear for drawing
 
     var interactive = !player && process.stdin.isTTY && !!process.stdin.setRawMode
 
