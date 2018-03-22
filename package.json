@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "airplayer": "^2.0.0",
+    "buffer-from": "^1.0.0",
     "clivas": "^0.2.0",
     "inquirer": "^1.2.2",
     "keypress": "^0.2.1",
