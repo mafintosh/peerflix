@@ -45,7 +45,7 @@ var createServer = function (e, opts) {
         return el.name
       }).sort()
       index = e.files.findIndex(function (el) {
-          return el.name === sortedFiles[index]
+        return el.name === sortedFiles[index]
       })
     }
 
