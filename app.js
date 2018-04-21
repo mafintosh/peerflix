@@ -156,12 +156,12 @@ var ontorrent = function (torrent) {
           type: 'list',
           name: 'file',
           message: 'Choose one file',
-          choices: engine.files
-            .sort((file1, file2) => file1.name > file2.name ? 1 : -1)
+          choices: Array.from(engine.files)
+            .sort((file1, file2) => file1.path.localeCompare(file2.path))
             .map(function (file, i) {
               return {
                 name: file.name + ' : ' + bytes(file.length),
-                value: i
+                value: engine.files.map(file=>file.path).indexOf(file.path)
               }
             })
         }]).then(function (answers) {
