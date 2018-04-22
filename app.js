@@ -152,6 +152,7 @@ var ontorrent = function (torrent) {
 
     var onready = function () {
       if (interactive) {
+        var filenamesInOriginalOrder = engine.files.map(file => file.path)
         inquirer.prompt([{
           type: 'list',
           name: 'file',
@@ -161,7 +162,7 @@ var ontorrent = function (torrent) {
             .map(function (file, i) {
               return {
                 name: file.name + ' : ' + bytes(file.length),
-                value: engine.files.map(file=>file.path).indexOf(file.path)
+                value: filenamesInOriginalOrder.indexOf(file.path)
               }
             })
         }]).then(function (answers) {
