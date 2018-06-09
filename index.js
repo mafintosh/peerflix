@@ -30,7 +30,7 @@ var truthy = function () {
 var createServer = function (e, opts) {
   var server = http.createServer()
   var index = opts.index
-  var getType = opts.type || mime.lookup.bind(mime)
+  var getType = opts.type || mime.getType.bind(mime)
   var filter = opts.filter || truthy
 
   var onready = function () {
