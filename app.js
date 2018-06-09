@@ -12,6 +12,7 @@ var keypress = require('keypress')
 var openUrl = require('open')
 var inquirer = require('inquirer')
 var parsetorrent = require('parse-torrent')
+var bufferFrom = require('buffer-from')
 
 var path = require('path')
 
@@ -152,16 +153,19 @@ var ontorrent = function (torrent) {
 
     var onready = function () {
       if (interactive) {
+        var filenamesInOriginalOrder = engine.files.map(file => file.path)
         inquirer.prompt([{
           type: 'list',
           name: 'file',
           message: 'Choose one file',
-          choices: engine.files.map(function (file, i) {
-            return {
-              name: file.name + ' : ' + bytes(file.length),
-              value: i
-            }
-          })
+          choices: Array.from(engine.files)
+            .sort((file1, file2) => file1.path.localeCompare(file2.path))
+            .map(function (file, i) {
+              return {
+                name: file.name + ' : ' + bytes(file.length),
+                value: filenamesInOriginalOrder.indexOf(file.path)
+              }
+            })
         }]).then(function (answers) {
           argv.index = answers.file
           delete argv.list
@@ -337,7 +341,7 @@ var ontorrent = function (torrent) {
 
     if (argv.quiet) return console.log('server is listening on ' + href)
 
-    process.stdout.write(Buffer.from('G1tIG1sySg==', 'base64')) // clear for drawing
+    process.stdout.write(bufferFrom('G1tIG1sySg==', 'base64')) // clear for drawing
 
     var interactive = !player && process.stdin.isTTY && !!process.stdin.setRawMode
 
