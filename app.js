@@ -12,6 +12,7 @@ var keypress = require('keypress')
 var openUrl = require('open')
 var inquirer = require('inquirer')
 var parsetorrent = require('parse-torrent')
+var bufferFrom = require('buffer-from')
 
 var path = require('path')
 
@@ -340,7 +341,7 @@ var ontorrent = function (torrent) {
 
     if (argv.quiet) return console.log('server is listening on ' + href)
 
-    process.stdout.write(new Buffer('G1tIG1sySg==', 'base64')) // clear for drawing
+    process.stdout.write(bufferFrom('G1tIG1sySg==', 'base64')) // clear for drawing
 
     var interactive = !player && process.stdin.isTTY && !!process.stdin.setRawMode
 
