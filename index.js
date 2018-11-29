@@ -56,10 +56,10 @@ var createServer = function (e, opts) {
 
     var toPlaylist = function () {
       var toEntry = function (file, i) {
-        return '#EXTINF:-1,' + file.path + '\n' + 'http://' + host + '/' + i
+        return '#EXTINF:-1,' + file.name + '\n' + 'http://' + host + '/' + file.name.replace(/\s/g, '')
       }
 
-      return '#EXTM3U\n' + e.files.filter(filter).map(toEntry).join('\n')
+      return '#EXTM3U\n' + e.files.filter(filter).map(toEntry).sort(file).join('\n')
     }
 
     var toJSON = function () {
@@ -136,7 +136,7 @@ var createServer = function (e, opts) {
     }
 
     e.files.forEach(function (file, i) {
-      if (u.pathname.slice(1) === file.name) u.pathname = '/' + i
+      if (u.pathname.slice(1) === file.name.replace(/\s/g, '')) u.pathname = '/' + i
     })
 
     var i = Number(u.pathname.slice(1))
