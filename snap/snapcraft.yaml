@@ -1,0 +1,23 @@
+name: peerflix
+base: core18
+version: git
+summary: Streaming torrent client for Node.js
+description: |
+  Peerflix can be used with a magnet link or a torrent file to stream music or video.
+
+grade: devel
+confinement: strict
+
+parts:
+  peerflix:
+    plugin: nodejs
+    source: .
+
+apps:
+  peerflix:
+    command: peerflix
+    plugs:
+      - home
+      - network
+      - network-bind
+      - network-observe
