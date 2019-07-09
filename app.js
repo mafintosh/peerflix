@@ -31,6 +31,7 @@ var argv = rc('peerflix', {}, optimist
   .alias('m', 'mplayer').describe('m', 'autoplay in mplayer*').boolean('m')
   .alias('g', 'smplayer').describe('g', 'autoplay in smplayer*').boolean('g')
   .describe('mpchc', 'autoplay in MPC-HC player*').boolean('boolean')
+  .describe('iina', 'autoplay in iina player (MacOS)*').boolean('boolean')
   .describe('potplayer', 'autoplay in Potplayer*').boolean('boolean')
   .alias('k', 'mpv').describe('k', 'autoplay in mpv*').boolean('k')
   .alias('o', 'omx').describe('o', 'autoplay in omx**').boolean('o')
@@ -55,6 +56,8 @@ if (argv.version) {
   process.exit(0)
 }
 
+console.log(argv)
+
 var filename = argv._[0]
 var onTop = !argv.d
 
@@ -74,6 +77,7 @@ var OMX_EXEC = argv.jack ? 'omxplayer -r -o local ' : 'omxplayer -r -o hdmi '
 var MPLAYER_EXEC = 'mplayer ' + (onTop ? '-ontop' : '') + ' -really-quiet -noidx -loop 0 '
 var SMPLAYER_EXEC = 'smplayer ' + (onTop ? '-ontop' : '')
 var MPV_EXEC = 'mpv ' + (onTop ? '--ontop' : '') + ' --really-quiet --loop=no '
+var IINA_EXEC = 'iina --keep-running ' + (onTop ? '--ontop' : '') + ' --really-quiet --loop=no '
 var MPC_HC_ARGS = '/play'
 var POTPLAYER_ARGS = ''
 
@@ -87,6 +91,7 @@ if (argv.t) {
   MPLAYER_EXEC += ' -sub ' + enc(argv.t)
   SMPLAYER_EXEC += ' -sub ' + enc(argv.t)
   MPV_EXEC += ' --sub-file=' + enc(argv.t)
+  IINA_EXEC += ' --sub-file=' + enc(argv.t)
   POTPLAYER_ARGS += ' ' + enc(argv.t)
 }
 
@@ -99,6 +104,7 @@ if (argv._.length > 1) {
   MPLAYER_EXEC += ' ' + playerArgs
   SMPLAYER_EXEC += ' ' + playerArgs
   MPV_EXEC += ' ' + playerArgs
+  IINA_EXEC += ' ' + playerArgs
   MPC_HC_ARGS += ' ' + playerArgs
   POTPLAYER_ARGS += ' ' + playerArgs
 }
@@ -291,6 +297,12 @@ var ontorrent = function (torrent) {
         })
 
         vlc.on('exit', function () {
+          if (!argv.n && argv.quit !== false) process.exit(0)
+        })
+      } else if (argv.iina) {
+        player = 'iina'
+        var iina = proc.exec(IINA_EXEC + ' ' + localHref)
+        iina.on('exit', function () {
           if (!argv.n && argv.quit !== false) process.exit(0)
         })
       }
