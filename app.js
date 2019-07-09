@@ -56,8 +56,6 @@ if (argv.version) {
   process.exit(0)
 }
 
-console.log(argv)
-
 var filename = argv._[0]
 var onTop = !argv.d
 
