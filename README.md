@@ -48,7 +48,7 @@ peerflix magnet-link --connection 200 # set max connection to 200
 
 ## Programmatic usage
 
-If you want to build your own app using streaming bittorent in Node you should checkout [torrent-stream](https://github.com/mafintosh/torrent-stream)
+If you want to build your own app using streaming bittorrent in Node you should checkout [torrent-stream](https://github.com/mafintosh/torrent-stream)
 
 ## Chromebook users
 
