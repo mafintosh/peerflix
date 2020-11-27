@@ -387,6 +387,7 @@ var ontorrent = function (torrent) {
         draw()
       })
       process.stdin.setRawMode(true)
+      process.stdin.resume()
     }
 
     var draw = function () {
