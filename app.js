@@ -31,6 +31,7 @@ var argv = rc('peerflix', {}, optimist
   .alias('m', 'mplayer').describe('m', 'autoplay in mplayer*').boolean('m')
   .alias('g', 'smplayer').describe('g', 'autoplay in smplayer*').boolean('g')
   .describe('mpchc', 'autoplay in MPC-HC player*').boolean('boolean')
+  .describe('mpcbe', 'autoplay in MPC-BE player*').boolean('boolean')
   .describe('potplayer', 'autoplay in Potplayer*').boolean('boolean')
   .alias('k', 'mpv').describe('k', 'autoplay in mpv*').boolean('k')
   .alias('o', 'omx').describe('o', 'autoplay in omx**').boolean('o')
@@ -75,6 +76,7 @@ var MPLAYER_EXEC = 'mplayer ' + (onTop ? '-ontop' : '') + ' -really-quiet -noidx
 var SMPLAYER_EXEC = 'smplayer ' + (onTop ? '-ontop' : '')
 var MPV_EXEC = 'mpv ' + (onTop ? '--ontop' : '') + ' --really-quiet --loop=no '
 var MPC_HC_ARGS = '/play'
+var MPC_BE_ARGS = '/play'
 var POTPLAYER_ARGS = ''
 
 var enc = function (s) {
@@ -100,6 +102,7 @@ if (argv._.length > 1) {
   SMPLAYER_EXEC += ' ' + playerArgs
   MPV_EXEC += ' ' + playerArgs
   MPC_HC_ARGS += ' ' + playerArgs
+  MPC_BE_ARGS += ' ' + playerArgs
   POTPLAYER_ARGS += ' ' + playerArgs
 }
 
@@ -263,6 +266,12 @@ var ontorrent = function (torrent) {
       registry('HKCU', '\\Software\\MPC-HC\\MPC-HC', 'ExePath', function (err, regItem) {
         if (err) return
         proc.exec('"' + regItem.value + '" "' + localHref + '" ' + MPC_HC_ARGS)
+      })
+    }  else if (argv.mpcbe && process.platform === 'win32') {
+      player = 'mph-be'
+      registry('HKCU', '\\Software\\MPC-BE\\ShellExt', 'MpcPath', function (err, regItem) {
+        if (err) return
+        proc.exec('"' + regItem.value + '" "' + localHref + '" ' + MPC_BE_ARGS)
       })
     } else if (argv.potplayer && process.platform === 'win32') {
       player = 'potplayer'
