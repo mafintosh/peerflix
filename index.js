@@ -40,6 +40,14 @@ var createServer = function (e, opts) {
       })
       index = e.files.indexOf(index)
     }
+    else {
+      var sortedFiles = e.files.map(function (el) {
+        return el.name
+      }).sort()
+      index = e.files.findIndex(function (el) {
+        return el.name === sortedFiles[index]
+      })
+    }
 
     e.files[index].select()
     server.index = e.files[index]
