@@ -494,10 +494,26 @@ var ontorrent = function (torrent) {
   }
 }
 
-parsetorrent.remote(filename, function (err, parsedtorrent) {
-  if (err) {
-    console.error(err.message)
-    process.exit(1)
-  }
-  ontorrent(parsedtorrent)
-})
+if(filename.match("^magnet:")) {
+  parsetorrent.remote(filename, function (err, parsedtorrent) {
+    if (err) {
+      console.error(err.message)
+      process.exit(1)
+    }
+    ontorrent(parsedtorrent)
+  })
+} else {
+  require('read-torrent')(filename, {headers: {
+      'User-Agent': 'Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:49.0) Gecko/20100101 Firefox/49.0',
+      'Accept-Language' :"fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3",
+      'Accept-Encoding' :"gzip, deflate, br",
+      'Accept' :"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    }
+  }, function(err, torrent) {
+      if (err) {
+        console.error(err)
+        process.exit(1)
+      }
+      ontorrent(torrent)
+  });
+}
