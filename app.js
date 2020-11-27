@@ -423,7 +423,9 @@ var ontorrent = function (torrent) {
       clivas.line('')
       linesremaining -= 9
 
-      wires.every(function (wire) {
+      wires.sort(function (a,b) {
+        return b.downloadSpeed() - a.downloadSpeed()
+      }).every(function (wire) {
         var tags = []
         if (wire.peerChoking) tags.push('choked')
         clivas.line('{25+magenta:' + wire.peerAddress + '} {10:' + bytes(wire.downloaded) + '} {10 + cyan:' + bytes(wire.downloadSpeed()) + '/s} {15 + grey:' + tags.join(', ') + '}   ')
