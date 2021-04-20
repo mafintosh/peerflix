@@ -15,6 +15,7 @@ var parsetorrent = require('parse-torrent')
 var bufferFrom = require('buffer-from')
 
 var path = require('path')
+var fs = require('fs')
 
 process.title = 'peerflix'
 
@@ -153,6 +154,16 @@ var ontorrent = function (torrent) {
 
     var onready = function () {
       if (interactive) {
+
+        var getDownloadedSize = function(file) {
+          var p = path.join(engine.path, file.path)
+          if (fs.existsSync(p)) {
+            var size = fs.statSync(p).size
+            return Math.round(size / file.length) * 100  // percentage
+          }
+          return 0
+        }
+
         var filenamesInOriginalOrder = engine.files.map(file => file.path)
         inquirer.prompt([{
           type: 'list',
@@ -162,7 +173,7 @@ var ontorrent = function (torrent) {
             .sort((file1, file2) => file1.path.localeCompare(file2.path))
             .map(function (file, i) {
               return {
-                name: file.name + ' : ' + bytes(file.length),
+                name: file.name + ' : ' + bytes(file.length) + " (" + getDownloadedSize(file) + "%)",
                 value: filenamesInOriginalOrder.indexOf(file.path)
               }
             })
