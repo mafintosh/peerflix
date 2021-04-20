@@ -154,8 +154,7 @@ var ontorrent = function (torrent) {
 
     var onready = function () {
       if (interactive) {
-
-        var getDownloadedSize = function(file) {
+        var getDownloadedSize = function (file) {
           var p = path.join(engine.path, file.path)
           if (fs.existsSync(p)) {
             var size = fs.statSync(p).size
@@ -173,7 +172,7 @@ var ontorrent = function (torrent) {
             .sort((file1, file2) => file1.path.localeCompare(file2.path))
             .map(function (file, i) {
               return {
-                name: file.name + ' : ' + bytes(file.length) + " (" + getDownloadedSize(file) + "%)",
+                name: file.name + ' : ' + bytes(file.length) + ' (' + getDownloadedSize(file) + '%)',
                 value: filenamesInOriginalOrder.indexOf(file.path)
               }
             })
