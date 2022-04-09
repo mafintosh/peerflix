@@ -3,46 +3,46 @@
 Streaming torrent client for Node.js
 
 ```
-npm install -g peerflix
+npm install -g @meteor314/stream
 ```
 
 [![build status](http://img.shields.io/travis/mafintosh/peerflix.svg?style=flat)](http://travis-ci.org/mafintosh/peerflix)
 
 ## Usage
 
-Peerflix can be used with a magnet link or a torrent file.
+stream-cli can be used with a magnet link or a torrent file.
 To stream a video with its magnet link use the following command.
 
 ```
-peerflix "magnet:?xt=urn:btih:ef330b39f4801d25b4245212e75a38634bfc856e" --vlc
+stream "magnet:?xt=urn:btih:ef330b39f4801d25b4245212e75a38634bfc856e" --vlc
 ```
 
 Remember to put `"` around your magnet link since they usually contain `&`.
-`peerflix` will print a terminal interface. The first line contains an address to a http server. The `--vlc` flag ensures vlc is opened when the torrent is ready to stream.
+`stream` will print a terminal interface. The first line contains an address to a http server. The `--vlc` flag ensures vlc is opened when the torrent is ready to stream.
 
-![peerflix](https://raw.github.com/mafintosh/peerflix/master/screenshot.png)
+![stream](https://raw.github.com/mafintosh/peerflix/master/screenshot.png)
 
 To stream music with a torrent file use the following command.
 
 ```
-peerflix "http://some-torrent/music.torrent" -a --vlc
+stream "http://some-torrent/music.torrent" -a --vlc
 ```
 
 The `-a` flag ensures that all files in the music repository are played with vlc.
-Otherwise if the torrent contains multiple files, `peerflix` will choose the biggest one.
-To get a full list of available options run peerflix with the help flag.
+Otherwise if the torrent contains multiple files, `stream` will choose the biggest one.
+To get a full list of available options run stream with the help flag.
 
 ```
-peerflix --help
+stream --help
 ```
 
 Examples of usage of could be
 
 ```
-peerflix magnet-link --list # Select from a list of files to download
-peerflix magnet-link --vlc -- --fullscreen # will pass --fullscreen to vlc
-peerflix magnet-link --mplayer --subtitles subtitle-file.srt # play in mplayer with subtitles
-peerflix magnet-link --connection 200 # set max connection to 200
+stream magnet-link --list # Select from a list of files to download
+stream magnet-link --vlc -- --fullscreen # will pass --fullscreen to vlc
+stream magnet-link --mplayer --subtitles subtitle-file.srt # play in mplayer with subtitles
+stream magnet-link --connection 200 # set max connection to 200
 ```
 
 
@@ -60,7 +60,7 @@ sudo iptables -P INPUT ACCEPT
 
 ## Chromecast
 
-If you wanna use peerflix on your chromecast checkout [peercast](https://github.com/mafintosh/peercast)
+If you wanna use stream on your chromecast checkout [peercast](https://github.com/mafintosh/peercast)
 or [castnow](https://github.com/xat/castnow)
 
 ## License
