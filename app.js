@@ -173,7 +173,6 @@ var ontorrent = function (torrent) {
             .sort((file1, file2) => file1.path.localeCompare(file2.path))
             .map(function (file, i) {
               return {
-                name: file.name + ' : ' + bytes(file.length),
                 name: file.name + ' : ' + bytes(file.length) + ' (' + getDownloadedSize(file) + '%)',
                 value: filenamesInOriginalOrder.indexOf(file.path)
               }
@@ -226,7 +225,7 @@ var ontorrent = function (torrent) {
 
   if (argv['exit']) {
     engine.on('uninterested', function () {
-        process.exit(0)
+      process.exit(0)
     })
   }
 
