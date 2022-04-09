@@ -1,4 +1,4 @@
-# peerflix
+# stream
 
 Streaming torrent client for Node.js
 
@@ -6,7 +6,7 @@ Streaming torrent client for Node.js
 npm install -g @meteor314/stream
 ```
 
-[![build status](http://img.shields.io/travis/mafintosh/peerflix.svg?style=flat)](http://travis-ci.org/mafintosh/peerflix)
+[![build status](http://img.shields.io/travis/mafintosh/peerflix.svg?style=flat)](http://travis-ci.org/meteor314/stream)
 
 ## Usage
 
