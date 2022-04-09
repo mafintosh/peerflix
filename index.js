@@ -1,4 +1,4 @@
-var torrentStream = require('torrent-stream')
+var torrentpeerflix = require('torrent-peerflix')
 var http = require('http')
 var fs = require('fs')
 var rangeParser = require('range-parser')
@@ -152,12 +152,12 @@ var createServer = function (e, opts) {
     range = range && rangeParser(file.length, range)[0]
     response.setHeader('Accept-Ranges', 'bytes')
     response.setHeader('Content-Type', getType(file.name))
-    response.setHeader('transferMode.dlna.org', 'Streaming')
+    response.setHeader('transferMode.dlna.org', 'peerflixing')
     response.setHeader('contentFeatures.dlna.org', 'DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01700000000000000000000000000000')
     if (!range) {
       response.setHeader('Content-Length', file.length)
       if (request.method === 'HEAD') return response.end()
-      pump(file.createReadStream(), response)
+      pump(file.createReadpeerflix(), response)
       return
     }
 
@@ -165,7 +165,7 @@ var createServer = function (e, opts) {
     response.setHeader('Content-Length', range.end - range.start + 1)
     response.setHeader('Content-Range', 'bytes ' + range.start + '-' + range.end + '/' + file.length)
     if (request.method === 'HEAD') return response.end()
-    pump(file.createReadStream(range), response)
+    pump(file.createReadpeerflix(range), response)
   })
 
   server.on('connection', function (socket) {
@@ -181,9 +181,9 @@ module.exports = function (torrent, opts) {
   // Parse blocklist
   if (opts.blocklist) opts.blocklist = parseBlocklist(opts.blocklist)
 
-  var engine = torrentStream(torrent, xtend(opts, {port: opts.peerPort}))
+  var engine = torrentpeerflix(torrent, xtend(opts, {port: opts.peerPort}))
 
-  // Just want torrent-stream to list files.
+  // Just want torrent-peerflix to list files.
   if (opts.list) return engine
 
   // Pause/Resume downloading as needed
@@ -197,7 +197,7 @@ module.exports = function (torrent, opts) {
 
   engine.server = createServer(engine, opts)
 
-  // Listen when torrent-stream is ready, by default a random port.
+  // Listen when torrent-peerflix is ready, by default a random port.
   engine.on('ready', function () {
     engine.server.listen(opts.port || 0, opts.hostname)
   })

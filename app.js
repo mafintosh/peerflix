@@ -7,7 +7,7 @@ var numeral = require('numeral')
 var os = require('os')
 var address = require('network-address')
 var proc = require('child_process')
-var stream = require('./')
+var peerflix = require('./')
 var keypress = require('keypress')
 var openUrl = require('open')
 var inquirer = require('inquirer')
@@ -17,13 +17,13 @@ var fs = require('fs')
 
 var path = require('path')
 
-process.title = 'stream'
+process.title = 'peerflix'
 
-var argv = rc('stream', {}, optimist
+var argv = rc('peerflix', {}, optimist
   .usage('Usage: $0 magnet-link-or-torrent [options]')
   .alias('c', 'connections').describe('c', 'max connected peers').default('c', os.cpus().length > 1 ? 100 : 30)
   .alias('p', 'port').describe('p', 'change the http port').default('p', 8888)
-  .alias('i', 'index').describe('i', 'changed streamed file (index)')
+  .alias('i', 'index').describe('i', 'changed peerflixed file (index)')
   .alias('l', 'list').describe('l', 'list available files with corresponding index').boolean('l')
   .alias('t', 'subtitles').describe('t', 'load subtitles file')
   .alias('q', 'quiet').describe('q', 'be quiet').boolean('v')
@@ -39,14 +39,14 @@ var argv = rc('stream', {}, optimist
   .alias('j', 'jack').describe('j', 'autoplay in omx** using the audio jack').boolean('j')
   .alias('f', 'path').describe('f', 'change buffer file path')
   .alias('b', 'blocklist').describe('b', 'use the specified blocklist')
-  .alias('n', 'no-quit').describe('n', 'do not quit stream on vlc exit').boolean('n')
+  .alias('n', 'no-quit').describe('n', 'do not quit peerflix on vlc exit').boolean('n')
   .alias('a', 'all').describe('a', 'select all files in the torrent').boolean('a')
   .alias('r', 'remove').describe('r', 'remove files on exit').boolean('r')
   .alias('h', 'hostname').describe('h', 'host name or IP to bind the server to')
   .alias('e', 'peer').describe('e', 'add peer by ip:port')
   .alias('x', 'peer-port').describe('x', 'set peer listening port')
   .alias('d', 'not-on-top').describe('d', 'do not float video on top').boolean('d')
-  .describe('exit', 'Exit stream on download').boolean('n')
+  .describe('exit', 'Exit peerflix on download').boolean('n')
   .describe('on-downloaded', 'script to call when file is 100% downloaded')
   .describe('on-listening', 'script to call when server goes live')
   .describe('version', 'prints current version').boolean('boolean')
@@ -64,7 +64,7 @@ if (!filename) {
   optimist.showHelp()
   console.error('Options passed after -- will be passed to your player')
   console.error('')
-  console.error('  "stream magnet-link --vlc -- --fullscreen" will pass --fullscreen to vlc')
+  console.error('  "peerflix magnet-link --vlc -- --fullscreen" will pass --fullscreen to vlc')
   console.error('')
   console.error('* Autoplay can take several seconds to start since it needs to wait for the first piece')
   console.error('** OMX player is the default Raspbian video player\n')
@@ -130,7 +130,7 @@ var watchVerifying = function (engine) {
 var ontorrent = function (torrent) {
   if (argv['peer-port']) argv.peerPort = Number(argv['peer-port'])
 
-  var engine = stream(torrent, argv)
+  var engine = peerflix(torrent, argv)
   var hotswaps = 0
   var verified = 0
   var invalid = 0
@@ -419,13 +419,13 @@ var ontorrent = function (torrent) {
 
       clivas.clear()
       if (argv.airplay) {
-        if (airplayServer) clivas.line('{green:streaming to} {bold:' + airplayServer.name + '} {green:using airplay}')
-        else clivas.line('{green:streaming} {green:using airplay}')
+        if (airplayServer) clivas.line('{green:peerflixing to} {bold:' + airplayServer.name + '} {green:using airplay}')
+        else clivas.line('{green:peerflixing} {green:using airplay}')
       } else {
         clivas.line('{green:open} {bold:' + (player || 'vlc') + '} {green:and enter} {bold:' + href + '} {green:as the network address}')
       }
       clivas.line('')
-      clivas.line('{yellow:info} {green:streaming} {bold:' + filename + ' (' + bytes(filelength) + ')} {green:-} {bold:' + bytes(swarm.downloadSpeed()) + '/s} {green:from} {bold:' + unchoked.length + '/' + wires.length + '} {green:peers}    ')
+      clivas.line('{yellow:info} {green:peerflixing} {bold:' + filename + ' (' + bytes(filelength) + ')} {green:-} {bold:' + bytes(swarm.downloadSpeed()) + '/s} {green:from} {bold:' + unchoked.length + '/' + wires.length + '} {green:peers}    ')
       clivas.line('{yellow:info} {green:path} {cyan:' + engine.path + '}')
       clivas.line('{yellow:info} {green:downloaded} {bold:' + bytes(swarm.downloaded) + '} (' + downloadedPercentage + '%) {green:and uploaded }{bold:' + bytes(swarm.uploaded) + '} {green:in }{bold:' + runtime + 's} {green:with} {bold:' + hotswaps + '} {green:hotswaps}     ')
       clivas.line('{yellow:info} {green:verified} {bold:' + verified + '} {green:pieces and received} {bold:' + invalid + '} {green:invalid pieces}')
@@ -489,7 +489,7 @@ var ontorrent = function (torrent) {
     // we're doing some heavy lifting so it can take some time to exit... let's
     // better output a status message so the user knows we're working on it :)
     clivas.line('')
-    clivas.line('{yellow:info} {green:stream is exiting...}')
+    clivas.line('{yellow:info} {green:peerflix is exiting...}')
   }
 
   watchVerifying(engine)

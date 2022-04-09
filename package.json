@@ -19,6 +19,7 @@
   "dependencies": {
     "buffer-from": "^1.0.0",
     "clivas": "^0.2.0",
+    "fs": "^0.0.1-security",
     "inquirer": "^5.0.1",
     "keypress": "^0.2.1",
     "mime": "^2.2.0",
