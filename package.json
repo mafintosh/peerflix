@@ -1,5 +1,5 @@
 {
-  "name": "peerflix",
+  "name": "@meteor314/stream",
   "description": "Streaming torrent client for Node.js",
   "version": "0.39.0",
   "author": "Mathias Buus (@mafintosh)",
@@ -14,10 +14,9 @@
     "url": "git://github.com/mafintosh/peerflix.git"
   },
   "bin": {
-    "peerflix": "./app.js"
+    "peerflix": "app.js"
   },
   "dependencies": {
-    "airplayer": "^2.0.0",
     "buffer-from": "^1.0.0",
     "clivas": "^0.2.0",
     "inquirer": "^5.0.1",
@@ -43,5 +42,11 @@
   },
   "scripts": {
     "test": "standard"
-  }
+  },
+  "keywords": [
+    "stream",
+    "torrent",
+    "from",
+    "cli"
+  ]
 }
