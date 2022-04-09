@@ -7,18 +7,19 @@ var numeral = require('numeral')
 var os = require('os')
 var address = require('network-address')
 var proc = require('child_process')
-var peerflix = require('./')
+var stream = require('./')
 var keypress = require('keypress')
 var openUrl = require('open')
 var inquirer = require('inquirer')
 var parsetorrent = require('parse-torrent')
 var bufferFrom = require('buffer-from')
+var fs = require('fs')
 
 var path = require('path')
 
-process.title = 'peerflix'
+process.title = 'stream'
 
-var argv = rc('peerflix', {}, optimist
+var argv = rc('stream', {}, optimist
   .usage('Usage: $0 magnet-link-or-torrent [options]')
   .alias('c', 'connections').describe('c', 'max connected peers').default('c', os.cpus().length > 1 ? 100 : 30)
   .alias('p', 'port').describe('p', 'change the http port').default('p', 8888)
@@ -38,13 +39,14 @@ var argv = rc('peerflix', {}, optimist
   .alias('j', 'jack').describe('j', 'autoplay in omx** using the audio jack').boolean('j')
   .alias('f', 'path').describe('f', 'change buffer file path')
   .alias('b', 'blocklist').describe('b', 'use the specified blocklist')
-  .alias('n', 'no-quit').describe('n', 'do not quit peerflix on vlc exit').boolean('n')
+  .alias('n', 'no-quit').describe('n', 'do not quit stream on vlc exit').boolean('n')
   .alias('a', 'all').describe('a', 'select all files in the torrent').boolean('a')
   .alias('r', 'remove').describe('r', 'remove files on exit').boolean('r')
   .alias('h', 'hostname').describe('h', 'host name or IP to bind the server to')
   .alias('e', 'peer').describe('e', 'add peer by ip:port')
   .alias('x', 'peer-port').describe('x', 'set peer listening port')
   .alias('d', 'not-on-top').describe('d', 'do not float video on top').boolean('d')
+  .describe('exit', 'Exit stream on download').boolean('n')
   .describe('on-downloaded', 'script to call when file is 100% downloaded')
   .describe('on-listening', 'script to call when server goes live')
   .describe('version', 'prints current version').boolean('boolean')
@@ -62,7 +64,7 @@ if (!filename) {
   optimist.showHelp()
   console.error('Options passed after -- will be passed to your player')
   console.error('')
-  console.error('  "peerflix magnet-link --vlc -- --fullscreen" will pass --fullscreen to vlc')
+  console.error('  "stream magnet-link --vlc -- --fullscreen" will pass --fullscreen to vlc')
   console.error('')
   console.error('* Autoplay can take several seconds to start since it needs to wait for the first piece')
   console.error('** OMX player is the default Raspbian video player\n')
@@ -128,7 +130,7 @@ var watchVerifying = function (engine) {
 var ontorrent = function (torrent) {
   if (argv['peer-port']) argv.peerPort = Number(argv['peer-port'])
 
-  var engine = peerflix(torrent, argv)
+  var engine = stream(torrent, argv)
   var hotswaps = 0
   var verified = 0
   var invalid = 0
@@ -153,6 +155,15 @@ var ontorrent = function (torrent) {
 
     var onready = function () {
       if (interactive) {
+        var getDownloadedSize = function (file) {
+          var p = path.join(engine.path, file.path)
+          if (fs.existsSync(p)) {
+            var size = fs.statSync(p).size
+            return Math.round(size / file.length) * 100  // percentage
+          }
+          return 0
+        }
+
         var filenamesInOriginalOrder = engine.files.map(file => file.path)
         inquirer.prompt([{
           type: 'list',
@@ -163,6 +174,7 @@ var ontorrent = function (torrent) {
             .map(function (file, i) {
               return {
                 name: file.name + ' : ' + bytes(file.length),
+                name: file.name + ' : ' + bytes(file.length) + ' (' + getDownloadedSize(file) + '%)',
                 value: filenamesInOriginalOrder.indexOf(file.path)
               }
             })
@@ -209,6 +221,12 @@ var ontorrent = function (torrent) {
     engine.on('uninterested', function () {
       if (!downloaded) proc.exec(argv['on-downloaded'])
       downloaded = true
+    })
+  }
+
+  if (argv['exit']) {
+    engine.on('uninterested', function () {
+        process.exit(0)
     })
   }
 
@@ -471,7 +489,7 @@ var ontorrent = function (torrent) {
     // we're doing some heavy lifting so it can take some time to exit... let's
     // better output a status message so the user knows we're working on it :)
     clivas.line('')
-    clivas.line('{yellow:info} {green:peerflix is exiting...}')
+    clivas.line('{yellow:info} {green:stream is exiting...}')
   }
 
   watchVerifying(engine)
