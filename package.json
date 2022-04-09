@@ -34,6 +34,9 @@
     "winreg": "1.2.4",
     "xtend": "^4.0.0"
   },
+  "publishConfig": {
+    "access": "public"
+  },  
   "devDependencies": {
     "standard": "^10.0.3"
   },
