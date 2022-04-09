@@ -17,7 +17,6 @@
     "stream": "app.js"
   },
   "dependencies": {
-    "@meteor314/stream": "^0.0.1",
     "buffer-from": "^1.0.0",
     "clivas": "^0.2.0",
     "inquirer": "^5.0.1",
