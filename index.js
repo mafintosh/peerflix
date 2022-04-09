@@ -1,4 +1,4 @@
-var torrentpeerflix = require('torrent-peerflix')
+var torrentpeerflix = require('torrent-stream')
 var http = require('http')
 var fs = require('fs')
 var rangeParser = require('range-parser')
@@ -183,7 +183,7 @@ module.exports = function (torrent, opts) {
 
   var engine = torrentpeerflix(torrent, xtend(opts, {port: opts.peerPort}))
 
-  // Just want torrent-peerflix to list files.
+  // Just want torrent-stream to list files.
   if (opts.list) return engine
 
   // Pause/Resume downloading as needed
@@ -197,7 +197,7 @@ module.exports = function (torrent, opts) {
 
   engine.server = createServer(engine, opts)
 
-  // Listen when torrent-peerflix is ready, by default a random port.
+  // Listen when torrent-streaù is ready, by default a random port.
   engine.on('ready', function () {
     engine.server.listen(opts.port || 0, opts.hostname)
   })
