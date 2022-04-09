@@ -1,7 +1,7 @@
 {
   "name": "@meteor314/stream",
   "description": "Streaming torrent client for Node.js",
-  "version": "0.0.19",
+  "version": "1.0.0",
   "author": "@meteor314",
   "license": "MIT",
   "homepage": "https://github.com/meteor314/stream",
