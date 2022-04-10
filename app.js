@@ -360,9 +360,9 @@ var ontorrent = function (torrent) {
 
     process.stdout.write(bufferFrom('G1tIG1sySg==', 'base64')) // clear for drawing
 
-    var interactive = !player && process.stdin.isTTY && !!process.stdin.setRawMode
+    var interactive =  process.stdin.isTTY && !!process.stdin.setRawMode
 
-    if (interactive) {
+    if (!interactive) {
       keypress(process.stdin)
       process.stdin.on('keypress', function (ch, key) {
         if (!key) return
