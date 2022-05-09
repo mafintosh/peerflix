@@ -1,4 +1,4 @@
-var torrentpeerflix = require('torrent-stream')
+var torrentstreaming = require('torrent-stream')
 var http = require('http')
 var fs = require('fs')
 var rangeParser = require('range-parser')
@@ -152,12 +152,12 @@ var createServer = function (e, opts) {
     range = range && rangeParser(file.length, range)[0]
     response.setHeader('Accept-Ranges', 'bytes')
     response.setHeader('Content-Type', getType(file.name))
-    response.setHeader('transferMode.dlna.org', 'peerflixing')
+    response.setHeader('transferMode.dlna.org', 'Streaming')
     response.setHeader('contentFeatures.dlna.org', 'DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01700000000000000000000000000000')
     if (!range) {
       response.setHeader('Content-Length', file.length)
       if (request.method === 'HEAD') return response.end()
-      pump(file.createReadpeerflix(), response)
+      pump(file.torrentstreaming(), response)
       return
     }
 
@@ -181,7 +181,7 @@ module.exports = function (torrent, opts) {
   // Parse blocklist
   if (opts.blocklist) opts.blocklist = parseBlocklist(opts.blocklist)
 
-  var engine = torrentpeerflix(torrent, xtend(opts, {port: opts.peerPort}))
+  var engine = torrentstreaming(torrent, xtend(opts, {port: opts.peerPort}))
 
   // Just want torrent-stream to list files.
   if (opts.list) return engine

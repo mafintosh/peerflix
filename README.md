@@ -6,8 +6,6 @@ Streaming torrent client for Node.js
 npm install -g @meteor314/stream
 ```
 
-[![build status](http://img.shields.io/travis/mafintosh/peerflix.svg?style=flat)](http://travis-ci.org/meteor314/stream)
-
 ## Usage
 
 stream-cli can be used with a magnet link or a torrent file.
@@ -20,7 +18,7 @@ stream "magnet:?xt=urn:btih:ef330b39f4801d25b4245212e75a38634bfc856e" --vlc
 Remember to put `"` around your magnet link since they usually contain `&`.
 `stream` will print a terminal interface. The first line contains an address to a http server. The `--vlc` flag ensures vlc is opened when the torrent is ready to stream.
 
-![stream](https://raw.github.com/mafintosh/peerflix/master/screenshot.png)
+![stream](https://raw.github.com/meteor314/stream/master/screenshot.png)
 
 To stream music with a torrent file use the following command.
 
