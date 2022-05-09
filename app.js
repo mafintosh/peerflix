@@ -19,7 +19,7 @@ var path = require('path')
 
 process.title = 'peerflix'
 
-var argv = rc('peerflix', {}, optimist
+var argv = rc('stream', {}, optimist
   .usage('Usage: $0 magnet-link-or-torrent [options]')
   .alias('c', 'connections').describe('c', 'max connected peers').default('c', os.cpus().length > 1 ? 100 : 30)
   .alias('p', 'port').describe('p', 'change the http port').default('p', 8888)
@@ -64,7 +64,7 @@ if (!filename) {
   optimist.showHelp()
   console.error('Options passed after -- will be passed to your player')
   console.error('')
-  console.error('  "peerflix magnet-link --vlc -- --fullscreen" will pass --fullscreen to vlc')
+  console.error('  "stream magnet-link --vlc -- --fullscreen" will pass --fullscreen to vlc')
   console.error('')
   console.error('* Autoplay can take several seconds to start since it needs to wait for the first piece')
   console.error('** OMX player is the default Raspbian video player\n')
@@ -239,7 +239,6 @@ var ontorrent = function (torrent) {
     var paused = false
     var timePaused = 0
     var pausedAt = null
-
     VLC_ARGS += ' --meta-title="' + filename.replace(/"/g, '\\"') + '"'
 
     if (argv.all) {
@@ -424,18 +423,26 @@ var ontorrent = function (torrent) {
         clivas.line('{green:open} {bold:' + (player || 'vlc') + '} {green:and enter} {bold:' + href + '} {green:as the network address}')
       }
       clivas.line('')
-      clivas.line('{yellow:info} {green:peerflixing} {bold:' + filename + ' (' + bytes(filelength) + ')} {green:-} {bold:' + bytes(swarm.downloadSpeed()) + '/s} {green:from} {bold:' + unchoked.length + '/' + wires.length + '} {green:peers}    ')
-      clivas.line('{yellow:info} {green:path} {cyan:' + engine.path + '}')
+      clivas.line('{yellow:info} {green:streaming} {bold:' + filename + ' (' + bytes(filelength) + ')} {green:-} {bold:' + bytes(swarm.downloadSpeed()) + '/s} {green:from} {bold:' + unchoked.length + '/' + wires.length + '} {green:peers}    ')
       clivas.line('{yellow:info} {green:downloaded} {bold:' + bytes(swarm.downloaded) + '} (' + downloadedPercentage + '%) {green:and uploaded }{bold:' + bytes(swarm.uploaded) + '} {green:in }{bold:' + runtime + 's} {green:with} {bold:' + hotswaps + '} {green:hotswaps}     ')
+      // calculate estimated time from remaining bytes for the whole torrent and current download speed
+     /* if(swarm.downloaded >= 0 ) {
+        var estimatedTime = Math.floor(((engine.torrent.length) - swarm.downloaded) / swarm.downloadSpeed())
+      } else
+      {
+        estimatedTime = 0;
+      }*/
+      var estimatedTime = (swarm.downloaded > 0) ? Math.floor(((engine.torrent.length) - swarm.downloaded) / swarm.downloadSpeed()) : 0;
+
+      
+      var estimatedTimeString = ''
+      if (estimatedTime > 0) {
+        estimatedTimeString = '{yellow:info} {green: estimated time remaining for the complete download of this torrent} {bold:' + Math.floor(estimatedTime / 60) + 'm' + Math.floor(estimatedTime % 60) + 's}'
+        clivas.line(estimatedTimeString)
+      }
       clivas.line('{yellow:info} {green:verified} {bold:' + verified + '} {green:pieces and received} {bold:' + invalid + '} {green:invalid pieces}')
       clivas.line('{yellow:info} {green:peer queue size is} {bold:' + swarm.queued + '}')
       clivas.line('{80:}')
-
-      if (interactive) {
-        var openLoc = ' or CTRL+L to open download location}'
-        if (paused) clivas.line('{yellow:PAUSED} {green:Press SPACE to continue download' + openLoc)
-        else clivas.line('{50+green:Press SPACE to pause download' + openLoc)
-      }
 
       clivas.line('')
       linesremaining -= 9
