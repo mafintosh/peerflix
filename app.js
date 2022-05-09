@@ -429,7 +429,7 @@ var ontorrent = function (torrent) {
       var estimatedTime = (swarm.downloaded > 0) ? Math.floor(((engine.torrent.length) - swarm.downloaded) / swarm.downloadSpeed()) : 0;      
       var estimatedTimeString = ''
       if (estimatedTime > 0) {
-        estimatedTimeString = '{yellow:info} {green: estimated time remaining for the complete download of this torrent} {bold:' + Math.floor(estimatedTime / 60) + 'm' + Math.floor(estimatedTime % 60) + 's}'
+        estimatedTimeString = '{yellow:info} {green: estimated time remaining for the complete download of this torrent} {bold:' +  Math.floor(estimatedTime /(60*60)) + 'h' + Math.floor(estimatedTime /(60)) + 'm' + Math.floor(estimatedTime % 60) + 's}'
         clivas.line(estimatedTimeString)
       }
       clivas.line('{yellow:info} {green:verified} {bold:' + verified + '} {green:pieces and received} {bold:' + invalid + '} {green:invalid pieces}')
