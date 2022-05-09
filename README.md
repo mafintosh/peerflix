@@ -5,7 +5,6 @@ Streaming torrent client for Node.js
 ```
 npm install -g @meteor314/stream
 ```
-
 ## Usage
 
 stream-cli can be used with a magnet link or a torrent file.
