@@ -1,23 +1,22 @@
 {
-  "name": "peerflix",
+  "name": "@meteor314/stream",
   "description": "Streaming torrent client for Node.js",
-  "version": "0.39.0",
-  "author": "Mathias Buus (@mafintosh)",
+  "version": "1.0.5",
+  "author": "@meteor314",
   "license": "MIT",
-  "homepage": "https://github.com/mafintosh/peerflix",
+  "homepage": "https://github.com/meteor314/stream",
   "main": "index.js",
   "bugs": {
-    "url": "https://github.com/mafintosh/peerflix/issues"
+    "url": "https://github.com/meteor314/stream/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/mafintosh/peerflix.git"
+    "url": "git://github.com/meteor314/stream.git"
   },
   "bin": {
-    "peerflix": "./app.js"
+    "stream": "app.js"
   },
   "dependencies": {
-    "airplayer": "^2.0.0",
     "buffer-from": "^1.0.0",
     "clivas": "^0.2.0",
     "inquirer": "^5.0.1",
@@ -35,6 +34,9 @@
     "winreg": "1.2.4",
     "xtend": "^4.0.0"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "standard": "^10.0.3"
   },
@@ -43,5 +45,11 @@
   },
   "scripts": {
     "test": "standard"
-  }
+  },
+  "keywords": [
+    "stream",
+    "torrent",
+    "from",
+    "cli"
+  ]
 }
