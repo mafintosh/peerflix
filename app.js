@@ -438,7 +438,7 @@ var ontorrent = function (torrent) {
       clivas.line('{yellow:info} {green:verified} {bold:' + verified + '} {green:pieces and received} {bold:' + invalid + '} {green:invalid pieces}')
       clivas.line('{yellow:info} {green:peer queue size is} {bold:' + swarm.queued + '}')
       clivas.line('{80:}')
-
+      clivas.line('{yellow:info} {green:path} {cyan:' + engine.path + '}')
       clivas.line('')
       linesremaining -= 9
 
